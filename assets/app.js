@@ -9,6 +9,7 @@ const pct = v => (v*100).toFixed(1)+'%';
 
 const PAGES = [
   ['index.html','Home','home'],
+  ['managers.html','Managers','managers'],
   ['power-rankings.html','Power Rankings','power'],
   ['records.html','Records','records'],
   ['history.html','History','history'],
@@ -33,6 +34,7 @@ function mountChrome(active){
     `<div>Farmhood Fantasy · 7 seasons (2019–2025) · Data from the Sleeper API</div>
      <div><span class="ok">✓ verified</span> · 596W=596L · sanitized</div>`);
   document.body.appendChild(foot);
+  easterEgg();
 }
 
 function medalRank(i){
@@ -51,21 +53,26 @@ function renderHome(){
 
   const titleLeader=[...L.managers].sort((a,b)=>b.titles-a.titles)[0];
   const pfLeader=[...L.managers].sort((a,b)=>b.pf-a.pf)[0];
+  const cu=(n,suf)=>`<span class="countup" data-to="${n}"${suf?` data-suffix="${suf}"`:''}>0</span>`;
   const stats=el('div','stats');
-  [['k gold',m.seasonsCompleted,'Seasons'],
-   ['k', L.managers.length,'Managers'],
-   ['k gold',titleLeader.titles+'×','Most titles ('+titleLeader.name+')'],
-   ['k blue',Math.round(pfLeader.pf).toLocaleString(),'Most pts ('+pfLeader.name+')']
+  [['k gold',cu(m.seasonsCompleted),'Seasons'],
+   ['k', cu(L.managers.length),'Managers'],
+   ['k gold',cu(titleLeader.titles,'×'),'Most titles ('+titleLeader.name+')'],
+   ['k blue',cu(Math.round(pfLeader.pf)),'Most pts ('+pfLeader.name+')']
   ].forEach(([c,k,l])=>{const s=el('div','stat');s.appendChild(el('div',c,k));s.appendChild(el('div','l',l));stats.appendChild(s);});
   app.appendChild(stats);
+
+  // Stat of the Day
+  const sod=statOfTheDay();
+  app.appendChild(el('div','sotd',`<span class="sotd-tag">📅 Stat of the Day</span><span class="sotd-txt">${sod}</span>`)).style.marginTop='16px';
 
   // reigning champ
   const sec1=el('section','section');
   sec1.appendChild(el('h2','h','<span class="bar"></span>Reigning Champion'));
   sec1.appendChild(el('div','champ-card',
-    `<div class="trophy">🏆</div>
+    `${avatarImg(champ.name,58)}
      <div style="flex:1">
-       <div class="yr">2025 CHAMPION</div>
+       <div class="yr">2025 CHAMPION 🏆</div>
        <div class="who">${champ.name}</div>
        <div class="meta" style="color:var(--muted)">${champ.titles}× champion · ${champ.wins}-${champ.losses} all-time · ${rings(champ.titles)}</div>
      </div>`));
@@ -116,6 +123,51 @@ function renderHome(){
     const c=el('a','card hover',`<h3>${ti}</h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
   });
   sec3.appendChild(g); app.appendChild(sec3);
+  animateCounts();
+}
+
+/* ---------- PLAYFUL POLISH ---------- */
+function statOfTheDay(){
+  const A=L.allTime, f=[
+    "martinch94 owns 3 of the last 6 titles — the league's only dynasty.",
+    "maco71 has the 2nd-most points in league history and zero championships.",
+    "vpitello34 has the best all-time win % (.558) and has never won it all.",
+    "Four straight years the best regular-season team failed to win the title.",
+    "pgorny is the all-time points leader AND a back-to-back champion (2022–23).",
+    "Blumbo won the very first season (2019) going 11-2 wire-to-wire.",
+    "akaaashh is tied for the most Manager-of-the-Week honors in league history.",
+    "turi70 once won the closest game ever (0.18) and lost the biggest blowout ever — same season.",
+    "Archibaldo is the unluckiest manager ever by expected wins, despite scoring like a contender."
+  ];
+  if(A){
+    if(A.highest_weeks&&A.highest_weeks[0]) f.push(`The highest single week ever: ${A.highest_weeks[0].name} dropped ${A.highest_weeks[0].pts.toFixed(1)} in ${A.highest_weeks[0].season}.`);
+    if(A.biggest_blowout) f.push(`The biggest blowout ever: ${A.biggest_blowout.winner} beat ${A.biggest_blowout.loser} by ${A.biggest_blowout.margin} in ${A.biggest_blowout.season}.`);
+  }
+  const d=new Date(), doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+  return f[doy%f.length];
+}
+function animateCounts(){
+  if(typeof document.querySelectorAll!=='function'||typeof requestAnimationFrame==='undefined')return;
+  document.querySelectorAll('.countup').forEach(node=>{
+    const to=+node.getAttribute('data-to'), suf=node.getAttribute('data-suffix')||'', t0=performance.now(), dur=950;
+    (function step(t){const p=Math.min(1,(t-t0)/dur), e=1-Math.pow(1-p,3);
+      node.textContent=Math.round(to*e).toLocaleString()+suf;
+      if(p<1)requestAnimationFrame(step);})(t0);
+  });
+}
+function easterEgg(){
+  if(typeof document.addEventListener!=='function')return;
+  const seq=['arrowup','arrowup','arrowdown','arrowdown','arrowleft','arrowright','arrowleft','arrowright','b','a'];let i=0;
+  document.addEventListener('keydown',e=>{
+    i = (e.key&&e.key.toLowerCase()===seq[i]) ? i+1 : 0;
+    if(i===seq.length){i=0;showToast('🏆 DYNASTY MODE UNLOCKED — martinch94 nods approvingly');}
+  });
+}
+function showToast(msg){
+  if(typeof document.createElement!=='function'||!document.body)return;
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{if(t.parentNode)t.parentNode.removeChild(t);},3200);
 }
 
 /* ---------- POWER RANKINGS ---------- */
@@ -210,6 +262,13 @@ function renderRecords(){
     g3.appendChild(el('div','card',`<h3>${t1}</h3><div class="big" style="font-size:24px;margin:4px 0">${v}</div><div class="meta">${m}</div>`));
   });
   sec3.appendChild(g3);app.appendChild(sec3);
+
+  // all-time points-for chart
+  const pfRank=[...L.managers].sort((a,b)=>b.pf-a.pf);
+  drawBar(chartCanvas(app,'All-Time Points For',380),
+    pfRank.map(m=>m.name), pfRank.map(m=>Math.round(m.pf)),
+    pfRank.map(()=>'#F2C24B'), true);
+
   app.appendChild(el('div','note', A
     ? `Marks span all 7 seasons (2019–2025). Two managers from the 14-team 2019–2020 era are omitted from the active leaderboard.`
     : `Two managers played only the 14-team 2019–2020 era and are omitted. Single-week marks reflect 2025 until <b>scripts/backfill.py</b> pulls older weekly data.`)).style.marginTop='16px';
@@ -369,6 +428,12 @@ function renderAllTimeFun(app){
     h+=`<tr><td class="who-name">${x.name}</td><td class="r mono">${x.actual}</td><td class="r mono" style="color:var(--muted)">${x.expected.toFixed(1)}</td><td class="r mono ${cls}">${s}${x.luck.toFixed(1)}</td></tr>`;});
   tc.innerHTML=h+'</tbody></table>';sec2.appendChild(tc);app.appendChild(sec2);
 
+  // luck chart (diverging)
+  const lkSorted=[...A.luck].sort((a,b)=>a.luck-b.luck);
+  drawBar(chartCanvas(app,'Luck, Visualized',380),
+    lkSorted.map(x=>x.name), lkSorted.map(x=>x.luck),
+    lkSorted.map(x=>x.luck>=0?'#3FD18C':'#FF6B6B'), true);
+
   // rivalries
   if(A.rivalries&&A.rivalries.length){
     const sec3=el('section','section');
@@ -477,6 +542,99 @@ function renderStory(){
        <div class="meta" style="color:var(--muted);line-height:1.6">${o.text}</div>`)));
     so.appendChild(go);app.appendChild(so);
   }
+}
+
+/* ---------- MANAGERS / PROFILES ---------- */
+function avatarImg(name,size){
+  size=size||44;const u=(L.avatars||{})[name]||'';const i=(name[0]||'?').toUpperCase();
+  const fb=`<span class="av-fb" style="font-size:${Math.round(size*0.42)}px">${i}</span>`;
+  return `<span class="av-wrap" style="width:${size}px;height:${size}px">${fb}`+
+    (u?`<img class="av" src="${u}" alt="" loading="lazy" onerror="this.style.display='none'">`:'')+`</span>`;
+}
+function badgesFor(name){
+  const m=L.managers.find(x=>x.name===name),A=L.allTime,out=[];
+  if(m.titles>=3) out.push(['👑','Dynasty']);
+  if(m.titles>0) out.push(['🏆',`${m.titles}× Champion`]);
+  const byWP=[...L.managers].sort((a,b)=>winPct(b)-winPct(a));
+  const byPF=[...L.managers].sort((a,b)=>b.pf-a.pf);
+  if(byWP[0].name===name) out.push(['🎖️','Best Win %']);
+  if(byPF[0].name===name) out.push(['💰','Points King']);
+  if(byWP[byWP.length-1].name===name) out.push(['🪑','Cellar Dweller']);
+  if(A){
+    if(A.luck[0].name===name) out.push(['🍀','Luckiest Ever']);
+    if(A.luck[A.luck.length-1].name===name) out.push(['☠️','Unluckiest Ever']);
+    if(motwLeaders(A).names.split(' & ').includes(name)) out.push(['🎯','Iron Manager']);
+    if(A.highest_weeks[0].name===name) out.push(['📈','Highest Week Ever']);
+    if(A.biggest_blowout.winner===name) out.push(['💥','Biggest Blowout']);
+  }
+  if(m.titles===0 && winPct(m)>=0.5) out.push(['🥈','Bridesmaid']);
+  return out;
+}
+function renderManagers(){
+  const app=$('#app');
+  app.appendChild(header('The Managers','Managers','Twelve managers, seven seasons. Tap anyone for their full résumé, rivalries, and badges.'));
+  const ms=[...L.managers].sort((a,b)=>b.titles-a.titles||b.wins-a.wins);
+  const g=el('div','mgr-grid');
+  ms.forEach(m=>{
+    const c=el('button','mgr-card');
+    c.innerHTML=`${avatarImg(m.name,68)}
+      <div class="mgr-nm">${m.name}</div>
+      <div class="mgr-rec">${m.wins}-${m.losses} · ${pct(winPct(m))}</div>
+      <div class="rings">${rings(m.titles)||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>`;
+    c.onclick=()=>openProfile(m.name);
+    g.appendChild(c);
+  });
+  app.appendChild(g);
+  app.appendChild(el('div','note','Tap a manager for their full card. Avatars come straight from each owner\'s Sleeper profile.')).style.marginTop='18px';
+}
+function openProfile(name){
+  const m=L.managers.find(x=>x.name===name),A=L.allTime;
+  const luck=A&&A.luck.find(x=>x.name===name);
+  const motw=A&&A.motw_counts[name];
+  const rivs=A?(A.rivalries||[]).filter(r=>r.a===name||r.b===name):[];
+  const badges=badgesFor(name).map(([e,l])=>`<span class="pill-badge">${e} ${l}</span>`).join('');
+  const rivRows=rivs.map(r=>{const opp=r.a===name?r.b:r.a,w=r.a===name?r.a_wins:r.b_wins,l=r.a===name?r.b_wins:r.a_wins;
+    return `<tr><td>${avatarImg(opp,26)} <span class="who-name">${opp}</span></td>
+      <td class="r mono ${w>l?'pos':w<l?'neg':''}">${w}–${l}</td></tr>`;}).join('');
+  const ov=el('div','modal-ov');
+  const box=el('div','modal');
+  box.innerHTML=
+    `<button class="modal-x" aria-label="Close">✕</button>
+     <div class="prof-head">${avatarImg(name,86)}
+       <div><div class="prof-nm">${name}</div>
+         <div class="rings" style="font-size:16px">${rings(m.titles)}</div>
+         <div class="meta">${m.titles?m.titleYears.join(', ')+' champion':'Chasing a first ring'}</div></div></div>
+     <div class="prof-stats">
+       <div><b>${m.wins}-${m.losses}</b><span>Record</span></div>
+       <div><b>${pct(winPct(m))}</b><span>Win %</span></div>
+       <div><b>${Math.round(m.pf).toLocaleString()}</b><span>Points</span></div>
+       <div><b class="${luck&&luck.luck>0?'pos':luck&&luck.luck<0?'neg':''}">${luck?(luck.luck>0?'+':'')+luck.luck:'–'}</b><span>Luck</span></div>
+       <div><b>${motw||'–'}</b><span>Wk Highs</span></div>
+     </div>
+     ${badges?`<div class="prof-badges">${badges}</div>`:''}
+     ${rivs.length?`<div class="prof-sec">All-Time Rivalries</div><div class="tablecard"><table class="tbl"><tbody>${rivRows}</tbody></table></div>`:''}`;
+  ov.appendChild(box);
+  ov.addEventListener('click',e=>{if(e.target===ov||e.target.classList.contains('modal-x'))document.body.removeChild(ov);});
+  document.body.appendChild(ov);
+}
+
+/* ---------- CHARTS (Chart.js, guarded so headless/no-CDN still renders) ---------- */
+function chartCanvas(app,title,height){
+  const sec=el('section','section');
+  sec.appendChild(el('h2','h',`<span class="bar"></span>${title}`));
+  const wrap=el('div','chart-wrap');wrap.style.height=(height||340)+'px';
+  const cv=document.createElement('canvas');wrap.appendChild(cv);
+  sec.appendChild(wrap);app.appendChild(sec);
+  return cv;
+}
+function drawBar(cv,labels,data,colors,horizontal){
+  if(typeof Chart==='undefined'||!cv||!cv.getContext)return;
+  new Chart(cv,{type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderWidth:0,maxBarThickness:30}]},
+    options:{indexAxis:horizontal?'y':'x',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0E1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#EAEDF5',bodyColor:'#cfd6e6',padding:10}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8A93A8'}},
+              y:{grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
 }
 
 function header(title,eyebrow,sub){

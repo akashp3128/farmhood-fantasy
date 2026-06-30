@@ -30,6 +30,22 @@ window.LEAGUE = {
     { name:"turi70",      wins:41, losses:54, pf:9974.44,  titles:0, titleYears:[] }
   ],
 
+  // Sleeper profile avatars (image + display name only; team names/mascot text excluded)
+  avatars: {
+    "Blumbo":"https://sleepercdn.com/uploads/4ac6275d46501378e7166c537df59462.jpg",
+    "turi70":"https://sleepercdn.com/uploads/5bc9fcd0d1bdac88abd955dc2d8b3445.jpg",
+    "akaaashh":"https://sleepercdn.com/uploads/3ed7c5da37b66038e8fa233a2f4c62c4.jpg",
+    "cuch":"https://sleepercdn.com/uploads/28241616bedbbb29d2a9285bbbc905d7.jpg",
+    "martinch94":"https://sleepercdn.com/uploads/7fcabf508fefb22a64683baa5e37a888.jpg",
+    "Archibaldo":"https://sleepercdn.com/uploads/1707b722f92dc32f6f368bcf8c8b5c28.jpg",
+    "jwislek_20":"https://sleepercdn.com/uploads/8cd97f8e06565c99daada94ecbee5912.jpg",
+    "Siccboi":"https://sleepercdn.com/uploads/add0c69cc0a689978695c3f293d22a5d.jpg",
+    "maco71":"https://sleepercdn.com/avatars/2b9c6cd4df626407433ed3e399ce5472",
+    "pgorny":"https://sleepercdn.com/uploads/02f7aae5c74b544e45926e6d87f2a62b.jpg",
+    "sidjunlee":"https://sleepercdn.com/uploads/052ecc2e6107facaa4cdbe60922178d7.jpg",
+    "vpitello34":"https://sleepercdn.com/avatars/d8b367a9353d4a1b03b8714233ced278"
+  },
+
   championsByYear: {
     2019:"Blumbo", 2020:"martinch94", 2021:"martinch94",
     2022:"pgorny", 2023:"pgorny", 2024:"jwislek_20", 2025:"martinch94"
