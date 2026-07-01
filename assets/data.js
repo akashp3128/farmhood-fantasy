@@ -53,6 +53,11 @@ window.LEAGUE = {
     "vpitello34":790, "Siccboi":220
   },
 
+  // Founders Era (NFL.com, 2014-2018) — champions only, no game stats survived.
+  // Yogi (2014) is a former member no longer in the league.
+  foundersChampions: { 2014:"Yogi", 2015:"Siccboi", 2016:"vpitello34", 2017:"akaaashh", 2018:"Blumbo" },
+  formerChampions: ["Yogi"],
+
   championsByYear: {
     2019:"Blumbo", 2020:"martinch94", 2021:"martinch94",
     2022:"pgorny", 2023:"pgorny", 2024:"jwislek_20", 2025:"martinch94"

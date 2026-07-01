@@ -6,6 +6,11 @@ const f1 = n => n.toFixed(1);
 const rings = n => n>0 ? '★'.repeat(n) : '';
 const winPct = m => (m.wins/(m.wins+m.losses));
 const pct = v => (v*100).toFixed(1)+'%';
+// Championships span the full league history (Founders 2014-2018 + Sleeper 2019-2025)
+const championsAll = () => Object.assign({}, L.foundersChampions||{}, L.championsByYear||{});
+const titleCounts = () => { const c={}; Object.values(championsAll()).forEach(n=>{c[n]=(c[n]||0)+1;}); return c; };
+const titlesOf = name => titleCounts()[name]||0;
+const titleYearsOf = name => { const a=championsAll(); return Object.keys(a).filter(y=>a[y]===name).map(Number).sort((x,y)=>x-y); };
 
 const PAGES = [
   ['index.html','Home','home'],
@@ -21,10 +26,14 @@ const PAGES = [
 ];
 
 function mountChrome(active){
+  // favicon (SVG logo), injected once
+  if(document.head && typeof document.createElement==='function'){
+    const l=document.createElement('link');l.rel='icon';l.type='image/jpeg';l.href='assets/logo.jpg';document.head.appendChild(l);
+  }
   const nav = el('nav','nav');
   const inner = el('div','nav-inner');
   inner.appendChild(el('a','brand',
-    `<span class="crest">F</span><span><b>Farmhood Fantasy</b><span>Est. 2019 · Private League</span></span>`)).href='index.html';
+    `<img class="crest-img" src="assets/logo.jpg" alt="Farmwood"><span><b>Farmhood Fantasy</b><span>Est. 2014 · Private League</span></span>`)).href='index.html';
   const links = el('div','nav-links');
   PAGES.forEach(([href,label,key])=>{
     const a = el('a','link'+(key===active?' active':''),label); a.href=href; links.appendChild(a);
@@ -53,13 +62,14 @@ function renderHome(){
      <h1>The <span class="gold">Farmhood Fantasy</span><br>record book.</h1>
      <p>Seven seasons of championships, collapses, and points left on the bench — every game verified against the Sleeper API.</p>`));
 
-  const titleLeader=[...L.managers].sort((a,b)=>b.titles-a.titles)[0];
+  const titleLeader=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name))[0];
   const pfLeader=[...L.managers].sort((a,b)=>b.pf-a.pf)[0];
+  const totalSeasons=Object.keys(championsAll()).length;
   const cu=(n,suf)=>`<span class="countup" data-to="${n}"${suf?` data-suffix="${suf}"`:''}>0</span>`;
   const stats=el('div','stats');
-  [['k gold',cu(m.seasonsCompleted),'Seasons'],
+  [['k gold',cu(totalSeasons),'Seasons (since 2014)'],
    ['k', cu(L.managers.length),'Managers'],
-   ['k gold',cu(titleLeader.titles,'×'),'Most titles ('+titleLeader.name+')'],
+   ['k gold',cu(titlesOf(titleLeader.name),'×'),'Most titles ('+titleLeader.name+')'],
    ['k blue',cu(Math.round(pfLeader.pf)),'Most pts ('+pfLeader.name+')']
   ].forEach(([c,k,l])=>{const s=el('div','stat');s.appendChild(el('div',c,k));s.appendChild(el('div','l',l));stats.appendChild(s);});
   app.appendChild(stats);
@@ -76,22 +86,24 @@ function renderHome(){
      <div style="flex:1">
        <div class="yr">2025 CHAMPION 🏆</div>
        <div class="who">${champ.name}</div>
-       <div class="meta" style="color:var(--muted)">${champ.titles}× champion · ${champ.wins}-${champ.losses} all-time · ${rings(champ.titles)}</div>
+       <div class="meta" style="color:var(--muted)">${titlesOf(champ.name)}× champion · ${champ.wins}-${champ.losses} all-time · ${rings(titlesOf(champ.name))}</div>
      </div>`));
   app.appendChild(sec1);
 
   // title leaderboard
-  const winners=L.managers.filter(x=>x.titles>0).sort((a,b)=>b.titles-a.titles||b.wins-a.wins);
+  const tcnt=titleCounts();
+  const winners=Object.keys(tcnt).sort((a,b)=>tcnt[b]-tcnt[a]||titleYearsOf(a)[0]-titleYearsOf(b)[0]);
   const sec2=el('section','section');
-  sec2.appendChild(el('h2','h','<span class="bar"></span>Title Count'));
+  sec2.appendChild(el('h2','h','<span class="bar"></span>Title Count <span class="badge muted" style="font-weight:600">since 2014</span>'));
   const tc=el('div','tablecard'); const t=el('table','tbl');
   t.innerHTML='<thead><tr><th>Manager</th><th>Rings</th><th class="r">Years</th></tr></thead>';
   const tb=el('tbody');
   winners.forEach(w=>{
+    const former=(L.formerChampions||[]).includes(w);
     tb.appendChild(el('tr','',
-      `<td><span class="who-name">${w.name}</span></td>
-       <td><span class="rings">${rings(w.titles)}</span></td>
-       <td class="r mono" style="color:var(--muted)">${w.titleYears.join(', ')}</td>`));
+      `<td>${avatarImg(w,24)} <span class="who-name">${w}</span> ${former?'<span class="badge muted" style="font-weight:600">Founders</span>':''}</td>
+       <td><span class="rings">${rings(tcnt[w])}</span></td>
+       <td class="r mono" style="color:var(--muted)">${titleYearsOf(w).join(', ')}</td>`));
   });
   t.appendChild(tb); tc.appendChild(t); sec2.appendChild(tc); app.appendChild(sec2);
 
@@ -182,7 +194,7 @@ function renderPower(){
     return {...m,g,ppg,wp};
   });
   const avgPpg=ms.reduce((s,m)=>s+m.ppg,0)/ms.length;
-  ms.forEach(m=>{ m.score = m.wp*100*0.55 + m.titles*7 + (m.ppg-avgPpg)*1.4; });
+  ms.forEach(m=>{ m.score = m.wp*100*0.55 + titlesOf(m.name)*7 + (m.ppg-avgPpg)*1.4; });
   ms.sort((a,b)=>b.score-a.score);
   const max=ms[0].score, min=ms[ms.length-1].score;
   const tc=el('div','tablecard');const t=el('table','tbl');
@@ -192,10 +204,10 @@ function renderPower(){
     const w=((m.score-min)/(max-min))*100;
     tb.appendChild(el('tr','',
       `<td>${medalRank(i)}</td>
-       <td><span class="who-name">${m.name}</span> ${m.titles?'<span class="rings">'+rings(m.titles)+'</span>':''}</td>
+       <td><span class="who-name">${m.name}</span> ${titlesOf(m.name)?'<span class="rings">'+rings(titlesOf(m.name))+'</span>':''}</td>
        <td class="r mono">${pct(m.wp)}</td>
        <td class="r mono">${f1(m.ppg)}</td>
-       <td class="r mono" style="color:var(--muted)">${m.titles||'–'}</td>
+       <td class="r mono" style="color:var(--muted)">${titlesOf(m.name)||'–'}</td>
        <td class="r"><div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
          <div class="bar-track" style="width:90px"><div class="bar-fill gold" style="width:${w.toFixed(0)}%"></div></div>
          <b class="mono" style="color:var(--gold);min-width:42px;display:inline-block">${m.score.toFixed(1)}</b></div></td>`));
@@ -228,21 +240,21 @@ function renderRecords(){
        <td class="r mono" style="color:var(--muted)">${m.losses}</td>
        <td class="r mono">${pct(winPct(m))}</td>
        <td class="r mono">${m.pf.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})}</td>
-       <td class="r"><span class="rings">${rings(m.titles)||'<span style=color:var(--muted-2)>–</span>'}</span></td>`));
+       <td class="r"><span class="rings">${rings(titlesOf(m.name))||'<span style=color:var(--muted-2)>–</span>'}</span></td>`));
   });
   t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
 
   // record cards
   const wins=ms[0], pf=[...ms].sort((a,b)=>b.pf-a.pf)[0],
         wp=[...ms].sort((a,b)=>winPct(b)-winPct(a))[0],
-        titles=[...ms].sort((a,b)=>b.titles-a.titles)[0];
+        titles=[...ms].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name))[0];
   const sec2=el('section','section');
   sec2.appendChild(el('h2','h','<span class="bar"></span>Record Holders'));
   const g=el('div','grid g2');
   [['Most Wins',wins.name,wins.wins+' career wins','gold'],
    ['Most Points',pf.name,Math.round(pf.pf).toLocaleString()+' all-time','blue'],
-   ['Best Win %',wp.name,pct(winPct(wp))+' · still ringless','gold'],
-   ['Most Titles',titles.name,titles.titles+' championships','blue']
+   ['Best Win %',wp.name,pct(winPct(wp))+(titlesOf(wp.name)?'':' · still ringless'),'gold'],
+   ['Most Titles',titles.name,titlesOf(titles.name)+' championships','blue']
   ].forEach(([t1,who,meta,col])=>{
     g.appendChild(el('div','card',
       `<div class="meta" style="text-transform:uppercase;letter-spacing:1px;font-size:11px;font-weight:700;color:var(--${col==='gold'?'gold':'blue-2'})">${t1}</div>
@@ -259,7 +271,7 @@ function renderRecords(){
   const hw=A?A.highest_weeks[0]:{name:'maco71',pts:177.1,season:2025,week:8};
   const lw=A?A.lowest_weeks[0]:{name:'Siccboi',pts:57.6,season:2025,week:7};
   const bl=A?A.biggest_blowout:{winner:'maco71',loser:'cuch',margin:90.8,season:2025};
-  [['Best record','Blumbo 11-2','2019 (inaugural)'],
+  [['Best record','Blumbo 11-2','2019 · Sleeper era'],
    ['Most points (season)','maco71 1,827','2025'],
    ['Highest single week',`${hw.name} ${(+hw.pts).toFixed(1)}`,`${hw.season} · Week ${hw.week}`],
    ['Worst record','turi70 2-12','2025'],
@@ -284,9 +296,10 @@ function renderRecords(){
 /* ---------- HISTORY ---------- */
 function renderHistory(){
   const app=$('#app');
-  app.appendChild(header('League History','History','Champion by champion, from the 2019 inaugural season to today.'));
+  app.appendChild(header('League History','History','A decade of Farmhood — the Founders Era (2014–2018) and the Sleeper Era (2019–present).'));
   const years=Object.keys(L.seasonResults).map(Number).sort((a,b)=>b-a);
-  const sec=el('section','');
+  const sec=el('section','section');
+  sec.appendChild(el('h2','h','<span class="bar"></span>Sleeper Era <span class="badge muted" style="font-weight:600">2019–present · full stats</span>'));
   years.forEach(y=>{
     const s=L.seasonResults[y]; const champ=s.champion;
     const c=el('div','champ-card');c.style.marginBottom='14px';
@@ -304,14 +317,29 @@ function renderHistory(){
   });
   app.appendChild(sec);
 
-  // dynasty timeline
+  // Founders Era — champions only
+  const fsec=el('section','section');
+  fsec.appendChild(el('h2','h','<span class="bar"></span>Founders Era <span class="badge muted" style="font-weight:600">2014–2018 · NFL.com · champions only</span>'));
+  Object.keys(L.foundersChampions||{}).map(Number).sort((a,b)=>b-a).forEach(y=>{
+    const champ=L.foundersChampions[y], former=(L.formerChampions||[]).includes(champ);
+    const c=el('div','champ-card');c.style.marginBottom='14px';
+    c.innerHTML=`${avatarImg(champ,44)}
+      <div style="flex:1"><div class="yr">${y} CHAMPION 🏆</div>
+      <div class="who">${champ}</div>
+      <div class="meta" style="color:var(--muted);margin-top:3px">${former?'Founders-era champion — no longer in the league, never forgotten':'Won it in the NFL.com era'}</div></div>`;
+    fsec.appendChild(c);
+  });
+  fsec.appendChild(el('div','note','The league began in 2014 on the NFL.com app and moved to Sleeper in 2019. Only champions carried over from the Founders Era — detailed stats start in 2019.'));
+  app.appendChild(fsec);
+
+  // full champions timeline (2014–present)
   const sec2=el('section','section');
-  sec2.appendChild(el('h2','h','<span class="bar"></span>Champions Timeline'));
+  sec2.appendChild(el('h2','h','<span class="bar"></span>Champions Timeline <span class="badge muted" style="font-weight:600">since 2014</span>'));
   const tl=el('div','tablecard');const t=el('table','tbl');
   t.innerHTML='<thead><tr><th>Year</th><th>Champion</th><th class="r">Title #</th></tr></thead>';
-  const tb=el('tbody');const seen={};
-  years.slice().sort((a,b)=>a-b).forEach(y=>{
-    const c=L.championsByYear[y]; seen[c]=(seen[c]||0)+1;
+  const tb=el('tbody');const seen={};const allC=championsAll();
+  Object.keys(allC).map(Number).sort((a,b)=>a-b).forEach(y=>{
+    const c=allC[y]; seen[c]=(seen[c]||0)+1;
     tb.appendChild(el('tr','',
       `<td class="mono"><b>${y}</b></td>
        <td><span class="who-name">${c}</span> <span class="rings">${'★'.repeat(seen[c])}</span></td>
@@ -559,9 +587,9 @@ function avatarImg(name,size){
     (u?`<img class="av" src="${u}" alt="" loading="lazy" onerror="this.style.display='none'">`:'')+`</span>`;
 }
 function badgesFor(name){
-  const m=L.managers.find(x=>x.name===name),A=L.allTime,out=[];
-  if(m.titles>=3) out.push(['👑','Dynasty']);
-  if(m.titles>0) out.push(['🏆',`${m.titles}× Champion`]);
+  const m=L.managers.find(x=>x.name===name),A=L.allTime,out=[],t=titlesOf(name);
+  if(t>=3) out.push(['👑','Dynasty']);
+  if(t>0) out.push(['🏆',`${t}× Champion`]);
   const byWP=[...L.managers].sort((a,b)=>winPct(b)-winPct(a));
   const byPF=[...L.managers].sort((a,b)=>b.pf-a.pf);
   if(byWP[0].name===name) out.push(['🎖️','Best Win %']);
@@ -574,13 +602,36 @@ function badgesFor(name){
     if(A.highest_weeks[0].name===name) out.push(['📈','Highest Week Ever']);
     if(A.biggest_blowout.winner===name) out.push(['💥','Biggest Blowout']);
   }
-  if(m.titles===0 && winPct(m)>=0.5) out.push(['🥈','Bridesmaid']);
+  if(t===0 && winPct(m)>=0.5) out.push(['🥈','Bridesmaid']);
   return out;
+}
+function renderMoneyBoard(app){
+  if(!L.winnings)return;
+  const rows=Object.entries(L.winnings).sort((a,b)=>b[1]-a[1]);
+  const max=rows[0][1], total=rows.reduce((s,r)=>s+r[1],0);
+  const sec=el('section','section');
+  sec.appendChild(el('h2','h',`<span class="bar"></span>💰 The Money Board <span class="badge" style="font-weight:600;background:rgba(63,209,140,.14);color:#5be6a8">$${total.toLocaleString()} paid out</span>`));
+  const tc=el('div','tablecard');const t=el('table','tbl');
+  t.innerHTML='<thead><tr><th>#</th><th>Manager</th><th class="r">All-Time Winnings</th></tr></thead>';
+  const tb=el('tbody');
+  rows.forEach(([n,v],i)=>{
+    const mgr=L.managers.find(x=>x.name===n);
+    tb.appendChild(el('tr','',
+      `<td>${medalRank(i)}</td>
+       <td>${avatarImg(n,28)} <span class="who-name">${n}</span> ${titlesOf(n)?'<span class="rings">'+rings(titlesOf(n))+'</span>':''}</td>
+       <td class="r"><div style="display:flex;align-items:center;gap:12px;justify-content:flex-end">
+         <div class="bar-track" style="width:110px"><div class="bar-fill" style="width:${(v/max*100).toFixed(0)}%;background:linear-gradient(90deg,#2f9e6a,#5be6a8)"></div></div>
+         <b class="mono" style="color:#5be6a8;min-width:58px;display:inline-block">$${v.toLocaleString()}</b></div></td>`));
+  });
+  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
+  app.appendChild(el('div','note','4-season payout totals. Pat (pgorny) leads the league\'s all-time bankroll.')).style.marginTop='14px';
 }
 function renderManagers(){
   const app=$('#app');
-  app.appendChild(header('The Managers','Managers','Twelve managers, seven seasons. Tap anyone for their full résumé, rivalries, and badges.'));
-  const ms=[...L.managers].sort((a,b)=>b.titles-a.titles||b.wins-a.wins);
+  app.appendChild(header('The Managers','Managers','Twelve managers, seven seasons. The money board, then tap anyone for their full résumé, rivalries, badges, and winnings.'));
+  renderMoneyBoard(app);
+  const g0=el('h2','h','<span class="bar"></span>All Managers');app.appendChild(g0);
+  const ms=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name)||b.wins-a.wins);
   const g=el('div','mgr-grid');
   ms.forEach(m=>{
     const c=el('button','mgr-card');
@@ -588,7 +639,7 @@ function renderManagers(){
     c.innerHTML=`${avatarImg(m.name,68)}
       <div class="mgr-nm">${m.name}</div>
       <div class="mgr-rec">${m.wins}-${m.losses} · ${pct(winPct(m))}</div>
-      <div class="rings">${rings(m.titles)||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>
+      <div class="rings">${rings(titlesOf(m.name))||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>
       ${w!=null?`<div class="mgr-win">$${w.toLocaleString()}</div>`:''}`;
     c.onclick=()=>openProfile(m.name);
     g.appendChild(c);
@@ -614,8 +665,8 @@ function openProfile(name){
     `<button class="modal-x" aria-label="Close">✕</button>
      <div class="prof-head">${avatarImg(name,86)}
        <div><div class="prof-nm">${name}</div>
-         <div class="rings" style="font-size:16px">${rings(m.titles)}</div>
-         <div class="meta">${m.titles?m.titleYears.join(', ')+' champion':'Chasing a first ring'}</div></div></div>
+         <div class="rings" style="font-size:16px">${rings(titlesOf(name))}</div>
+         <div class="meta">${titlesOf(name)?titleYearsOf(name).join(', ')+' champion':'Chasing a first ring'}</div></div></div>
      ${win!=null?`<div class="winnings">
        <div><span class="win-label">💰 All-Time Winnings</span><span class="win-cap">4-season total</span></div>
        <div class="win-right"><span class="win-amt">$${win.toLocaleString()}</span><span class="win-rank">#${winRank} of ${winTotal}</span></div></div>`:''}
