@@ -14,6 +14,8 @@ const PAGES = [
   ['records.html','Records','records'],
   ['history.html','History','history'],
   ['story.html','The Story','story'],
+  ['draft.html','Draft','draft'],
+  ['trades.html','Trades','trades'],
   ['fun.html','Fun Stats','fun'],
   ['matchups.html','Matchups','matchups'],
 ];
@@ -199,7 +201,12 @@ function renderPower(){
          <b class="mono" style="color:var(--gold);min-width:42px;display:inline-block">${m.score.toFixed(1)}</b></div></td>`));
   });
   t.appendChild(tb);tc.appendChild(t);app.appendChild(tc);
-  app.appendChild(el('div','note',`Formula: <b>55%</b> career win-rate + <b>7 pts</b> per championship + scoring rate vs. league average. Pts/Gm normalizes the 13- and 14-game seasons.`)).style.marginTop='16px';
+
+  // power index chart — gold = has a ring, blue = ringless
+  drawBar(chartCanvas(app,'Power Index, Visualized',380),
+    ms.map(m=>m.name), ms.map(m=>+m.score.toFixed(1)),
+    ms.map(m=>m.titles>0?'#F2C24B':'#3D6BFF'), true);
+  app.appendChild(el('div','note',`<span style="color:var(--gold)">●</span> champion &nbsp; <span style="color:var(--blue-2)">●</span> ringless &nbsp;·&nbsp; Formula: <b>55%</b> career win-rate + <b>7 pts</b> per championship + scoring rate vs. league average. Pts/Gm normalizes the 13- and 14-game seasons.`)).style.marginTop='16px';
 }
 
 /* ---------- RECORDS ---------- */
@@ -616,6 +623,64 @@ function openProfile(name){
   ov.appendChild(box);
   ov.addEventListener('click',e=>{if(e.target===ov||e.target.classList.contains('modal-x'))document.body.removeChild(ov);});
   document.body.appendChild(ov);
+}
+
+/* ---------- DRAFT ---------- */
+function renderDraft(){
+  const app=$('#app');
+  app.appendChild(header('Draft Steals & Busts','The Draft','Where championships were stolen in the double-digit rounds — and where first-round picks went to die. Ranked by season fantasy points vs. draft slot.'));
+  const E=L.extra;
+  if(!E){app.appendChild(el('div','note','🔓 Run <b>scripts/extras.py</b> to pull draft data (picks + player scoring). This page lights up once it finishes.')).style.marginTop='8px';return;}
+  const tbl=(title,rows,ptsColor)=>{
+    const sec=el('section','section');
+    sec.appendChild(el('h2','h',`<span class="bar"></span>${title}`));
+    const tc=el('div','tablecard');let h='<table class="tbl"><thead><tr><th>Player</th><th>Drafted</th><th class="r">Season Pts</th><th>Manager</th><th class="r">Yr</th></tr></thead><tbody>';
+    rows.forEach(p=>h+=`<tr><td class="who-name">${p.player}</td>
+      <td class="mono" style="color:var(--muted)">R${p.round} · #${p.pick}</td>
+      <td class="r mono" style="color:${ptsColor};font-weight:700">${p.pts.toFixed(1)}</td>
+      <td>${avatarImg(p.by,24)} ${p.by}</td>
+      <td class="r mono" style="color:var(--muted)">${p.season}</td></tr>`);
+    tc.innerHTML=h+'</tbody></table>';sec.appendChild(tc);app.appendChild(sec);
+  };
+  tbl('💎 Biggest Steals <span class="badge muted" style="font-weight:600">round 7+</span>', E.steals, 'var(--gold)');
+  tbl('🪦 Biggest Busts <span class="badge muted" style="font-weight:600">rounds 1–2</span>', E.busts, 'var(--loss)');
+}
+
+/* ---------- TRADES ---------- */
+function renderTrades(){
+  const app=$('#app');
+  app.appendChild(header('Trade Tracker','Trades','Every deal in league history — the wheelers, the dealers, and the heists.'));
+  const E=L.extra;
+  if(!E){app.appendChild(el('div','note','🔓 Run <b>scripts/extras.py</b> to pull the trade history. This page lights up once it finishes.')).style.marginTop='8px';return;}
+  const topTrader=Object.entries(E.trader_counts)[0]||['—',0];
+  const bt=E.biggest_trade;
+  const stats=el('div','stats');
+  [['k gold',E.trades_total,'Total Trades'],
+   ['k',topTrader[0],'Most Active ('+topTrader[1]+')'],
+   ['k blue',bt?bt.assets:'–','Biggest Trade (assets)']
+  ].forEach(([c,k,l])=>{const s=el('div','stat');s.appendChild(el('div',c,k));s.appendChild(el('div','l',l));stats.appendChild(s);});
+  stats.style.gridTemplateColumns='repeat(3,1fr)';app.appendChild(stats);
+
+  // recent trades
+  const sec=el('section','section');
+  sec.appendChild(el('h2','h','<span class="bar"></span>Recent Trades'));
+  E.recent_trades.forEach(t=>{
+    const card=el('div','trade-card');
+    const sides=t.sides.map(s=>`<div class="trade-side">
+        <div class="trade-mgr">${avatarImg(s.manager,26)} <b>${s.manager}</b> <span class="meta">got</span></div>
+        <div class="trade-got">${s.got.length?s.got.map(g=>`<span class="asset">${g}</span>`).join(''):'<span class="meta">—</span>'}</div>
+      </div>`).join('<div class="trade-swap">⇄</div>');
+    card.innerHTML=`<div class="trade-hd"><span class="badge blue">${t.season} · Wk ${t.week}</span></div><div class="trade-body">${sides}</div>`;
+    sec.appendChild(card);
+  });
+  app.appendChild(sec);
+
+  // trader leaderboard
+  const sec2=el('section','section');
+  sec2.appendChild(el('h2','h','<span class="bar"></span>Most Active Traders'));
+  const tc=el('div','tablecard');let h='<table class="tbl"><thead><tr><th>Manager</th><th class="r">Trades</th></tr></thead><tbody>';
+  Object.entries(E.trader_counts).forEach(([n,c])=>h+=`<tr><td>${avatarImg(n,26)} <span class="who-name">${n}</span></td><td class="r"><div style="display:flex;align-items:center;gap:10px;justify-content:flex-end"><div class="bar-track" style="width:${Math.min(120,c*14)}px"><div class="bar-fill gold" style="width:100%"></div></div><b class="mono">${c}</b></div></td></tr>`);
+  tc.innerHTML=h+'</tbody></table>';sec2.appendChild(tc);app.appendChild(sec2);
 }
 
 /* ---------- CHARTS (Chart.js, guarded so headless/no-CDN still renders) ---------- */
