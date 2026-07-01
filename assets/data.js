@@ -46,6 +46,13 @@ window.LEAGUE = {
     "vpitello34":"https://sleepercdn.com/avatars/d8b367a9353d4a1b03b8714233ced278"
   },
 
+  // All-time league winnings ($), 4-season total (payouts)
+  winnings: {
+    "akaaashh":260, "cuch":185, "turi70":170, "sidjunlee":165, "jwislek_20":1975,
+    "Blumbo":295, "pgorny":3650, "Archibaldo":305, "maco71":295, "martinch94":1885,
+    "vpitello34":790, "Siccboi":220
+  },
+
   championsByYear: {
     2019:"Blumbo", 2020:"martinch94", 2021:"martinch94",
     2022:"pgorny", 2023:"pgorny", 2024:"jwislek_20", 2025:"martinch94"

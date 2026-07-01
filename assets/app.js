@@ -584,10 +584,12 @@ function renderManagers(){
   const g=el('div','mgr-grid');
   ms.forEach(m=>{
     const c=el('button','mgr-card');
+    const w=(L.winnings||{})[m.name];
     c.innerHTML=`${avatarImg(m.name,68)}
       <div class="mgr-nm">${m.name}</div>
       <div class="mgr-rec">${m.wins}-${m.losses} · ${pct(winPct(m))}</div>
-      <div class="rings">${rings(m.titles)||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>`;
+      <div class="rings">${rings(m.titles)||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>
+      ${w!=null?`<div class="mgr-win">$${w.toLocaleString()}</div>`:''}`;
     c.onclick=()=>openProfile(m.name);
     g.appendChild(c);
   });
@@ -596,6 +598,9 @@ function renderManagers(){
 }
 function openProfile(name){
   const m=L.managers.find(x=>x.name===name),A=L.allTime;
+  const win=(L.winnings||{})[name];
+  const winTotal=Object.keys(L.winnings||{}).length;
+  const winRank=win!=null?Object.values(L.winnings).filter(v=>v>win).length+1:null;
   const luck=A&&A.luck.find(x=>x.name===name);
   const motw=A&&A.motw_counts[name];
   const rivs=A?(A.rivalries||[]).filter(r=>r.a===name||r.b===name):[];
@@ -611,6 +616,9 @@ function openProfile(name){
        <div><div class="prof-nm">${name}</div>
          <div class="rings" style="font-size:16px">${rings(m.titles)}</div>
          <div class="meta">${m.titles?m.titleYears.join(', ')+' champion':'Chasing a first ring'}</div></div></div>
+     ${win!=null?`<div class="winnings">
+       <div><span class="win-label">💰 All-Time Winnings</span><span class="win-cap">4-season total</span></div>
+       <div class="win-right"><span class="win-amt">$${win.toLocaleString()}</span><span class="win-rank">#${winRank} of ${winTotal}</span></div></div>`:''}
      <div class="prof-stats">
        <div><b>${m.wins}-${m.losses}</b><span>Record</span></div>
        <div><b>${pct(winPct(m))}</b><span>Win %</span></div>
