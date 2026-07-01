@@ -101,7 +101,7 @@ function renderHome(){
   winners.forEach(w=>{
     const former=(L.formerChampions||[]).includes(w);
     tb.appendChild(el('tr','',
-      `<td>${avatarImg(w,24)} <span class="who-name">${w}</span> ${former?'<span class="badge muted" style="font-weight:600">Founders</span>':''}</td>
+      `<td>${avatarImg(w,24)} <span class="who-name">${w}</span> ${former?'<span class="badge muted" style="font-weight:600">Founders Era</span>':''}</td>
        <td><span class="rings">${rings(tcnt[w])}</span></td>
        <td class="r mono" style="color:var(--muted)">${titleYearsOf(w).join(', ')}</td>`));
   });
