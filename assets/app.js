@@ -46,6 +46,7 @@ function mountChrome(active){
      <div><span class="ok">✓ verified</span> · 596W=596L · sanitized</div>`);
   document.body.appendChild(foot);
   easterEgg();
+  mountChat();
 }
 
 function medalRank(i){
@@ -759,6 +760,103 @@ function drawBar(cv,labels,data,colors,horizontal){
       plugins:{legend:{display:false},tooltip:{backgroundColor:'#0E1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#EAEDF5',bodyColor:'#cfd6e6',padding:10}},
       scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8A93A8'}},
               y:{grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
+}
+
+/* ---------- CHAT ASSISTANT (client-side, no backend) ---------- */
+const FF_ALIAS={akash:'akaaashh',akaaashh:'akaaashh',pat:'pgorny',pgorny:'pgorny',marty:'martinch94',martin:'martinch94',martinch94:'martinch94',martinch:'martinch94',vince:'vpitello34',vinny:'vpitello34',vpitello34:'vpitello34',vpitello:'vpitello34',sid:'sidjunlee',sidjunlee:'sidjunlee',jim:'jwislek_20',jwislek_20:'jwislek_20',jwislek:'jwislek_20',albert:'Blumbo',blumbo:'Blumbo',dom:'cuch',cuch:'cuch',sal:'turi70',turi70:'turi70',marco:'maco71',maco71:'maco71',ian:'Siccboi',siccboi:'Siccboi',sasha:'Archibaldo',archibaldo:'Archibaldo',yogi:'Yogi'};
+function ffResolve(q){
+  const hits=[];
+  Object.keys(FF_ALIAS).forEach(a=>{const m=q.match(new RegExp('\\b'+a+'\\b'));if(m)hits.push([m.index,FF_ALIAS[a]]);});
+  const out=[];hits.sort((a,b)=>a[0]-b[0]).forEach(([,n])=>{if(!out.includes(n))out.push(n);});
+  return out;
+}
+function ffResume(name){
+  const m=L.managers.find(x=>x.name===name), t=titlesOf(name);
+  if(!m){ return t?`${name} is a Founders-era champion (${titleYearsOf(name).join(', ')}) — no longer in the league.`:`I don't have stats for ${name}.`; }
+  const luck=L.allTime&&L.allTime.luck.find(x=>x.name===name), win=(L.winnings||{})[name];
+  let s=`<b>${name}</b> — ${m.wins}-${m.losses} all-time (${(winPct(m)*100).toFixed(1)}%), ${Math.round(m.pf).toLocaleString()} pts, ${t} ring${t!==1?'s':''}`;
+  s+= t?` (${titleYearsOf(name).join(', ')}).`:'.';
+  if(win!=null) s+=` Winnings $${win.toLocaleString()}.`;
+  if(luck) s+=` Luck ${luck.luck>0?'+':''}${luck.luck} wins vs expected.`;
+  return s;
+}
+function ffH2H(a,b){
+  const r=((L.allTime&&L.allTime.rivalries)||[]).find(x=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a));
+  if(!r) return `I don't have a tracked all-time head-to-head for ${a} and ${b} (needs the all-time data loaded).`;
+  const aw=r.a===a?r.a_wins:r.b_wins, bw=r.a===a?r.b_wins:r.a_wins;
+  return `<b>${a} vs ${b}</b>: ${aw}–${bw} all-time${aw===bw?' (dead even)':', '+(aw>bw?a:b)+' leads'} across ${r.games} meetings.`;
+}
+function ffHelp(pre){return (pre||'Try asking:')+' <span class="chat-eg">“who won 2021?”</span> <span class="chat-eg">“how many titles does Blumbo have?”</span> <span class="chat-eg">“Akash vs cuch”</span> <span class="chat-eg">“who won the most money?”</span> <span class="chat-eg">“biggest blowout ever”</span> <span class="chat-eg">“tell me about maco71”</span>';}
+function ffAnswer(raw){
+  const q=(raw||'').toLowerCase().trim();
+  if(!q) return ffHelp();
+  if(/\b(help|examples?|what can you|how do you work)\b/.test(q)) return ffHelp();
+  const A=L.allTime, years=(q.match(/\b(20\d{2})\b/g)||[]).map(Number).filter(y=>y>=2014&&y<=2025), names=ffResolve(q);
+  const mgrsByPf=[...L.managers].sort((a,b)=>b.pf-a.pf), mgrsByW=[...L.managers].sort((a,b)=>b.wins-a.wins), mgrsByWp=[...L.managers].sort((a,b)=>winPct(b)-winPct(a));
+  const tc=titleCounts(), champAll=championsAll();
+
+  // head-to-head
+  if(names.length>=2 && (/\b(vs|versus|against|head.?to.?head|h2h|beat|series)\b/.test(q) || names.length===2)) return ffH2H(names[0],names[1]);
+  // champion of a year
+  if(years.length && /(win|won|champ|winner|title|took|first)/.test(q))
+    return years.map(y=>champAll[y]?`🏆 <b>${champAll[y]}</b> won the ${y} championship${(L.formerChampions||[]).includes(champAll[y])?' (Founders Era)':''}.`:`I don't have a champion on record for ${y}.`).join('<br>');
+  if(years.length && /\bwho\b/.test(q))
+    return years.map(y=>champAll[y]?`🏆 <b>${champAll[y]}</b> won ${y}.`:`No ${y} champion on record.`).join('<br>');
+  // titles / rings for a name
+  if(names.length && /(title|ring|champ|how many)/.test(q))
+    return names.map(n=>{const t=titlesOf(n);return t?`<b>${n}</b> has ${t} title${t>1?'s':''} — ${titleYearsOf(n).join(', ')}.`:`<b>${n}</b> has no championships yet.`;}).join('<br>');
+  // winnings / money
+  if(/\b(money|winning|winnings|earn|earnings|paid|cash|bankroll|\$|richest)\b/.test(q)){
+    if(names.length) return names.map(n=>(L.winnings||{})[n]!=null?`<b>${n}</b> has won $${L.winnings[n].toLocaleString()} (4-season total).`:`No winnings on record for ${n}.`).join('<br>');
+    const top=Object.entries(L.winnings||{}).sort((a,b)=>b[1]-a[1]);
+    return `💰 Money leaders: ${top.slice(0,3).map(([n,v])=>`<b>${n}</b> $${v.toLocaleString()}`).join(', ')}. Total pot: $${top.reduce((s,x)=>s+x[1],0).toLocaleString()}.`;
+  }
+  // superlatives
+  if(/\bmost (titles|rings|champ)/.test(q)){const n=Object.keys(tc).sort((a,b)=>tc[b]-tc[a])[0];return `👑 <b>${n}</b> has the most titles: ${tc[n]} (${titleYearsOf(n).join(', ')}).`;}
+  if(/\bmost points|points leader|highest scoring|most pf\b/.test(q)){const m=mgrsByPf[0];return `<b>${m.name}</b> has the most points all-time: ${Math.round(m.pf).toLocaleString()}.`;}
+  if(/\bmost wins|best record\b/.test(q)){const m=mgrsByW[0];return `<b>${m.name}</b> has the most wins: ${m.wins}-${m.losses}.`;}
+  if(/\bbest win|highest win|win %|win percent/.test(q)){const m=mgrsByWp[0];return `<b>${m.name}</b> has the best win %: ${(winPct(m)*100).toFixed(1)}%${titlesOf(m.name)?'':' (and no title)'}.`;}
+  if(A&&/\bhighest (week|score)|most in a week|single.?week high/.test(q)){const h=A.highest_weeks[0];return `📈 Highest week ever: <b>${h.name}</b> — ${h.pts.toFixed(1)} (${h.season}, Week ${h.week}).`;}
+  if(A&&/\bblowout|biggest win|beatdown|destroyed\b/.test(q)){const b=A.biggest_blowout;return `💥 Biggest blowout ever: <b>${b.winner}</b> ${b.score} over ${b.loser} (${b.season}, +${b.margin}).`;}
+  if(A&&/\bclos(e|est)|nail.?biter|narrow/.test(q)){const c=A.closest_game;return `🔪 Closest game ever: <b>${c.winner}</b> edged ${c.loser} by ${c.margin} (${c.season}).`;}
+  if(A&&/luck/.test(q)){
+    if(names.length){return names.map(n=>{const x=A.luck.find(y=>y.name===n);return x?`<b>${n}</b> luck: ${x.luck>0?'+':''}${x.luck} (won ${x.actual}, expected ${x.expected}).`:`No luck data for ${n}.`;}).join('<br>');}
+    return `🍀 Luckiest ever: <b>${A.luck[0].name}</b> (+${A.luck[0].luck}). ☠️ Unluckiest: <b>${A.luck[A.luck.length-1].name}</b> (${A.luck[A.luck.length-1].luck}).`;
+  }
+  if(A&&/\brival/.test(q)){const r=(A.rivalries||[])[0];return r?`⚔️ Biggest rivalry: <b>${r.a} vs ${r.b}</b> — ${r.games} meetings (${r.a_wins}-${r.b_wins}).`:`No rivalry data loaded.`;}
+  // draft / trades (need data_extra)
+  if(/\bsteal/.test(q)){if(!L.extra)return 'Draft data isn\'t loaded yet — run extras.py, or open the Draft page.';const s=L.extra.steals[0];return `💎 Biggest draft steal: <b>${s.player}</b> (R${s.round}, #${s.pick}) scored ${s.pts.toFixed(1)} for ${s.by} in ${s.season}.`;}
+  if(/\bbust/.test(q)){if(!L.extra)return 'Draft data isn\'t loaded yet — run extras.py.';const b=L.extra.busts[0];return `🪦 Biggest bust: <b>${b.player}</b> (R${b.round}, #${b.pick}) scored just ${b.pts.toFixed(1)} for ${b.by} in ${b.season}.`;}
+  if(/\btrade|deal|active trader\b/.test(q)){if(!L.extra)return 'Trade data isn\'t loaded yet — run extras.py, or open the Trades page.';const t=Object.entries(L.extra.trader_counts)[0];return `🤝 ${L.extra.trades_total} trades all-time. Most active: <b>${t[0]}</b> (${t[1]}).`;}
+  // standings / last place
+  if(years.includes(2025) && /\b(standing|finish|last|place|record|toilet|worst)\b/.test(q)){
+    if(/last|toilet|worst/.test(q)){const s=L.standings2025[L.standings2025.length-1];return `In 2025, <b>${s.name}</b> finished last at ${s.w}-${s.l}.`;}
+    return '2025 final: '+L.standings2025.slice(0,3).map(s=>`${s.rank}. ${s.name} (${s.w}-${s.l})`).join(', ')+'… (full table on the Matchups page).';
+  }
+  // list champions
+  if(/\bchampions|title history|all winners|list.*win/.test(q))
+    return 'Champions: '+Object.keys(champAll).sort().map(y=>`${y} ${champAll[y]}`).join(' · ');
+  // single manager résumé
+  if(names.length===1) return ffResume(names[0]);
+  return ffHelp("I didn't catch that.");
+}
+function mountChat(){
+  if(typeof document.addEventListener!=='function' || !document.body) return;
+  const fab=document.createElement('button');fab.className='chat-fab';fab.innerHTML='💬';fab.setAttribute('aria-label','Ask the league bot');
+  const panel=document.createElement('div');panel.className='chat-panel';
+  panel.innerHTML=`<div class="chat-head"><img src="assets/logo.jpg" alt="" style="width:24px;height:24px;border-radius:50%"><b>Farmwood Bot</b><span class="chat-sub">ask about the league</span><button class="chat-close" aria-label="Close">✕</button></div>
+    <div class="chat-msgs"></div>
+    <form class="chat-form"><input class="chat-in" placeholder="Ask about a season, manager, record…" autocomplete="off"><button class="chat-send">➤</button></form>`;
+  document.body.appendChild(fab);document.body.appendChild(panel);
+  const msgs=panel.querySelector('.chat-msgs'), form=panel.querySelector('.chat-form'), input=panel.querySelector('.chat-in');
+  const add=(html,who)=>{const d=document.createElement('div');d.className='chat-msg '+who;d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;};
+  add('👋 I\'m the Farmwood bot. '+ffHelp(),'bot');
+  const ask=t=>{if(!t.trim())return;add(t.replace(/</g,'&lt;'),'user');setTimeout(()=>add(ffAnswer(t),'bot'),120);};
+  const toggle=o=>{panel.classList.toggle('open',o);if(o)setTimeout(()=>input.focus(),50);};
+  fab.addEventListener('click',()=>toggle(!panel.classList.contains('open')));
+  panel.querySelector('.chat-close').addEventListener('click',()=>toggle(false));
+  form.addEventListener('submit',e=>{e.preventDefault();const v=input.value;input.value='';ask(v);});
+  msgs.addEventListener('click',e=>{if(e.target.classList.contains('chat-eg')){ask(e.target.textContent.replace(/[“”]/g,''));}});
 }
 
 function header(title,eyebrow,sub){
