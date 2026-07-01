@@ -326,7 +326,7 @@ function renderHistory(){
     c.innerHTML=`${avatarImg(champ,44)}
       <div style="flex:1"><div class="yr">${y} CHAMPION 🏆</div>
       <div class="who">${champ}</div>
-      <div class="meta" style="color:var(--muted);margin-top:3px">${former?'Founders-era champion — no longer in the league, never forgotten':'Won it in the NFL.com era'}</div></div>`;
+      <div class="meta" style="color:var(--muted);margin-top:3px">${former?'Founders-era champion — no longer in the league':'Won it in the NFL.com era'}</div></div>`;
     fsec.appendChild(c);
   });
   fsec.appendChild(el('div','note','The league began in 2014 on the NFL.com app and moved to Sleeper in 2019. Only champions carried over from the Founders Era — detailed stats start in 2019.'));
