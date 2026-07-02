@@ -42,8 +42,8 @@ function mountChrome(active){
   document.body.prepend(nav);
 
   const foot = el('footer','',
-    `<div>Farmhood Fantasy · 7 seasons (2019–2025) · Data from the Sleeper API</div>
-     <div><span class="ok">✓ verified</span> · 596W=596L · sanitized</div>`);
+    `<div>Farmhood Fantasy · Founded 2014 · Data from the Sleeper API</div>
+     <div>Built by <b style="color:var(--gold)">Akash Patel</b> · <span class="ok">✓ verified</span> · sanitized</div>`);
   document.body.appendChild(foot);
   easterEgg();
   mountChat();
