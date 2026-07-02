@@ -237,6 +237,8 @@ h2.h .bar{width:4px;height:20px;border-radius:3px;background:linear-gradient(var
 .mgr-rec{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
 .mgr-win{color:#3FD18C;font-weight:800;font-size:14.5px;font-variant-numeric:tabular-nums;
   background:rgba(63,209,140,.12);border:1px solid rgba(63,209,140,.28);border-radius:8px;padding:2px 10px;margin-top:2px}
+.commish-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.3px;color:var(--blue-2);
+  background:var(--blue-dim);border:1px solid rgba(61,107,255,.3);border-radius:7px;padding:2px 8px}
 
 /* winnings banner (profile modal) */
 .winnings{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;

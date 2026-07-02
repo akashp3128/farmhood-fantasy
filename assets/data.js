@@ -46,6 +46,8 @@ window.LEAGUE = {
     "vpitello34":"https://sleepercdn.com/avatars/d8b367a9353d4a1b03b8714233ced278"
   },
 
+  commissioner: "cuch",
+
   // All-time league winnings ($), 4-season total (payouts)
   winnings: {
     "akaaashh":260, "cuch":185, "turi70":170, "sidjunlee":165, "jwislek_20":1975,
@@ -182,12 +184,12 @@ window.LEAGUE = {
 
   oddities: [
     { icon:"🍀", title:"The Luck Paradox",
-      text:"vpitello34 owns the best win % in league history (.558) AND the most fortunate schedule ever recorded — +6.5 wins above what his scores actually deserved. Fortune follows him everywhere except the one game that matters: still zero rings." },
+      text:"vpitello34 owns the best win % in league history (.558) and the most fortunate schedule ever recorded (+6.5 wins above expected). He has a ring — the 2016 title — but the summit keeps slipping away: he's lost three championship games in the years since. The luckiest man in the league, and still heartbroken in the games that matter most." },
     { icon:"☠️", title:"Archibaldo, the Truly Cursed",
       text:"Forget the maco71 curse — by the math, Archibaldo is the unluckiest manager the league has ever seen, a staggering −7.1 wins below expectation across seven seasons. He has scored like a contender and finished like a tenant. The schedule has personally wronged this man." },
     { icon:"🎢", title:"turi70's Feast & Famine (2021)",
       text:"In one season turi70 authored both extremes in league history: the biggest blowout ever — 178.1 to 58.9 over sidjunlee (+119.2) — and, weeks earlier, the closest game ever, surviving vpitello34 by 0.18. Nobody has ever swung harder between god and goblin." },
-    { icon:"🥈", title:"The Bridesmaid Club",
-      text:"vpitello34 (best win %, luckiest ever), maco71 (most points, most heartbreak) and akaaashh (tied for the most Manager-of-the-Week honors, 13) are the league's most decorated ringless trio. Combined regular-season pedigree: immense. Combined championships: zero." }
+    { icon:"🥈", title:"maco71, the Ringless King",
+      text:"maco71 has the second-most points in league history and the highest-scoring single season ever (1,827 in 2025) — and not one championship. In 2021 he had the best record AND the most points, and still didn't win. The most productive manager never to lift the trophy." }
   ]
 };

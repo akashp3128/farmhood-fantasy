@@ -218,7 +218,7 @@ function renderPower(){
   // power index chart — gold = has a ring, blue = ringless
   drawBar(chartCanvas(app,'Power Index, Visualized',380),
     ms.map(m=>m.name), ms.map(m=>+m.score.toFixed(1)),
-    ms.map(m=>m.titles>0?'#F2C24B':'#3D6BFF'), true);
+    ms.map(m=>titlesOf(m.name)>0?'#F2C24B':'#3D6BFF'), true);
   app.appendChild(el('div','note',`<span style="color:var(--gold)">●</span> champion &nbsp; <span style="color:var(--blue-2)">●</span> ringless &nbsp;·&nbsp; Formula: <b>55%</b> career win-rate + <b>7 pts</b> per championship + scoring rate vs. league average. Pts/Gm normalizes the 13- and 14-game seasons.`)).style.marginTop='16px';
 }
 
@@ -589,6 +589,7 @@ function avatarImg(name,size){
 }
 function badgesFor(name){
   const m=L.managers.find(x=>x.name===name),A=L.allTime,out=[],t=titlesOf(name);
+  if(name===L.commissioner) out.push(['⚖️','Commissioner']);
   if(t>=3) out.push(['👑','Dynasty']);
   if(t>0) out.push(['🏆',`${t}× Champion`]);
   const byWP=[...L.managers].sort((a,b)=>winPct(b)-winPct(a));
@@ -640,6 +641,7 @@ function renderManagers(){
     c.innerHTML=`${avatarImg(m.name,68)}
       <div class="mgr-nm">${m.name}</div>
       <div class="mgr-rec">${m.wins}-${m.losses} · ${pct(winPct(m))}</div>
+      ${m.name===L.commissioner?'<span class="commish-tag">⚖️ Commissioner</span>':''}
       <div class="rings">${rings(titlesOf(m.name))||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>
       ${w!=null?`<div class="mgr-win">$${w.toLocaleString()}</div>`:''}`;
     c.onclick=()=>openProfile(m.name);
@@ -791,6 +793,7 @@ function ffAnswer(raw){
   const q=(raw||'').toLowerCase().trim();
   if(!q) return ffHelp();
   if(/\b(help|examples?|what can you|how do you work)\b/.test(q)) return ffHelp();
+  if(/commissioner|commish|who runs|who.?s in charge/.test(q)) return `⚖️ <b>${L.commissioner}</b> is the league commissioner.`;
   const A=L.allTime, years=(q.match(/\b(20\d{2})\b/g)||[]).map(Number).filter(y=>y>=2014&&y<=2025), names=ffResolve(q);
   const mgrsByPf=[...L.managers].sort((a,b)=>b.pf-a.pf), mgrsByW=[...L.managers].sort((a,b)=>b.wins-a.wins), mgrsByWp=[...L.managers].sort((a,b)=>winPct(b)-winPct(a));
   const tc=titleCounts(), champAll=championsAll();
