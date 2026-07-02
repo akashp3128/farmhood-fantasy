@@ -289,6 +289,13 @@ function renderRecords(){
     pfRank.map(m=>m.name), pfRank.map(m=>Math.round(m.pf)),
     pfRank.map(()=>'#F2C24B'), true);
 
+  // playoff appearances chart
+  if(L.playoffAppearances){
+    const pa=Object.entries(L.playoffAppearances).sort((a,b)=>b[1]-a[1]);
+    drawBar(chartCanvas(app,`Playoff Appearances <span class="badge muted" style="font-weight:600">of ${L.playoffSeasons} seasons (2019–25)</span>`,380),
+      pa.map(x=>x[0]), pa.map(x=>x[1]), pa.map(x=>x[1]>=5?'#F2C24B':'#3D6BFF'), true);
+  }
+
   app.appendChild(el('div','note', A
     ? `Marks span all 7 seasons (2019–2025). Two managers from the 14-team 2019–2020 era are omitted from the active leaderboard.`
     : `Two managers played only the 14-team 2019–2020 era and are omitted. Single-week marks reflect 2025 until <b>scripts/backfill.py</b> pulls older weekly data.`)).style.marginTop='16px';
@@ -303,12 +310,15 @@ function renderHistory(){
   sec.appendChild(el('h2','h','<span class="bar"></span>Sleeper Era <span class="badge muted" style="font-weight:600">2019–present · full stats</span>'));
   years.forEach(y=>{
     const s=L.seasonResults[y]; const champ=s.champion;
-    const c=el('div','champ-card');c.style.marginBottom='14px';
-    c.innerHTML=`<div class="trophy">🏆</div>
+    const hasR=L.championRosters && L.championRosters[String(y)];
+    const c=el('div','champ-card'+(hasR?' clickable':''));c.style.marginBottom='14px';
+    if(hasR) c.onclick=()=>openRoster(String(y));
+    c.innerHTML=`${avatarImg(champ,46)}
       <div style="flex:1">
         <div class="yr">${y} · ${s.teams} TEAMS · ${s.games} GAMES</div>
-        <div class="who">${champ}</div>
+        <div class="who">${champ} 🏆</div>
         <div class="meta" style="color:var(--muted);margin-top:3px">${s.runnerNote}</div>
+        ${hasR?'<div class="meta" style="color:var(--gold);font-size:12px;margin-top:5px;font-weight:700">View title roster →</div>':''}
       </div>
       <div style="text-align:right" class="mono">
         <div class="badge blue" style="margin-bottom:6px">Top: ${s.topRecord}</div><br>
@@ -679,6 +689,7 @@ function openProfile(name){
        <div><b>${Math.round(m.pf).toLocaleString()}</b><span>Points</span></div>
        <div><b class="${luck&&luck.luck>0?'pos':luck&&luck.luck<0?'neg':''}">${luck?(luck.luck>0?'+':'')+luck.luck:'–'}</b><span>Luck</span></div>
        <div><b>${motw||'–'}</b><span>Wk Highs</span></div>
+       <div><b>${(L.playoffAppearances||{})[name]!=null?L.playoffAppearances[name]+'/'+L.playoffSeasons:'–'}</b><span>Playoffs</span></div>
      </div>
      ${badges?`<div class="prof-badges">${badges}</div>`:''}
      ${rivs.length?`<div class="prof-sec">All-Time Rivalries</div><div class="tablecard"><table class="tbl"><tbody>${rivRows}</tbody></table></div>`:''}`;
@@ -764,6 +775,26 @@ function drawBar(cv,labels,data,colors,horizontal){
               y:{grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
 }
 
+/* ---------- CHAMPION ROSTER (Sleeper-style) ---------- */
+function openRoster(year){
+  const r=L.championRosters && L.championRosters[year]; if(!r) return;
+  const rows=r.roster.map(p=>{const cls=['QB','RB','WR','TE','K','DEF'].includes(p.slot)?p.slot:'FLEX';
+    return `<div class="rsl"><span class="rsl-slot ${cls}">${p.slot}</span>
+      <span class="rsl-name">${p.name}</span>
+      <span class="rsl-meta">${[p.pos,p.team].filter(Boolean).join(' · ')}</span></div>`;}).join('');
+  const ov=el('div','modal-ov'), box=el('div','modal');
+  box.innerHTML=`<button class="modal-x" aria-label="Close">✕</button>
+    <div class="prof-head">${avatarImg(r.champion,74)}<div>
+      <div class="yr">${year} CHAMPION 🏆</div>
+      <div class="prof-nm">${r.champion}</div>
+      <div class="meta">Title-winning starting lineup</div></div></div>
+    <div class="prof-sec">Starters</div>
+    <div class="roster-list">${rows}</div>`;
+  ov.appendChild(box);
+  ov.addEventListener('click',e=>{if(e.target===ov||e.target.classList.contains('modal-x'))document.body.removeChild(ov);});
+  document.body.appendChild(ov);
+}
+
 /* ---------- CHAT ASSISTANT (client-side, no backend) ---------- */
 const FF_ALIAS={akash:'akaaashh',akaaashh:'akaaashh',pat:'pgorny',pgorny:'pgorny',marty:'martinch94',martin:'martinch94',martinch94:'martinch94',martinch:'martinch94',vince:'vpitello34',vinny:'vpitello34',vpitello34:'vpitello34',vpitello:'vpitello34',sid:'sidjunlee',sidjunlee:'sidjunlee',jim:'jwislek_20',jwislek_20:'jwislek_20',jwislek:'jwislek_20',albert:'Blumbo',blumbo:'Blumbo',dom:'cuch',cuch:'cuch',sal:'turi70',turi70:'turi70',marco:'maco71',maco71:'maco71',ian:'Siccboi',siccboi:'Siccboi',sasha:'Archibaldo',archibaldo:'Archibaldo',yogi:'Yogi'};
 function ffResolve(q){
@@ -806,7 +837,7 @@ function ffAnswer(raw){
   if(years.length && /\bwho\b/.test(q))
     return years.map(y=>champAll[y]?`🏆 <b>${champAll[y]}</b> won ${y}.`:`No ${y} champion on record.`).join('<br>');
   // titles / rings for a name
-  if(names.length && /(title|ring|champ|how many)/.test(q))
+  if(names.length && /(title|ring|champ|how many)/.test(q) && !/playoff|postseason|point|money|winning|earn|luck|rival|trade|steal|bust/.test(q))
     return names.map(n=>{const t=titlesOf(n);return t?`<b>${n}</b> has ${t} title${t>1?'s':''} — ${titleYearsOf(n).join(', ')}.`:`<b>${n}</b> has no championships yet.`;}).join('<br>');
   // winnings / money
   if(/\b(money|winning|winnings|earn|earnings|paid|cash|bankroll|\$|richest)\b/.test(q)){
@@ -831,6 +862,11 @@ function ffAnswer(raw){
   if(/\bsteal/.test(q)){if(!L.extra)return 'Draft data isn\'t loaded yet — run extras.py, or open the Draft page.';const s=L.extra.steals[0];return `💎 Biggest draft steal: <b>${s.player}</b> (R${s.round}, #${s.pick}) scored ${s.pts.toFixed(1)} for ${s.by} in ${s.season}.`;}
   if(/\bbust/.test(q)){if(!L.extra)return 'Draft data isn\'t loaded yet — run extras.py.';const b=L.extra.busts[0];return `🪦 Biggest bust: <b>${b.player}</b> (R${b.round}, #${b.pick}) scored just ${b.pts.toFixed(1)} for ${b.by} in ${b.season}.`;}
   if(/\btrade|deal|active trader\b/.test(q)){if(!L.extra)return 'Trade data isn\'t loaded yet — run extras.py, or open the Trades page.';const t=Object.entries(L.extra.trader_counts)[0];return `🤝 ${L.extra.trades_total} trades all-time. Most active: <b>${t[0]}</b> (${t[1]}).`;}
+  if(/playoff|postseason/.test(q)){
+    if(names.length) return names.map(n=>{const p=(L.playoffAppearances||{})[n];return p!=null?`<b>${n}</b> has made the playoffs ${p} time${p!==1?'s':''} in ${L.playoffSeasons} seasons (2019–25).`:`No playoff data for ${n}.`;}).join('<br>');
+    const top=Object.entries(L.playoffAppearances||{}).sort((a,b)=>b[1]-a[1]);
+    return `🏟️ Most playoff appearances: ${top.slice(0,3).map(([n,v])=>`<b>${n}</b> (${v})`).join(', ')} of ${L.playoffSeasons} seasons.`;
+  }
   // standings / last place
   if(years.includes(2025) && /\b(standing|finish|last|place|record|toilet|worst)\b/.test(q)){
     if(/last|toilet|worst/.test(q)){const s=L.standings2025[L.standings2025.length-1];return `In 2025, <b>${s.name}</b> finished last at ${s.w}-${s.l}.`;}

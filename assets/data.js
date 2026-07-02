@@ -48,6 +48,10 @@ window.LEAGUE = {
 
   commissioner: "cuch",
 
+  // Playoff appearances, computed from winners_bracket per season (Sleeper era 2019-2025).
+  playoffSeasons: 7,
+  playoffAppearances: { jwislek_20:5, martinch94:5, pgorny:5, Blumbo:4, akaaashh:4, vpitello34:4, Archibaldo:3, Siccboi:3, turi70:3, maco71:3, cuch:2, sidjunlee:2 },
+
   // All-time league winnings ($), 4-season total (payouts)
   winnings: {
     "akaaashh":260, "cuch":185, "turi70":170, "sidjunlee":165, "jwislek_20":1975,

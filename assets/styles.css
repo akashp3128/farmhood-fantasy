@@ -129,6 +129,22 @@ h2.h .bar{width:4px;height:20px;border-radius:3px;background:linear-gradient(var
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 
+/* champion roster (Sleeper-style) */
+.champ-card.clickable{cursor:pointer;transition:.16s}
+.champ-card.clickable:hover{border-color:rgba(242,194,75,.5);transform:translateY(-2px);box-shadow:var(--shadow)}
+.roster-list{display:flex;flex-direction:column;gap:6px}
+.rsl{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.rsl-slot{flex:0 0 46px;text-align:center;font-size:11px;font-weight:800;padding:4px 0;border-radius:6px;background:var(--card-hi);color:var(--muted)}
+.rsl-slot.QB{background:rgba(255,107,107,.16);color:#ff8f8f}
+.rsl-slot.RB{background:rgba(63,209,140,.16);color:#5be6a8}
+.rsl-slot.WR{background:rgba(61,107,255,.2);color:#8aa4ff}
+.rsl-slot.TE{background:rgba(242,194,75,.18);color:var(--gold)}
+.rsl-slot.FLEX{background:rgba(181,128,255,.18);color:#c9a6ff}
+.rsl-slot.K{background:rgba(255,160,90,.16);color:#ffb877}
+.rsl-slot.DEF{background:rgba(120,140,170,.18);color:#aab6cc}
+.rsl-name{font-weight:700;flex:1}
+.rsl-meta{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
 /* chat assistant */
 .chat-fab{position:fixed;bottom:20px;right:20px;z-index:120;width:56px;height:56px;border-radius:50%;
   border:1px solid rgba(242,194,75,.4);cursor:pointer;font-size:24px;
@@ -260,7 +276,7 @@ h2.h .bar{width:4px;height:20px;border-radius:3px;background:linear-gradient(var
 .modal-x:hover{color:var(--text)}
 .prof-head{display:flex;align-items:center;gap:16px;margin-bottom:18px}
 .prof-nm{font-size:24px;font-weight:900;letter-spacing:-.3px}
-.prof-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;margin-bottom:16px}
+.prof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-bottom:16px}
 .prof-stats>div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 4px}
 .prof-stats b{display:block;font-size:15px;font-weight:900}
 .prof-stats span{color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.4px}
