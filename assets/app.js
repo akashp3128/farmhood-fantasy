@@ -59,9 +59,14 @@ function renderHome(){
   const m=L.meta, app=$('#app');
   const champ=L.managers.find(x=>x.name===m.reigningChampion);
   app.appendChild(el('section','hero',
-    `<span class="pill">🏈 ${m.scoring} · ${m.teams} teams</span>
-     <h1>The <span class="gold">Farmhood Fantasy</span><br>record book.</h1>
-     <p>Seven seasons of championships, collapses, and points left on the bench — every game verified against the Sleeper API.</p>`));
+    `<div class="hero-inner">
+       <div class="hero-logo-wrap"><img class="hero-logo" src="assets/logo.jpg" alt="Farmwood"></div>
+       <div class="hero-text">
+         <span class="pill">🏈 ${m.scoring} · ${m.teams} teams · Est. 2014</span>
+         <h1>The <span class="gold">Farmhood Fantasy</span> record book.</h1>
+         <p>Twelve seasons in the tower since 2014 — seven of them tracked to the decimal. Dynasties and collapses, cruel schedules and cursed contenders, and all the points left to rot on the bench. This is the house that Farmwood built.</p>
+       </div>
+     </div>`));
 
   const titleLeader=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name))[0];
   const pfLeader=[...L.managers].sort((a,b)=>b.pf-a.pf)[0];
