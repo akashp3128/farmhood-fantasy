@@ -62,7 +62,7 @@ function renderHome(){
     `<div class="hero-inner">
        <div class="hero-logo-wrap"><img class="hero-logo" src="assets/logo.jpg" alt="Farmwood"></div>
        <div class="hero-text">
-         <span class="pill">🏈 ${m.scoring} · ${m.teams} teams · Est. 2014</span>
+         <span class="pill">${m.scoring} · ${m.teams} Teams · Est. 2014</span>
          <h1>The <span class="gold">Farmhood Fantasy</span> record book.</h1>
          <p>The official Farmhood Fantasy record book. Founded 2014.</p>
        </div>
@@ -73,16 +73,19 @@ function renderHome(){
   const totalSeasons=Object.keys(championsAll()).length;
   const cu=(n,suf)=>`<span class="countup" data-to="${n}"${suf?` data-suffix="${suf}"`:''}>0</span>`;
   const stats=el('div','stats');
-  [['k gold',cu(totalSeasons),'Seasons (since 2014)'],
-   ['k', cu(L.managers.length),'Managers'],
-   ['k gold',cu(titlesOf(titleLeader.name),'×'),'Most titles ('+titleLeader.name+')'],
-   ['k blue',cu(Math.round(pfLeader.pf)),'Most pts ('+pfLeader.name+')']
-  ].forEach(([c,k,l])=>{const s=el('div','stat');s.appendChild(el('div',c,k));s.appendChild(el('div','l',l));stats.appendChild(s);});
+  [['gold',cu(totalSeasons),'Seasons','Since 2014'],
+   ['plain',cu(L.managers.length),'Managers',''],
+   ['gold',cu(titlesOf(titleLeader.name),'×'),'Most Titles',titleLeader.name],
+   ['blue',cu(Math.round(pfLeader.pf)),'Most Points',pfLeader.name]
+  ].forEach(([v,k,l,sub])=>{
+    const s=el('div','stat stat-'+v);
+    s.innerHTML=`<div class="k">${k}</div><div class="l">${l}</div><div class="l-sub">${sub||'&nbsp;'}</div>`;
+    stats.appendChild(s);
+  });
   app.appendChild(stats);
 
   // Stat of the Day
-  const sod=statOfTheDay();
-  app.appendChild(el('div','sotd',`<span class="sotd-tag">📅 Stat of the Day</span><span class="sotd-txt">${sod}</span>`)).style.marginTop='16px';
+  app.appendChild(el('div','sotd',`<span class="sotd-tag">Stat of the Day</span><span class="sotd-txt">${statOfTheDay()}</span>`)).style.marginTop='16px';
 
   // reigning champ
   const sec1=el('section','section');
@@ -90,7 +93,7 @@ function renderHome(){
   sec1.appendChild(el('div','champ-card',
     `${avatarImg(champ.name,58)}
      <div style="flex:1">
-       <div class="yr">2025 CHAMPION 🏆</div>
+       <div class="yr">Reigning Champion · 2025</div>
        <div class="who">${champ.name}</div>
        <div class="meta" style="color:var(--muted)">${titlesOf(champ.name)}× champion · ${champ.wins}-${champ.losses} all-time · ${rings(titlesOf(champ.name))}</div>
      </div>`));
@@ -119,10 +122,10 @@ function renderHome(){
     const secR=el('section','section');
     secR.appendChild(el('h2','h','<span class="bar"></span>League Records'));
     const gr=el('div','grid g2');
-    [['📈 Highest week ever',`${hw.name} · ${hw.pts.toFixed(1)}`,`${hw.season}, Week ${hw.week}`],
-     ['💥 Biggest blowout ever',`+${b.margin}`,`${b.winner} over ${b.loser}, ${b.season}`],
-     ['🍀 Luckiest manager',`${lk.name} (+${lk.luck})`,'wins above expected, all-time'],
-     ['🎯 Most weekly highs',`${mo.names}`,`${mo.count}× Manager of the Week`]
+    [['Highest week ever',`${hw.name} · ${hw.pts.toFixed(1)}`,`${hw.season}, Week ${hw.week}`],
+     ['Biggest blowout ever',`+${b.margin}`,`${b.winner} over ${b.loser}, ${b.season}`],
+     ['Luckiest manager',`${lk.name} (+${lk.luck})`,'wins above expected, all-time'],
+     ['Most weekly highs',`${mo.names}`,`${mo.count}× Manager of the Week`]
     ].forEach(([t,v,m])=>gr.appendChild(el('a','card hover',
       `<div class="meta" style="font-size:12px;font-weight:700;color:var(--blue-2)">${t}</div>
        <div class="big" style="font-size:22px;margin:5px 0 2px">${v}</div><div class="meta">${m}</div>`)).href='fun.html');
@@ -133,14 +136,14 @@ function renderHome(){
   const sec3=el('section','section');
   sec3.appendChild(el('h2','h','<span class="bar"></span>Explore'));
   const g=el('div','grid g3');
-  [['power-rankings.html','📊 Power Rankings','All-time strength index, weighted by win %, rings & scoring.'],
-   ['records.html','📚 Records','Every all-time leaderboard — wins, points, win %.'],
-   ['history.html','🏆 History','Champion by champion, 2019 to today.'],
-   ['fun.html','🎲 Fun Stats','Luck index, blowouts, manager of the week.'],
-   ['matchups.html','📅 Matchups','Week-by-week scores from the latest season.'],
-   ['#','🔮 2026 — coming','Draft pending. Weekly sync turns on at kickoff.']
+  [['power-rankings.html','Power Rankings','All-time strength index, weighted by win %, rings & scoring.'],
+   ['records.html','Records','Every all-time leaderboard — wins, points, win %.'],
+   ['history.html','History','Champion by champion, 2014 to today.'],
+   ['fun.html','Fun Stats','Luck index, blowouts, manager of the week.'],
+   ['matchups.html','Matchups','Week-by-week scores from the latest season.'],
+   ['#','2026 — Coming Soon','Draft pending. Weekly sync turns on at kickoff.']
   ].forEach(([h,ti,d])=>{
-    const c=el('a','card hover',`<h3>${ti}</h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
+    const c=el('a','card hover explore-card',`<h3>${ti}<span class="card-arrow">→</span></h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
   });
   sec3.appendChild(g); app.appendChild(sec3);
   animateCounts();
@@ -299,6 +302,14 @@ function renderRecords(){
     const pa=Object.entries(L.playoffAppearances).sort((a,b)=>b[1]-a[1]);
     drawBar(chartCanvas(app,`Playoff Appearances <span class="badge muted" style="font-weight:600">of ${L.playoffSeasons} seasons (2019–25)</span>`,380),
       pa.map(x=>x[0]), pa.map(x=>x[1]), pa.map(x=>x[1]>=5?'#F2C24B':'#3D6BFF'), true);
+  }
+
+  // championship-game appearances (stacked won vs lost), all-time
+  if(L.finalsAppearances){
+    const fa=[...L.finalsAppearances].filter(x=>x.app>0).sort((a,b)=>b.app-a.app||b.won-a.won);
+    drawStacked(chartCanvas(app,`Championship Game Appearances <span class="badge muted" style="font-weight:600">all-time · <span style="color:var(--gold)">won</span> vs <span style="color:var(--loss)">lost</span></span>`,420),
+      fa.map(x=>x.name), fa.map(x=>x.won), fa.map(x=>x.lost));
+    app.appendChild(el('div','note','Every title game, 2014–present. Includes 2015 (Akash lost to ian) and 2020 (Joe lost to martinch94). The 2014, 2016, 2017 & 2018 runner-ups are still being recovered from the old NFL.com league.')).style.marginTop='14px';
   }
 
   app.appendChild(el('div','note', A
@@ -779,6 +790,18 @@ function drawBar(cv,labels,data,colors,horizontal){
       scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8A93A8'}},
               y:{grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
 }
+function drawStacked(cv,labels,wins,losses){
+  if(typeof Chart==='undefined'||!cv||!cv.getContext)return;
+  new Chart(cv,{type:'bar',
+    data:{labels,datasets:[
+      {label:'Won',data:wins,backgroundColor:'#F2C24B',borderRadius:5,maxBarThickness:26,stack:'s'},
+      {label:'Lost',data:losses,backgroundColor:'#FF6B6B',borderRadius:5,maxBarThickness:26,stack:'s'}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#cfd6e6',boxWidth:12,padding:14,font:{size:11}}},
+        tooltip:{backgroundColor:'#0E1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#EAEDF5',bodyColor:'#cfd6e6',padding:10}},
+      scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8A93A8',precision:0}},
+              y:{stacked:true,grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
+}
 
 /* ---------- CHAMPION ROSTER (Sleeper-style) ---------- */
 function openRoster(year){
@@ -801,7 +824,7 @@ function openRoster(year){
 }
 
 /* ---------- CHAT ASSISTANT (client-side, no backend) ---------- */
-const FF_ALIAS={akash:'akaaashh',akaaashh:'akaaashh',pat:'pgorny',pgorny:'pgorny',marty:'martinch94',martin:'martinch94',martinch94:'martinch94',martinch:'martinch94',vince:'vpitello34',vinny:'vpitello34',vpitello34:'vpitello34',vpitello:'vpitello34',sid:'sidjunlee',sidjunlee:'sidjunlee',jim:'jwislek_20',jwislek_20:'jwislek_20',jwislek:'jwislek_20',albert:'Blumbo',blumbo:'Blumbo',dom:'cuch',cuch:'cuch',sal:'turi70',turi70:'turi70',marco:'maco71',maco71:'maco71',ian:'Siccboi',siccboi:'Siccboi',sasha:'Archibaldo',archibaldo:'Archibaldo',yogi:'Yogi'};
+const FF_ALIAS={akash:'akaaashh',akaaashh:'akaaashh',pat:'pgorny',pgorny:'pgorny',marty:'martinch94',martin:'martinch94',martinch94:'martinch94',martinch:'martinch94',vince:'vpitello34',vinny:'vpitello34',vpitello34:'vpitello34',vpitello:'vpitello34',sid:'sidjunlee',sidjunlee:'sidjunlee',jim:'jwislek_20',jwislek_20:'jwislek_20',jwislek:'jwislek_20',albert:'Blumbo',blumbo:'Blumbo',dom:'cuch',cuch:'cuch',sal:'turi70',turi70:'turi70',marco:'maco71',maco71:'maco71',ian:'Siccboi',siccboi:'Siccboi',sasha:'Archibaldo',archibaldo:'Archibaldo',yogi:'Yogi',joe:'Joe'};
 function ffResolve(q){
   const hits=[];
   Object.keys(FF_ALIAS).forEach(a=>{const m=q.match(new RegExp('\\b'+a+'\\b'));if(m)hits.push([m.index,FF_ALIAS[a]]);});
@@ -830,6 +853,12 @@ function ffAnswer(raw){
   if(!q) return ffHelp();
   if(/\b(help|examples?|what can you|how do you work)\b/.test(q)) return ffHelp();
   if(/commissioner|commish|who runs|who.?s in charge/.test(q)) return `⚖️ <b>${L.commissioner}</b> is the league commissioner.`;
+  if(/\bfinal|championship (game|appearance)|title game|runner.?up/.test(q)){
+    const fa=L.finalsAppearances||[], nm=ffResolve(q);
+    if(nm.length) return nm.map(n=>{const x=fa.find(f=>f.name===n);return x?`<b>${n}</b> has reached ${x.app} championship game${x.app!==1?'s':''} all-time (${x.won}-${x.lost}).`:`No finals data for ${n}.`;}).join('<br>');
+    const top=[...fa].sort((a,b)=>b.app-a.app);
+    return `🏆 Most title-game appearances: ${top.slice(0,3).map(x=>`<b>${x.name}</b> (${x.app}, ${x.won}-${x.lost})`).join(', ')}.`;
+  }
   const A=L.allTime, years=(q.match(/\b(20\d{2})\b/g)||[]).map(Number).filter(y=>y>=2014&&y<=2025), names=ffResolve(q);
   const mgrsByPf=[...L.managers].sort((a,b)=>b.pf-a.pf), mgrsByW=[...L.managers].sort((a,b)=>b.wins-a.wins), mgrsByWp=[...L.managers].sort((a,b)=>winPct(b)-winPct(a));
   const tc=titleCounts(), champAll=championsAll();

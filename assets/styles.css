@@ -71,10 +71,16 @@ h2.h .bar{width:4px;height:20px;border-radius:3px;background:linear-gradient(var
 
 /* ---- stat strip ---- */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px}
-.stat .k{font-size:32px;font-weight:900;letter-spacing:-1px;line-height:1}
-.stat .k.gold{color:var(--gold)} .stat .k.blue{color:var(--blue-2)}
-.stat .l{color:var(--muted);font-size:12px;font-weight:600;margin-top:7px;text-transform:uppercase;letter-spacing:.8px}
+.stat{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 42%),var(--card);
+  border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;overflow:hidden;transition:.18s}
+.stat::before{content:"";position:absolute;top:0;left:20px;right:20px;height:2px;border-radius:0 0 2px 2px;background:rgba(255,255,255,.07)}
+.stat-gold::before{background:linear-gradient(90deg,var(--gold),rgba(242,194,75,0))}
+.stat-blue::before{background:linear-gradient(90deg,var(--blue),rgba(61,107,255,0))}
+.stat:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.stat .k{font-size:33px;font-weight:900;letter-spacing:-1px;line-height:1;color:var(--text)}
+.stat-gold .k{color:var(--gold)} .stat-blue .k{color:var(--blue-2)}
+.stat .l{color:var(--text);font-size:11.5px;font-weight:700;margin-top:12px;text-transform:uppercase;letter-spacing:1px}
+.stat .l-sub{color:var(--muted);font-size:11.5px;margin-top:3px;font-weight:500}
 @media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}}
 
 /* ---- cards / grid ---- */
@@ -83,6 +89,9 @@ h2.h .bar{width:4px;height:20px;border-radius:3px;background:linear-gradient(var
 @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;transition:.18s}
 .card.hover:hover{border-color:rgba(242,194,75,.4);transform:translateY(-2px);box-shadow:var(--shadow)}
+.explore-card h3{display:flex;align-items:center;justify-content:space-between}
+.card-arrow{color:var(--muted-2);font-weight:400;transition:.16s}
+.explore-card:hover .card-arrow{color:var(--gold);transform:translateX(4px)}
 .card h3{font-size:15px;font-weight:700;margin-bottom:4px}
 .card .big{font-size:30px;font-weight:900;letter-spacing:-.5px}
 .card .meta{color:var(--muted);font-size:13px}
@@ -115,11 +124,13 @@ h2.h .bar{width:4px;height:20px;border-radius:3px;background:linear-gradient(var
 .chart-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;position:relative}
 
 /* stat of the day */
-.sotd{display:flex;align-items:center;gap:14px;background:linear-gradient(120deg,var(--blue-dim),transparent 70%),var(--card);
-  border:1px solid rgba(61,107,255,.22);border-radius:var(--r);padding:14px 18px}
-.sotd-tag{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--blue-2);white-space:nowrap;text-transform:uppercase}
-.sotd-txt{font-size:14.5px;font-weight:600}
-@media(max-width:560px){.sotd{flex-direction:column;align-items:flex-start;gap:6px}}
+.sotd{display:flex;align-items:center;gap:16px;background:var(--card);
+  border:1px solid var(--line);border-left:2px solid var(--blue);border-radius:12px;padding:15px 18px}
+.sotd-tag{font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--blue-2);
+  white-space:nowrap;padding-right:16px;border-right:1px solid var(--line)}
+.sotd-txt{font-size:14.5px;font-weight:500;color:var(--text)}
+@media(max-width:560px){.sotd{flex-direction:column;align-items:flex-start;gap:8px}
+  .sotd-tag{border-right:none;padding-right:0}}
 
 /* easter-egg toast */
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:200;

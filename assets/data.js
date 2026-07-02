@@ -52,6 +52,28 @@ window.LEAGUE = {
   playoffSeasons: 7,
   playoffAppearances: { jwislek_20:5, martinch94:5, pgorny:5, Blumbo:4, akaaashh:4, vpitello34:4, Archibaldo:3, Siccboi:3, turi70:3, maco71:3, cuch:2, sidjunlee:2 },
 
+  // Championship-GAME appearances (finals), ALL-TIME 2014-25.
+  // Sleeper era (2019-25) from winners_bracket; Founders era (2014-18) from NFL.com (owner-provided).
+  // Joe = former member, 2020 runner-up (Martin's first title). Yogi = 2014 champ (former).
+  // TODO: 2014, 2016, 2017, 2018 runner-ups still unknown (need NFL.com records).
+  finalsAppearances: [
+    { name:"martinch94", app:3, won:3, lost:0 },
+    { name:"vpitello34", app:4, won:1, lost:3 },
+    { name:"pgorny",     app:3, won:2, lost:1 },
+    { name:"Blumbo",     app:2, won:2, lost:0 },
+    { name:"akaaashh",   app:2, won:1, lost:1 },
+    { name:"jwislek_20", app:2, won:1, lost:1 },
+    { name:"Yogi",       app:1, won:1, lost:0 },
+    { name:"Siccboi",    app:1, won:1, lost:0 },
+    { name:"maco71",     app:1, won:0, lost:1 },
+    { name:"Joe",        app:1, won:0, lost:1 },
+    { name:"Archibaldo", app:0, won:0, lost:0 },
+    { name:"cuch",       app:0, won:0, lost:0 },
+    { name:"turi70",     app:0, won:0, lost:0 },
+    { name:"sidjunlee",  app:0, won:0, lost:0 }
+  ],
+  foundersRunnersUp: { "2015":"akaaashh" },  // 2014/2016/2017/2018 TBD
+
   // All-time league winnings ($), 4-season total (payouts)
   winnings: {
     "akaaashh":260, "cuch":185, "turi70":170, "sidjunlee":165, "jwislek_20":1975,
