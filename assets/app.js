@@ -64,7 +64,7 @@ function renderHome(){
        <div class="hero-text">
          <span class="pill">🏈 ${m.scoring} · ${m.teams} teams · Est. 2014</span>
          <h1>The <span class="gold">Farmhood Fantasy</span> record book.</h1>
-         <p>Twelve seasons in the tower since 2014 — seven of them tracked to the decimal. Dynasties and collapses, cruel schedules and cursed contenders, and all the points left to rot on the bench. This is the house that Farmwood built.</p>
+         <p>The official Farmhood Fantasy record book. Founded 2014.</p>
        </div>
      </div>`));
 
