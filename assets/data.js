@@ -171,8 +171,8 @@ window.LEAGUE = {
       body:"vpitello34 took the top record (10-4) into the playoffs — and, in the league's signature move, did not win. Instead it was jwislek_20 finally breaking through for a first championship after years of contending and falling short. Every dynasty needs a challenger who refuses to quit; in 2024 the challenger got his ring." },
     { year:2025, teams:12, champion:"martinch94",
       headline:"The curse, the collapse, and a third crown",
-      tags:["martinch94 3rd title","maco71 robbed again","turi70 2-12"],
-      body:"maco71 scored the most points in a single season the league has ever seen (1,827), won Manager of the Week four times, posted the highest single week (177.1) — and went 8-6 with no title, the unluckiest team in the league by expected wins. jwislek_20 rode the league's best record (10-4) and its best luck (+2.55 wins) but martinch94 took the crown again — his third, the most of anyone, cementing the dynasty. At the bottom, turi70 endured a 2-12 freefall. Same league, same lesson: points are nice, rings are everything." }
+      tags:["martinch94 3rd title","maco71 robbed again","Jim's Monday collapse","turi70 2-12"],
+      body:"maco71 scored the most points in a single season the league has ever seen (1,827), won Manager of the Week four times, and posted the highest single week ever (177.1) — then went 8-6 with no title, the unluckiest team in the league by expected wins. But the cruelest twist was the final. jwislek_20 rode the league's best record (10-4) into the championship and went to bed Sunday night all but certain of the trophy — martinch94 had even gotten two zeros out of his own lineup. The catch: jwislek_20 still had three Rams starters left to play. When L.A. took the field Monday night they laid a collective egg, the lead evaporated, and martinch94 escaped with the crown on Monday — his third, the most of anyone, cementing the dynasty. At the bottom, turi70 endured a 2-12 freefall. Same league, same lesson: points are nice, rings are everything." }
   ],
 
   throughlines: [
