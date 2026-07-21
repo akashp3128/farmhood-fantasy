@@ -48,6 +48,9 @@ window.LEAGUE = {
 
   commissioner: "cuch",
 
+  // 2026 buy-in ledger (placeholder figures — update as people pay)
+  pot: { total: 3000, paid: 600, buyIn: 100, paidCount: 5, teams: 12, placeholder: true },
+
   // 2026 draft (from Sleeper draft_id 1377086848312045568). Verified against slot_to_roster_id.
   draft2026: {
     season: 2026, type: "Snake", rounds: 15, teams: 12, scoring: "Half-PPR", status: "pre_draft",

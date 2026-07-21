@@ -42,7 +42,8 @@ function mountChrome(active){
   const nav = el('nav','nav');
   const inner = el('div','nav-inner');
   inner.appendChild(el('a','brand',
-    `<img class="crest-img" src="assets/logo.jpg" alt="Farmwood"><span><b>Farmhood Fantasy</b><span>Est. 2014 · Private League</span></span>`)).href='index.html';
+    `<img class="crest-img" src="assets/logo.jpg" alt="Farmwood"><span><b>Farmhood Fantasy</b><span>The Official Record Book · Est. 2014</span></span>`)).href='index.html';
+  inner.appendChild(el('span','vol','Vol. XIII — The 2026 Season'));
   const links = el('div','nav-links');
   PAGES.forEach(([href,label,key])=>{
     const a = el('a','link'+(key===active?' active':''),label); a.href=href; links.appendChild(a);
@@ -67,71 +68,76 @@ function medalRank(i){
 function renderHome(){
   const m=L.meta, app=$('#app');
   const champ=L.managers.find(x=>x.name===m.reigningChampion);
-  app.appendChild(el('section','hero',
-    `<div class="hero-inner">
-       <div class="hero-logo-wrap"><img class="hero-logo" src="assets/logo.jpg" alt="Farmwood"></div>
-       <div class="hero-text">
-         <span class="pill">${m.scoring} · ${m.teams} Teams · Est. 2014</span>
-         <h1>The <span class="gold">Farmhood Fantasy</span> record book.</h1>
-         <p>The official Farmhood Fantasy record book. Founded 2014.</p>
-       </div>
-     </div>`));
-
+  const totalSeasons=Object.keys(championsAll()).length;
   const titleLeader=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name))[0];
   const pfLeader=[...L.managers].sort((a,b)=>b.pf-a.pf)[0];
-  const totalSeasons=Object.keys(championsAll()).length;
+
+  // ---- 1a hero: centered lede ----
+  const hero=el('section','hero hero-center');
+  hero.innerHTML=`<div class="hero-eyebrow">${totalSeasons} seasons · ${m.teams} managers · One tower</div>
+    <h1 class="hero-head">Every ring, every curse, every Monday-night collapse.</h1>
+    <p class="hero-lede">The complete, reconciled history of the Farmhood — from the Founders Era of 2014 to the ${m.reigningChampion} dynasty of today.</p>`;
+  app.appendChild(hero);
+
+  // ---- stat strip ----
   const cu=(n,suf)=>`<span class="countup" data-to="${n}"${suf?` data-suffix="${suf}"`:''}>0</span>`;
   const stats=el('div','stats');
-  [['gold',cu(totalSeasons),'Seasons','Since 2014'],
-   ['plain',cu(L.managers.length),'Managers',''],
-   ['gold',cu(titlesOf(titleLeader.name),'×'),'Most Titles',titleLeader.name],
-   ['blue',cu(Math.round(pfLeader.pf)),'Most Points',pfLeader.name]
-  ].forEach(([v,k,l,sub])=>{
-    const s=el('div','stat stat-'+v);
+  [[cu(totalSeasons),'Seasons','Since 2014'],
+   [cu(L.managers.length),'Managers','Twelve strong'],
+   [cu(titlesOf(titleLeader.name),'×'),'Most Titles',titleLeader.name],
+   [cu(Math.round(pfLeader.pf)),'Most Points',pfLeader.name]
+  ].forEach(([k,l,sub])=>{
+    const s=el('div','stat');
     s.innerHTML=`<div class="k">${k}</div><div class="l">${l}</div><div class="l-sub">${sub||'&nbsp;'}</div>`;
     stats.appendChild(s);
   });
   app.appendChild(stats);
 
-  // Stat of the Day
+  // ---- stat of the day ----
   app.appendChild(el('div','sotd',`<span class="sotd-tag">Stat of the Day</span><span class="sotd-txt">${statOfTheDay()}</span>`)).style.marginTop='16px';
 
-  // reigning champ
-  const sec1=el('section','section');
-  sec1.appendChild(el('h2','h','<span class="bar"></span>Reigning Champion'));
-  sec1.appendChild(el('div','champ-card',
-    `${avatarImg(champ.name,58)}
-     <div style="flex:1">
-       <div class="yr">Reigning Champion · 2025</div>
-       <div class="who">${champ.name}</div>
-       <div class="meta" style="color:var(--muted)">${titlesOf(champ.name)}× champion · ${champ.wins}-${champ.losses} all-time · ${rings(titlesOf(champ.name))}</div>
-     </div>`));
-  app.appendChild(sec1);
-
-  // "I pay when he pays" — the 2026 pot
-  const potSec=el('section','section');
-  potSec.appendChild(el('h2','h','<span class="bar"></span>The 2026 Pot'));
-  potSec.appendChild(el('div','pot-card',
-    '<div class="pot-quote">“I pay when he pays.”</div><div class="pot-amt">$3,000</div>'+
-    '<div class="pot-note">— everyone, to Ian, 2025. Winner takes the pot. Pay the man this year.</div>'));
-  app.appendChild(potSec);
-
-  // title leaderboard
+  // ---- two-column: title count | champion + ledger ----
+  const grid=el('div','home-grid');
   const tcnt=titleCounts();
   const winners=Object.keys(tcnt).sort((a,b)=>tcnt[b]-tcnt[a]||titleYearsOf(a)[0]-titleYearsOf(b)[0]);
-  const sec2=el('section','section');
-  sec2.appendChild(el('h2','h','<span class="bar"></span>Title Count <span class="badge muted" style="font-weight:600">since 2014</span>'));
-  const tc=el('div','tablecard'); const t=el('table','tbl');
-  t.innerHTML='<thead><tr><th>Manager</th><th>Rings</th><th class="r">Years</th></tr></thead>';
-  const tb=el('tbody');
-  winners.forEach(w=>{
-    const former=(L.formerChampions||[]).includes(w);
-    tb.appendChild(el('tr','',
-      `<td>${avatarImg(w,24)} <span class="who-name">${w}</span> ${former?'<span class="badge muted" style="font-weight:600">Founders Era</span>':''}</td>
-       <td><span class="rings">${rings(tcnt[w])}</span></td>
-       <td class="r mono" style="color:var(--muted)">${titleYearsOf(w).join(', ')}</td>`));
+  const left=el('div','tl-wrap');
+  let lh=`<div class="tl-head"><span>Title count — since 2014</span><span class="tl-key">★ = ring</span></div>`;
+  winners.forEach((w,i)=>{
+    lh+=`<div class="tl-row"><span class="tl-n">${i+1}</span><span class="tl-name">${w}</span>`+
+        `<span class="tl-rings">${rings(tcnt[w])}</span><span class="tl-sp"></span>`+
+        `<span class="tl-years">${titleYearsOf(w).join(', ')}</span></div>`;
   });
-  t.appendChild(tb); tc.appendChild(t); sec2.appendChild(tc); app.appendChild(sec2);
+  lh+=`<div class="tl-note">Founders Era titles (2014–18, NFL.com) counted in full. Yogi, 2014 champion, has left the neighborhood.</div>`;
+  left.innerHTML=lh;
+  grid.appendChild(left);
+
+  const right=el('div','home-right');
+  const cf=el('div','champ-frame');
+  cf.innerHTML=`<div class="cf-tag">Reigning Champion · MMXXV</div>
+    <div class="cf-body">${avatarImg(champ.name,54)}
+      <div><div class="cf-name">${champ.name}</div>
+        <div class="cf-meta">${titlesOf(champ.name)}× champion · ${champ.wins}–${champ.losses} all-time · <span class="rings">${rings(titlesOf(champ.name))}</span></div>
+      </div></div>
+    <div class="cf-quote">“Rarely the best team on paper. Always the one standing at the end.”</div>`;
+  right.appendChild(cf);
+
+  const pot=L.pot||{total:3000,paid:0,buyIn:100,paidCount:0,teams:L.managers.length};
+  const pctPaid=Math.max(0,Math.min(100,Math.round(pot.paid/pot.total*100)));
+  const ledger=el('div','ledger');
+  const shut=`<div class="lg-tag">The League Meme, Immortalized</div>
+     <div class="lg-quote">“I pay when he pays.”</div>
+     <div class="lg-sub">— everyone, to Ian, 2015 · Click to open the 2026 ledger →</div>`;
+  const open=`<div class="lg-tag">The 2026 Ledger</div>
+     <div class="lg-row"><span class="lg-amt">$${pot.paid.toLocaleString()} <span class="lg-of">of $${pot.total.toLocaleString()} pot</span></span>
+       <span class="lg-count">${pot.paidCount} of ${pot.teams} paid</span></div>
+     <div class="lg-bar"><div class="lg-fill" style="width:${pctPaid}%"></div></div>
+     <div class="lg-note">${pot.teams-pot.paidCount} managers are still “paying when he pays.” Buy-in $${pot.buyIn}${pot.placeholder?' · placeholder figures':''}.</div>`;
+  ledger.innerHTML=shut;
+  let lgOpen=false;
+  ledger.onclick=()=>{lgOpen=!lgOpen;ledger.innerHTML=lgOpen?open:shut;};
+  right.appendChild(ledger);
+  grid.appendChild(right);
+  app.appendChild(grid);
 
   // all-time records strip (once backfill has run)
   if(L.allTime){
