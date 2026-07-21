@@ -48,6 +48,13 @@ window.LEAGUE = {
 
   commissioner: "cuch",
 
+  // 2026 draft (from Sleeper draft_id 1377086848312045568). Verified against slot_to_roster_id.
+  draft2026: {
+    season: 2026, type: "Snake", rounds: 15, teams: 12, scoring: "Half-PPR", status: "pre_draft",
+    order: ["vpitello34","maco71","jwislek_20","akaaashh","pgorny","Siccboi",
+            "cuch","sidjunlee","martinch94","Archibaldo","Blumbo","turi70"]
+  },
+
   // Playoff appearances, computed from winners_bracket per season (Sleeper era 2019-2025).
   playoffSeasons: 7,
   playoffAppearances: { jwislek_20:5, martinch94:5, pgorny:5, Blumbo:4, akaaashh:4, vpitello34:4, Archibaldo:3, Siccboi:3, turi70:3, maco71:3, cuch:2, sidjunlee:2 },

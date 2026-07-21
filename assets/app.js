@@ -1,5 +1,8 @@
 /* Farmhood Fantasy — shared chrome + page renderers. Reads window.LEAGUE. */
 const L = window.LEAGUE;
+// Analytics: set GC_CODE to your GoatCounter code (the subdomain you pick at goatcounter.com).
+// e.g. GC_CODE="farmhood" -> reports to https://farmhood.goatcounter.com. Empty = disabled.
+const GC_CODE = "";
 const $ = (s,r=document)=>r.querySelector(s);
 const el = (t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
 const f1 = n => n.toFixed(1);
@@ -30,6 +33,12 @@ function mountChrome(active){
   if(document.head && typeof document.createElement==='function'){
     const l=document.createElement('link');l.rel='icon';l.type='image/jpeg';l.href='assets/logo.jpg';document.head.appendChild(l);
   }
+  // analytics (GoatCounter) — only if a code is configured
+  if(GC_CODE && document.head && typeof document.createElement==='function'){
+    const s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';
+    s.setAttribute('data-goatcounter','https://'+GC_CODE+'.goatcounter.com/count');
+    document.head.appendChild(s);
+  }
   const nav = el('nav','nav');
   const inner = el('div','nav-inner');
   inner.appendChild(el('a','brand',
@@ -46,7 +55,7 @@ function mountChrome(active){
      <div>Built by <b style="color:var(--gold)">Akash Patel</b> · <span class="ok">✓ verified</span> · sanitized</div>`);
   document.body.appendChild(foot);
   easterEgg();
-  mountChat();
+  /* chat assistant removed — Almanac redesign */
 }
 
 function medalRank(i){
@@ -99,6 +108,14 @@ function renderHome(){
      </div>`));
   app.appendChild(sec1);
 
+  // "I pay when he pays" — the 2026 pot
+  const potSec=el('section','section');
+  potSec.appendChild(el('h2','h','<span class="bar"></span>The 2026 Pot'));
+  potSec.appendChild(el('div','pot-card',
+    '<div class="pot-quote">“I pay when he pays.”</div><div class="pot-amt">$3,000</div>'+
+    '<div class="pot-note">— everyone, to Ian, 2025. Winner takes the pot. Pay the man this year.</div>'));
+  app.appendChild(potSec);
+
   // title leaderboard
   const tcnt=titleCounts();
   const winners=Object.keys(tcnt).sort((a,b)=>tcnt[b]-tcnt[a]||titleYearsOf(a)[0]-titleYearsOf(b)[0]);
@@ -141,7 +158,7 @@ function renderHome(){
    ['history.html','History','Champion by champion, 2014 to today.'],
    ['fun.html','Fun Stats','Luck index, blowouts, manager of the week.'],
    ['matchups.html','Matchups','Week-by-week scores from the latest season.'],
-   ['#','2026 — Coming Soon','Draft pending. Weekly sync turns on at kickoff.']
+   ['draft.html','2026 Draft Order','The order is set — see who picks where before kickoff.']
   ].forEach(([h,ti,d])=>{
     const c=el('a','card hover explore-card',`<h3>${ti}<span class="card-arrow">→</span></h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
   });
@@ -226,7 +243,7 @@ function renderPower(){
   // power index chart — gold = has a ring, blue = ringless
   drawBar(chartCanvas(app,'Power Index, Visualized',380),
     ms.map(m=>m.name), ms.map(m=>+m.score.toFixed(1)),
-    ms.map(m=>titlesOf(m.name)>0?'#F2C24B':'#3D6BFF'), true);
+    ms.map(m=>titlesOf(m.name)>0?'#B8912E':'#5C6E5F'), true);
   app.appendChild(el('div','note',`<span style="color:var(--gold)">●</span> champion &nbsp; <span style="color:var(--blue-2)">●</span> ringless &nbsp;·&nbsp; Formula: <b>55%</b> career win-rate + <b>7 pts</b> per championship + scoring rate vs. league average. Pts/Gm normalizes the 13- and 14-game seasons.`)).style.marginTop='16px';
 }
 
@@ -295,13 +312,13 @@ function renderRecords(){
   const pfRank=[...L.managers].sort((a,b)=>b.pf-a.pf);
   drawBar(chartCanvas(app,'All-Time Points For',380),
     pfRank.map(m=>m.name), pfRank.map(m=>Math.round(m.pf)),
-    pfRank.map(()=>'#F2C24B'), true);
+    pfRank.map(()=>'#B8912E'), true);
 
   // playoff appearances chart
   if(L.playoffAppearances){
     const pa=Object.entries(L.playoffAppearances).sort((a,b)=>b[1]-a[1]);
     drawBar(chartCanvas(app,`Playoff Appearances <span class="badge muted" style="font-weight:600">of ${L.playoffSeasons} seasons (2019–25)</span>`,380),
-      pa.map(x=>x[0]), pa.map(x=>x[1]), pa.map(x=>x[1]>=5?'#F2C24B':'#3D6BFF'), true);
+      pa.map(x=>x[0]), pa.map(x=>x[1]), pa.map(x=>x[1]>=5?'#B8912E':'#5C6E5F'), true);
   }
 
   // championship-game appearances (stacked won vs lost), all-time
@@ -494,7 +511,7 @@ function renderAllTimeFun(app){
   const lkSorted=[...A.luck].sort((a,b)=>a.luck-b.luck);
   drawBar(chartCanvas(app,'Luck, Visualized',380),
     lkSorted.map(x=>x.name), lkSorted.map(x=>x.luck),
-    lkSorted.map(x=>x.luck>=0?'#3FD18C':'#FF6B6B'), true);
+    lkSorted.map(x=>x.luck>=0?'#2E7D4F':'#A0432E'), true);
 
   // rivalries
   if(A.rivalries&&A.rivalries.length){
@@ -638,7 +655,7 @@ function renderMoneyBoard(app){
   const rows=Object.entries(L.winnings).sort((a,b)=>b[1]-a[1]);
   const max=rows[0][1], total=rows.reduce((s,r)=>s+r[1],0);
   const sec=el('section','section');
-  sec.appendChild(el('h2','h',`<span class="bar"></span>💰 The Money Board <span class="badge" style="font-weight:600;background:rgba(63,209,140,.14);color:#5be6a8">$${total.toLocaleString()} paid out</span>`));
+  sec.appendChild(el('h2','h',`<span class="bar"></span>💰 The Money Board <span class="badge" style="font-weight:600;background:rgba(63,209,140,.14);color:#2E7D4F">$${total.toLocaleString()} paid out</span>`));
   const tc=el('div','tablecard');const t=el('table','tbl');
   t.innerHTML='<thead><tr><th>#</th><th>Manager</th><th class="r">All-Time Winnings</th></tr></thead>';
   const tb=el('tbody');
@@ -648,8 +665,8 @@ function renderMoneyBoard(app){
       `<td>${medalRank(i)}</td>
        <td>${avatarImg(n,28)} <span class="who-name">${n}</span> ${titlesOf(n)?'<span class="rings">'+rings(titlesOf(n))+'</span>':''}</td>
        <td class="r"><div style="display:flex;align-items:center;gap:12px;justify-content:flex-end">
-         <div class="bar-track" style="width:110px"><div class="bar-fill" style="width:${(v/max*100).toFixed(0)}%;background:linear-gradient(90deg,#2f9e6a,#5be6a8)"></div></div>
-         <b class="mono" style="color:#5be6a8;min-width:58px;display:inline-block">$${v.toLocaleString()}</b></div></td>`));
+         <div class="bar-track" style="width:110px"><div class="bar-fill" style="width:${(v/max*100).toFixed(0)}%;background:linear-gradient(90deg,#1E5A38,#2E7D4F)"></div></div>
+         <b class="mono" style="color:#2E7D4F;min-width:58px;display:inline-block">$${v.toLocaleString()}</b></div></td>`));
   });
   t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
   app.appendChild(el('div','note','4-season payout totals. Pat (pgorny) leads the league\'s all-time bankroll.')).style.marginTop='14px';
@@ -715,9 +732,25 @@ function openProfile(name){
 }
 
 /* ---------- DRAFT ---------- */
+function renderDraftOrder(app){
+  const d=L.draft2026; if(!d||!d.order) return;
+  const sec=el('section','');
+  sec.appendChild(el('h2','h',`<span class="bar"></span>${d.season} Draft Order <span class="badge blue" style="font-weight:600">${d.type} · ${d.rounds} rounds · ${d.scoring}</span>`));
+  const list=el('div','draft-order');
+  d.order.forEach((n,i)=>{
+    const row=el('div','do-row'+(i===0?' first':''));
+    row.innerHTML=`<span class="do-pick">${i+1}</span>${avatarImg(n,32)}<span class="do-name">${n}</span>
+      <span class="do-meta">1.${String(i+1).padStart(2,'0')}</span>`;
+    list.appendChild(row);
+  });
+  sec.appendChild(list);
+  sec.appendChild(el('div','note',`Snake format — the order reverses each round, so <b>${d.order[d.order.length-1]}</b> picks 1.${d.teams} and 2.01 back to back. Draft date not scheduled yet.`)).style.marginTop='14px';
+  app.appendChild(sec);
+}
 function renderDraft(){
   const app=$('#app');
-  app.appendChild(header('Draft Steals & Busts','The Draft','Where championships were stolen in the double-digit rounds — and where first-round picks went to die. Ranked by season fantasy points vs. draft slot.'));
+  app.appendChild(header('The Draft','Draft','The 2026 order is set — plus every steal and bust in league history, ranked by season points against draft slot.'));
+  renderDraftOrder(app);
   const E=L.extra;
   if(!E){app.appendChild(el('div','note','🔓 Run <b>scripts/extras.py</b> to pull draft data (picks + player scoring). This page lights up once it finishes.')).style.marginTop='8px';return;}
   const tbl=(title,rows,ptsColor)=>{
@@ -786,21 +819,21 @@ function drawBar(cv,labels,data,colors,horizontal){
   new Chart(cv,{type:'bar',
     data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderWidth:0,maxBarThickness:30}]},
     options:{indexAxis:horizontal?'y':'x',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#0E1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#EAEDF5',bodyColor:'#cfd6e6',padding:10}},
-      scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8A93A8'}},
-              y:{grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#F8F5EB',borderColor:'rgba(23,59,39,.3)',borderWidth:1,titleColor:'#173B27',bodyColor:'#173B27',padding:10}},
+      scales:{x:{grid:{color:'rgba(23,59,39,.12)'},ticks:{color:'#8A8064'}},
+              y:{grid:{display:false},ticks:{color:'#173B27',font:{weight:'600'}}}}}});
 }
 function drawStacked(cv,labels,wins,losses){
   if(typeof Chart==='undefined'||!cv||!cv.getContext)return;
   new Chart(cv,{type:'bar',
     data:{labels,datasets:[
-      {label:'Won',data:wins,backgroundColor:'#F2C24B',borderRadius:5,maxBarThickness:26,stack:'s'},
-      {label:'Lost',data:losses,backgroundColor:'#FF6B6B',borderRadius:5,maxBarThickness:26,stack:'s'}]},
+      {label:'Won',data:wins,backgroundColor:'#B8912E',borderRadius:5,maxBarThickness:26,stack:'s'},
+      {label:'Lost',data:losses,backgroundColor:'#A0432E',borderRadius:5,maxBarThickness:26,stack:'s'}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{color:'#cfd6e6',boxWidth:12,padding:14,font:{size:11}}},
-        tooltip:{backgroundColor:'#0E1320',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#EAEDF5',bodyColor:'#cfd6e6',padding:10}},
-      scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8A93A8',precision:0}},
-              y:{stacked:true,grid:{display:false},ticks:{color:'#cfd6e6',font:{weight:'600'}}}}}});
+      plugins:{legend:{display:true,labels:{color:'#173B27',boxWidth:12,padding:14,font:{size:11}}},
+        tooltip:{backgroundColor:'#F8F5EB',borderColor:'rgba(23,59,39,.3)',borderWidth:1,titleColor:'#173B27',bodyColor:'#173B27',padding:10}},
+      scales:{x:{stacked:true,grid:{color:'rgba(23,59,39,.12)'},ticks:{color:'#8A8064',precision:0}},
+              y:{stacked:true,grid:{display:false},ticks:{color:'#173B27',font:{weight:'600'}}}}}});
 }
 
 /* ---------- CHAMPION ROSTER (Sleeper-style) ---------- */
@@ -893,6 +926,13 @@ function ffAnswer(raw){
   }
   if(A&&/\brival/.test(q)){const r=(A.rivalries||[])[0];return r?`⚔️ Biggest rivalry: <b>${r.a} vs ${r.b}</b> — ${r.games} meetings (${r.a_wins}-${r.b_wins}).`:`No rivalry data loaded.`;}
   // draft / trades (need data_extra)
+  if(/draft order|draft position|draft slot|draft pick|when.*\bpick\b|what pick|who picks|first pick/.test(q)){
+    const d=L.draft2026; if(!d) return 'No draft order is set yet.';
+    const nm=ffResolve(q);
+    if(nm.length) return nm.map(n=>{const i=d.order.indexOf(n);
+      return i>=0?`<b>${n}</b> has pick #${i+1} (1.${String(i+1).padStart(2,'0')}) in the ${d.season} ${d.type.toLowerCase()} draft.`:`${n} isn't in the ${d.season} draft order.`;}).join('<br>');
+    return `<b>${d.season} draft order:</b> `+d.order.map((n,i)=>`${i+1}. ${n}`).join(' · ');
+  }
   if(/\bsteal/.test(q)){if(!L.extra)return 'Draft data isn\'t loaded yet — run extras.py, or open the Draft page.';const s=L.extra.steals[0];return `💎 Biggest draft steal: <b>${s.player}</b> (R${s.round}, #${s.pick}) scored ${s.pts.toFixed(1)} for ${s.by} in ${s.season}.`;}
   if(/\bbust/.test(q)){if(!L.extra)return 'Draft data isn\'t loaded yet — run extras.py.';const b=L.extra.busts[0];return `🪦 Biggest bust: <b>${b.player}</b> (R${b.round}, #${b.pick}) scored just ${b.pts.toFixed(1)} for ${b.by} in ${b.season}.`;}
   if(/\btrade|deal|active trader\b/.test(q)){if(!L.extra)return 'Trade data isn\'t loaded yet — run extras.py, or open the Trades page.';const t=Object.entries(L.extra.trader_counts)[0];return `🤝 ${L.extra.trades_total} trades all-time. Most active: <b>${t[0]}</b> (${t[1]}).`;}
