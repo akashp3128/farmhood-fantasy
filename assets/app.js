@@ -126,17 +126,14 @@ function renderHome(){
     <div class="cf-quote">“Rarely the best team on paper. Always the one standing at the end.”</div>`;
   right.appendChild(cf);
 
-  const pot=L.pot||{total:3000,paid:0,buyIn:100,paidCount:0,teams:L.managers.length};
-  const pctPaid=Math.max(0,Math.min(100,Math.round(pot.paid/pot.total*100)));
+  const pot=L.pot||{total:3000,buyIn:100,teams:L.managers.length};
   const ledger=el('div','ledger');
   const shut=`<div class="lg-tag">The League Meme, Immortalized</div>
      <div class="lg-quote">“I pay when he pays.”</div>
      <div class="lg-sub">— everyone, to Ian, 2015 · Click to open the 2026 ledger →</div>`;
   const open=`<div class="lg-tag">The 2026 Ledger</div>
-     <div class="lg-row"><span class="lg-amt">$${pot.paid.toLocaleString()} <span class="lg-of">of $${pot.total.toLocaleString()} pot</span></span>
-       <span class="lg-count">${pot.paidCount} of ${pot.teams} paid</span></div>
-     <div class="lg-bar"><div class="lg-fill" style="width:${pctPaid}%"></div></div>
-     <div class="lg-note">${pot.teams-pot.paidCount} managers are still “paying when he pays.” Buy-in $${pot.buyIn}${pot.placeholder?' · placeholder figures':''}.</div>`;
+     <div class="lg-row"><span class="lg-amt">$${pot.total.toLocaleString()} <span class="lg-of">pot</span></span></div>
+     <div class="lg-note">Buy-in $${pot.buyIn} · ${pot.teams} managers${pot.placeholder?' · placeholder figures':''}.</div>`;
   ledger.innerHTML=shut;
   let lgOpen=false;
   ledger.onclick=()=>{lgOpen=!lgOpen;ledger.innerHTML=lgOpen?open:shut;};
