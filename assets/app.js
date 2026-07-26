@@ -72,11 +72,16 @@ function renderHome(){
   const titleLeader=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name))[0];
   const pfLeader=[...L.managers].sort((a,b)=>b.pf-a.pf)[0];
 
-  // ---- 1a hero: centered lede ----
-  const hero=el('section','hero hero-center');
-  hero.innerHTML=`<div class="hero-eyebrow">${totalSeasons} seasons · ${m.teams} managers · One tower</div>
-    <h1 class="hero-head">Every ring, every curse, every Monday-night collapse.</h1>
-    <p class="hero-lede">The complete, reconciled history of the Farmhood — from the Founders Era of 2014 to the ${m.reigningChampion} dynasty of today.</p>`;
+  // ---- 1a hero: crest left, lede right ----
+  const hero=el('section','hero hero-split');
+  hero.innerHTML=`<div class="hero-inner">
+      <div class="hero-logo-wrap"><img class="hero-logo" src="assets/logo.jpg" alt="Farmwood crest"></div>
+      <div class="hero-text">
+        <div class="hero-eyebrow">${totalSeasons} seasons · ${m.teams} managers · One tower</div>
+        <h1 class="hero-head">Every ring, every curse, every Monday-night collapse.</h1>
+        <p class="hero-lede">The complete, reconciled history of the Farmhood — from the Founders Era of 2014 to the ${m.reigningChampion} dynasty of today.</p>
+      </div>
+    </div>`;
   app.appendChild(hero);
 
   // ---- stat strip ----
