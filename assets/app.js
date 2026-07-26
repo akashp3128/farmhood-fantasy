@@ -133,7 +133,7 @@ function renderHome(){
      <div class="lg-sub">— everyone, to Ian, 2015 · Click to open the 2026 ledger →</div>`;
   const open=`<div class="lg-tag">The 2026 Ledger</div>
      <div class="lg-row"><span class="lg-amt">$${pot.total.toLocaleString()} <span class="lg-of">pot</span></span></div>
-     <div class="lg-note">Buy-in $${pot.buyIn} · ${pot.teams} managers${pot.placeholder?' · placeholder figures':''}.</div>`;
+     <div class="lg-note">Buy-in $${pot.buyIn} · ${pot.teams} managers.</div>`;
   ledger.innerHTML=shut;
   let lgOpen=false;
   ledger.onclick=()=>{lgOpen=!lgOpen;ledger.innerHTML=lgOpen?open:shut;};
