@@ -126,7 +126,7 @@ function renderHome(){
     <div class="cf-quote">“Rarely the best team on paper. Always the one standing at the end.”</div>`;
   right.appendChild(cf);
 
-  const pot=L.pot||{total:3000,buyIn:100,teams:L.managers.length};
+  const pot=L.pot||{total:3000,buyIn:250,teams:L.managers.length};
   const ledger=el('div','ledger');
   const shut=`<div class="lg-tag">The League Meme, Immortalized</div>
      <div class="lg-quote">“I pay when he pays.”</div>
