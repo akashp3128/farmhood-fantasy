@@ -5,6 +5,8 @@
   --text:#173B27; --muted:#6B6448; --muted-2:#736A50;
   --gold:#7D5F1A; --gold-2:#856519; --gold-dim:rgba(184,145,46,.13);
   --gold-fill:#B8912E; --gold-hi:#C9A23C;
+  /* medal fills: solid (no alpha) and dark enough for --surface text to pass AA */
+  --gold-solid:#876A22; --medal-2:#746C56; --medal-3:#A35C49;
   --blue:#1E5A38; --blue-2:#2B764A; --blue-dim:rgba(30,90,56,.09);
   --win:#2B764A; --loss:#A0432E; --shadow:0 8px 26px rgba(23,59,39,.14);
   --r:2px; --r-sm:2px;
@@ -183,9 +185,9 @@ h2.h .bar{display:none}
 .rankcell{display:flex;align-items:center;gap:12px}
 .rank{width:26px;height:26px;border-radius:0;display:grid;place-items:center;font-weight:700;font-size:13px;
   font-family:var(--serif);background:transparent;color:var(--muted-2)}
-.rank.g1{background:var(--gold-fill);color:var(--surface)}
-.rank.g2{background:rgba(138,128,100,.8);color:var(--surface)}
-.rank.g3{background:rgba(160,67,46,.75);color:var(--surface)}
+.rank.g1{background:var(--gold-solid);color:var(--surface)}
+.rank.g2{background:var(--medal-2);color:var(--surface)}
+.rank.g3{background:var(--medal-3);color:var(--surface)}
 .who-name{font-weight:700;font-family:var(--serif);font-size:15px}
 .tablecard{background:transparent;border:none;border-radius:0;padding:0;overflow-x:auto}
 .chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:0;padding:18px;position:relative}
@@ -226,8 +228,8 @@ h2.h .bar{display:none}
 .do-row:hover{border-color:var(--blue);transform:translateY(-1px)}
 .do-row.first{border-color:rgba(184,145,46,.6);background:rgba(184,145,46,.07)}
 .do-pick{flex:0 0 30px;height:30px;border-radius:0;display:grid;place-items:center;font-weight:700;font-size:14px;
-  font-family:var(--serif);background:rgba(30,90,56,.1);color:var(--muted);font-variant-numeric:tabular-nums}
-.do-row.first .do-pick{background:var(--gold-fill);color:var(--surface)}
+  font-family:var(--serif);background:rgba(30,90,56,.1);color:#5C563E;font-variant-numeric:tabular-nums}
+.do-row.first .do-pick{background:var(--gold-solid);color:var(--surface)}
 .do-name{font-weight:700;flex:1;font-family:var(--serif)}
 .do-meta{color:var(--muted-2);font-size:12px;font-variant-numeric:tabular-nums}
 
@@ -237,13 +239,13 @@ h2.h .bar{display:none}
 .roster-list{display:flex;flex-direction:column;gap:6px}
 .rsl{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line-2);border-radius:0;padding:8px 12px}
 .rsl-slot{flex:0 0 46px;text-align:center;font-size:11px;font-weight:800;padding:4px 0;border-radius:0;background:var(--card-hi);color:var(--muted)}
-.rsl-slot.QB{background:rgba(160,67,46,.14);color:var(--loss)}
+.rsl-slot.QB{background:rgba(160,67,46,.14);color:#8E3B28}
 .rsl-slot.RB{background:rgba(46,125,79,.16);color:var(--blue)}
-.rsl-slot.WR{background:rgba(30,90,56,.12);color:var(--blue-2)}
-.rsl-slot.TE{background:rgba(184,145,46,.16);color:var(--gold-2)}
-.rsl-slot.FLEX{background:rgba(92,110,95,.18);color:#5C6E5F}
-.rsl-slot.K{background:rgba(138,128,100,.18);color:var(--muted)}
-.rsl-slot.DEF{background:rgba(92,110,95,.18);color:#5C6E5F}
+.rsl-slot.WR{background:rgba(30,90,56,.12);color:#245F3C}
+.rsl-slot.TE{background:rgba(184,145,46,.16);color:#6F5416}
+.rsl-slot.FLEX{background:rgba(92,110,95,.18);color:#48564A}
+.rsl-slot.K{background:rgba(138,128,100,.18);color:#5C563E}
+.rsl-slot.DEF{background:rgba(92,110,95,.18);color:#48564A}
 .rsl-name{font-weight:700;flex:1;font-family:var(--serif);font-size:14px}
 .rsl-meta{color:var(--muted-2);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 
@@ -262,7 +264,7 @@ h2.h .bar{display:none}
 /* badges */
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 8px;
   border-radius:0;letter-spacing:1px;text-transform:uppercase}
-.badge.gold{background:var(--gold-dim);color:var(--gold-2);border:1px solid rgba(184,145,46,.4)}
+.badge.gold{background:var(--gold-dim);color:#6F5416;border:1px solid rgba(184,145,46,.4)}
 .badge.blue{background:transparent;color:var(--blue);border:1px solid rgba(30,90,56,.4)}
 .badge.muted{background:transparent;color:var(--muted-2);border:1px solid rgba(138,128,100,.45)}
 .rings{color:var(--gold);letter-spacing:2px;font-size:13px}
@@ -288,7 +290,7 @@ h2.h .bar{display:none}
 .weeksel button{background:var(--surface);border:1px solid var(--line);color:var(--text);
   width:40px;height:36px;border-radius:0;font-weight:700;font-family:var(--serif);cursor:pointer;transition:.12s;font-size:14px}
 .weeksel button:hover{border-color:var(--blue)}
-.weeksel button.on{background:var(--gold-fill);color:var(--surface);border-color:var(--gold-fill)}
+.weeksel button.on{background:var(--gold-solid);color:var(--surface);border-color:var(--gold-solid)}
 
 .note{background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--blue-2);color:#3E4A3F;
   border-radius:0;padding:12px 16px;font-size:13px;font-weight:400}
@@ -358,7 +360,7 @@ h2.h .bar{display:none}
 .prof-stats b{display:block;font-family:var(--serif);font-size:15px;font-weight:700}
 .prof-stats span{color:var(--muted-2);font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
 .prof-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.pill-badge{background:var(--gold-dim);color:var(--gold-2);border:1px solid rgba(184,145,46,.4);
+.pill-badge{background:var(--gold-dim);color:#6F5416;border:1px solid rgba(184,145,46,.4);
   border-radius:0;padding:4px 8px;font-size:12px;font-weight:700}
 .prof-sec{font-size:11px;text-transform:uppercase;letter-spacing:1.6px;color:var(--muted-2);font-weight:800;margin-bottom:8px}
 @keyframes fade{from{opacity:0}to{opacity:1}}
