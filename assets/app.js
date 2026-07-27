@@ -5,11 +5,22 @@ const L = window.LEAGUE;
 const GC_CODE = "";
 const $ = (s,r=document)=>r.querySelector(s);
 const el = (t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+// Make a non-button element behave like one: pointer, keyboard (Enter/Space) and screen-reader role.
+const clickable = (node,fn,label)=>{
+  node.onclick=fn;
+  node.setAttribute('role','button');
+  node.setAttribute('tabindex','0');
+  if(label) node.setAttribute('aria-label',label);
+  node.addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'){e.preventDefault();fn();}
+  });
+  return node;
+};
 const f1 = n => n.toFixed(1);
 const rings = n => n>0 ? '★'.repeat(n) : '';
 const winPct = m => (m.wins/(m.wins+m.losses));
 const pct = v => (v*100).toFixed(1)+'%';
-// Championships span the full league history (Founders 2014-2018 + Sleeper 2019-2025)
+// Championships span the full league history (Founders 2014–2018 + Sleeper 2019–2025)
 const championsAll = () => Object.assign({}, L.foundersChampions||{}, L.championsByYear||{});
 const titleCounts = () => { const c={}; Object.values(championsAll()).forEach(n=>{c[n]=(c[n]||0)+1;}); return c; };
 const titlesOf = name => titleCounts()[name]||0;
@@ -136,7 +147,12 @@ function renderHome(){
      <div class="lg-note">Buy-in $${pot.buyIn} · ${pot.teams} managers.</div>`;
   ledger.innerHTML=shut;
   let lgOpen=false;
-  ledger.onclick=()=>{lgOpen=!lgOpen;ledger.innerHTML=lgOpen?open:shut;};
+  clickable(ledger,()=>{
+    lgOpen=!lgOpen;
+    ledger.innerHTML=lgOpen?open:shut;
+    ledger.setAttribute('aria-expanded',String(lgOpen));
+  },'Toggle the 2026 ledger');
+  ledger.setAttribute('aria-expanded','false');
   right.appendChild(ledger);
   grid.appendChild(right);
   app.appendChild(grid);
@@ -353,7 +369,7 @@ function renderHistory(){
     const s=L.seasonResults[y]; const champ=s.champion;
     const hasR=L.championRosters && L.championRosters[String(y)];
     const c=el('div','champ-card'+(hasR?' clickable':''));c.style.marginBottom='14px';
-    if(hasR) c.onclick=()=>openRoster(String(y));
+    if(hasR) clickable(c,()=>openRoster(String(y)),`View the ${y} title roster`);
     c.innerHTML=`${avatarImg(champ,46)}
       <div style="flex:1">
         <div class="yr">${y} · ${s.teams} TEAMS · ${s.games} GAMES</div>
@@ -484,7 +500,7 @@ function renderSuperlatives(app,A){
   const g=el('div','grid g3');
   cards.forEach(([ic,lab,val,sub])=>g.appendChild(el('div','card hover',
     `<div style="font-size:22px">${ic}</div>
-     <div class="meta" style="text-transform:uppercase;letter-spacing:1px;font-size:10.5px;font-weight:700;color:var(--gold);margin-top:7px">${lab}</div>
+     <div class="meta" style="text-transform:uppercase;letter-spacing:1px;font-size:11px;font-weight:700;color:var(--gold);margin-top:7px">${lab}</div>
      <div class="big" style="font-size:19px;margin:3px 0;letter-spacing:-.2px">${val}</div>
      <div class="meta">${sub}</div>`)));
   sec.appendChild(g);app.appendChild(sec);
@@ -585,12 +601,12 @@ function drawWeek(w,board){
 function renderStory(){
   const app=$('#app');
   app.appendChild(header('The Story of Farmhood Fantasy','The Story',
-    'Seven seasons of dynasties, collapses, and the cruelest rule in fantasy: the best team rarely wins. Every storyline below is drawn from the verified record.'));
+    'Seven Sleeper-era seasons (2019–2025) of dynasties, collapses, and the cruelest rule in fantasy: the best team rarely wins. Every storyline below is drawn from the verified record.'));
 
   const tl=el('section','section');
   L.stories.forEach((s,i)=>{
-    const champ=L.managers.find(m=>m.name===s.champion);
-    const ringTxt = champ && champ.titles>1 ? `${rings(champ.titles)} (career)` : 'Champion';
+    const ct = titlesOf(s.champion);
+    const ringTxt = ct>1 ? `${rings(ct)} (career)` : 'Champion';
     const card=el('article','storycard');
     card.innerHTML=
       `<div class="story-rail"><span class="story-year">${s.year}</span>
@@ -695,7 +711,7 @@ function renderManagers(){
       ${m.name===L.commissioner?'<span class="commish-tag">⚖️ Commissioner</span>':''}
       <div class="rings">${rings(titlesOf(m.name))||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>
       ${w!=null?`<div class="mgr-win">$${w.toLocaleString()}</div>`:''}`;
-    c.onclick=()=>openProfile(m.name);
+    clickable(c,()=>openProfile(m.name),`View ${m.name}'s profile`);
     g.appendChild(c);
   });
   app.appendChild(g);

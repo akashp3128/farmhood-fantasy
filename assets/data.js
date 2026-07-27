@@ -14,20 +14,21 @@ window.LEAGUE = {
     reigningChampion: "martinch94"
   },
 
-  // All-time, 2019-2025. games = wins+losses.
+  // All-time, 2019–2025. games = wins+losses.
+  // Championships are derived from championsByYear/foundersChampions - never stored here.
   managers: [
-    { name:"martinch94",  wins:52, losses:43, pf:10790.94, titles:3, titleYears:[2020,2021,2025] },
-    { name:"pgorny",      wins:50, losses:45, pf:10882.40, titles:2, titleYears:[2022,2023] },
-    { name:"jwislek_20",  wins:51, losses:44, pf:10551.10, titles:1, titleYears:[2024] },
-    { name:"Blumbo",      wins:51, losses:44, pf:10681.86, titles:1, titleYears:[2019] },
-    { name:"vpitello34",  wins:53, losses:42, pf:10364.90, titles:0, titleYears:[] },
-    { name:"akaaashh",    wins:49, losses:46, pf:10698.72, titles:0, titleYears:[] },
-    { name:"maco71",      wins:49, losses:46, pf:10847.32, titles:0, titleYears:[] },
-    { name:"Siccboi",     wins:46, losses:49, pf:10378.56, titles:0, titleYears:[] },
-    { name:"cuch",        wins:43, losses:52, pf:9988.74,  titles:0, titleYears:[] },
-    { name:"Archibaldo",  wins:42, losses:53, pf:10518.03, titles:0, titleYears:[] },
-    { name:"sidjunlee",   wins:42, losses:53, pf:10225.20, titles:0, titleYears:[] },
-    { name:"turi70",      wins:41, losses:54, pf:9974.44,  titles:0, titleYears:[] }
+    { name:"martinch94",  wins:52, losses:43, pf:10790.94 },
+    { name:"pgorny",      wins:50, losses:45, pf:10882.40 },
+    { name:"jwislek_20",  wins:51, losses:44, pf:10551.10 },
+    { name:"Blumbo",      wins:51, losses:44, pf:10681.86 },
+    { name:"vpitello34",  wins:53, losses:42, pf:10364.90 },
+    { name:"akaaashh",    wins:49, losses:46, pf:10698.72 },
+    { name:"maco71",      wins:49, losses:46, pf:10847.32 },
+    { name:"Siccboi",     wins:46, losses:49, pf:10378.56 },
+    { name:"cuch",        wins:43, losses:52, pf:9988.74 },
+    { name:"Archibaldo",  wins:42, losses:53, pf:10518.03 },
+    { name:"sidjunlee",   wins:42, losses:53, pf:10225.20 },
+    { name:"turi70",      wins:41, losses:54, pf:9974.44 }
   ],
 
   // Sleeper profile avatars (image + display name only; team names/mascot text excluded)
@@ -58,12 +59,12 @@ window.LEAGUE = {
             "cuch","sidjunlee","martinch94","Archibaldo","Blumbo","turi70"]
   },
 
-  // Playoff appearances, computed from winners_bracket per season (Sleeper era 2019-2025).
+  // Playoff appearances, computed from winners_bracket per season (Sleeper era 2019–2025).
   playoffSeasons: 7,
   playoffAppearances: { jwislek_20:5, martinch94:5, pgorny:5, Blumbo:4, akaaashh:4, vpitello34:4, Archibaldo:3, Siccboi:3, turi70:3, maco71:3, cuch:2, sidjunlee:2 },
 
-  // Championship-GAME appearances (finals), ALL-TIME 2014-25.
-  // Sleeper era (2019-25) from winners_bracket; Founders era (2014-18) from NFL.com (owner-provided).
+  // Championship-GAME appearances (finals), ALL-TIME 2014–25.
+  // Sleeper era (2019–25) from winners_bracket; Founders era (2014-18) from NFL.com (owner-provided).
   // Joe = former member, 2020 runner-up (Martin's first title). Yogi = 2014 champ (former).
   // TODO: 2014, 2016, 2017, 2018 runner-ups still unknown (need NFL.com records).
   finalsAppearances: [
@@ -91,7 +92,7 @@ window.LEAGUE = {
     "vpitello34":790, "Siccboi":220
   },
 
-  // Founders Era (NFL.com, 2014-2018) — champions only, no game stats survived.
+  // Founders Era (NFL.com, 2014–2018) — champions only, no game stats survived.
   // Yogi (2014) is a former member no longer in the league.
   foundersChampions: { 2014:"Yogi", 2015:"Siccboi", 2016:"vpitello34", 2017:"akaaashh", 2018:"Blumbo" },
   formerChampions: ["Yogi"],
