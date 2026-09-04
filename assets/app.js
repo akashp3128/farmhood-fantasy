@@ -75,6 +75,55 @@ function medalRank(i){
   return `<span class="${cls}">${i+1}</span>`;
 }
 
+/* ---------- LIVE 2026 SHARED UI ---------- */
+function liveTime(ts){
+  try{return new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(new Date(ts));}
+  catch(_err){return 'just now';}
+}
+function liveDate(value){
+  if(!value)return '';
+  try{return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(new Date(value+'T12:00:00'));}
+  catch(_err){return value;}
+}
+function recordLabel(row){
+  return `${row.wins}-${row.losses}${row.ties?'-'+row.ties:''}`;
+}
+function liveStatusBar(snapshot,onRefresh){
+  const state=window.FarmhoodLive.phase(snapshot), bar=el('div','live-status '+state.key+(snapshot.stale?' cache':''));
+  const main=el('div','live-status-main');
+  main.setAttribute('role','status');main.setAttribute('aria-live','polite');
+  main.appendChild(el('span','live-dot'));
+  const copy=el('span','live-status-copy');copy.textContent=state.label;main.appendChild(copy);
+  const detail=el('span','live-checked');
+  detail.textContent=(snapshot.stale?'Last good feed · ':'Checked ')+liveTime(snapshot.fetchedAt);
+  main.appendChild(detail);bar.appendChild(main);
+  if(onRefresh){
+    const button=el('button','live-refresh','Refresh');button.type='button';
+    button.addEventListener('click',async()=>{button.disabled=true;button.textContent='Refreshing…';
+      try{await onRefresh();}finally{if(button.isConnected){button.disabled=false;button.textContent='Refresh';}}
+    });
+    bar.appendChild(button);
+  }
+  return bar;
+}
+function startLivePolling(refresh){
+  if(typeof window==='undefined'||!window.FarmhoodLive)return;
+  let busy=false;
+  const tick=async()=>{if(document.hidden||busy)return;busy=true;try{await refresh();}finally{busy=false;}};
+  const timer=setInterval(tick,window.FarmhoodLive.refreshMs);
+  window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
+}
+function liveLoading(label){
+  const box=el('div','live-loading');box.setAttribute('role','status');
+  box.innerHTML=`<span class="live-spinner" aria-hidden="true"></span><span>${label||'Connecting to Sleeper…'}</span>`;
+  return box;
+}
+function liveError(message){
+  const box=el('div','note live-error');
+  box.textContent=message||'The live feed is temporarily unavailable. The verified archive is still available below.';
+  return box;
+}
+
 /* ---------- HOME ---------- */
 function renderHome(){
   const m=L.meta, app=$('#app');
@@ -108,6 +157,13 @@ function renderHome(){
     stats.appendChild(s);
   });
   app.appendChild(stats);
+
+  // 2026 live pulse — historical content remains available if Sleeper is offline.
+  if(window.FarmhoodLive){
+    const liveMount=el('section','live-home');
+    liveMount.appendChild(liveLoading('Loading the 2026 season…'));app.appendChild(liveMount);
+    mountHomeLive(liveMount);
+  }
 
   // ---- stat of the day ----
   app.appendChild(el('div','sotd',`<span class="sotd-tag">Stat of the Day</span><span class="sotd-txt">${statOfTheDay()}</span>`)).style.marginTop='16px';
@@ -177,17 +233,63 @@ function renderHome(){
   const sec3=el('section','section');
   sec3.appendChild(el('h2','h','<span class="bar"></span>Explore'));
   const g=el('div','grid g3');
-  [['power-rankings.html','Power Rankings','All-time strength index, weighted by win %, rings & scoring.'],
+  [['power-rankings.html','Power Rankings','Live 2026 form layered over the all-time strength index.'],
    ['records.html','Records','Every all-time leaderboard — wins, points, win %.'],
    ['history.html','History','Champion by champion, 2014 to today.'],
    ['fun.html','Fun Stats','Luck index, blowouts, manager of the week.'],
-   ['matchups.html','Matchups','Week-by-week scores from the latest season.'],
+   ['matchups.html','Matchups','Live 2026 scores, schedule and official standings.'],
    ['draft.html','2026 Draft Order','The order is set — see who picks where before kickoff.']
   ].forEach(([h,ti,d])=>{
     const c=el('a','card hover explore-card',`<h3>${ti}<span class="card-arrow">→</span></h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
   });
   sec3.appendChild(g); app.appendChild(sec3);
   animateCounts();
+}
+
+function mountHomeLive(node){
+  let request=0,hasRendered=false;
+  const update=async force=>{
+    const token=++request;
+    try{
+      const snapshot=await window.FarmhoodLive.load({force:!!force});
+      if(token!==request)return;
+      const phase=window.FarmhoodLive.phase(snapshot);
+      const standings=window.FarmhoodLive.standings(snapshot);
+      const officialGames=Math.max(0,...standings.map(row=>row.games));
+      const current=[...snapshot.matchups].filter(row=>row.points!=null).sort((a,b)=>b.points-a.points)[0];
+      const currentManager=current&&snapshot.rosters.find(row=>row.rosterId===current.rosterId);
+      const kickoff=snapshot.currentWeek===1&&snapshot.startDate?'Kickoff '+liveDate(snapshot.startDate):'Scores pending';
+      node.innerHTML='';node.appendChild(liveStatusBar(snapshot,()=>update(true)));
+      const grid=el('div','live-summary-grid');
+      const items=officialGames
+        ? [
+            ['Season leader',standings[0].name,recordLabel(standings[0])+' · '+standings[0].pf.toFixed(1)+' PF'],
+            [`Week ${snapshot.currentWeek} high`,currentManager&&window.FarmhoodLive.hasScoring(snapshot.matchups)?currentManager.name:'Awaiting scores',currentManager&&window.FarmhoodLive.hasScoring(snapshot.matchups)?current.points.toFixed(1)+' pts':kickoff],
+            ['Live power','Updates automatically','Record · all-play · scoring']
+          ]
+        : [
+            ['2026 draft','Complete','180 picks · 12 managers'],
+            ['Next up',`Week ${snapshot.currentWeek}`,phase.key==='scheduled'?kickoff:phase.label],
+            ['Power rankings','Preseason baseline','Go live with the first score']
+          ];
+      items.forEach(([label,value,meta])=>{
+        const card=el('div','live-summary-item');
+        const a=el('span','live-summary-label'),b=el('strong','live-summary-value'),c=el('span','live-summary-meta');
+        a.textContent=label;b.textContent=value;c.textContent=meta;card.append(a,b,c);grid.appendChild(card);
+      });
+      node.appendChild(grid);
+      const actions=el('div','live-actions');
+      [['matchups.html','Open live scoreboard'],['power-rankings.html','View live power rankings']].forEach(([href,label])=>{
+        const a=el('a','live-link',label+' →');a.href=href;actions.appendChild(a);
+      });
+      node.appendChild(actions);hasRendered=true;
+    }catch(_err){
+      if(token!==request||hasRendered)return;
+      node.innerHTML='';node.appendChild(liveError('The 2026 feed could not connect. Historical records remain available.'));
+    }
+  };
+  update(false);
+  startLivePolling(()=>update(true));
 }
 
 /* ---------- PLAYFUL POLISH ---------- */
@@ -237,8 +339,182 @@ function showToast(msg){
 /* ---------- POWER RANKINGS ---------- */
 function renderPower(){
   const app=$('#app');
-  app.appendChild(header('All-Time Power Index','Power Rankings',
-    'A single strength score across all 7 seasons — blending win %, championships and scoring rate. Not just who won, but who was good.'));
+  app.appendChild(header('2026 Live Power Rankings','Power Rankings',
+    'A live, explainable power board built from the official Sleeper feed — current form, lineup strength, luck, movement and just enough league-approved disrespect.'));
+  const mount=el('section','live-power');
+  mount.appendChild(liveLoading('Calculating the live power table…'));app.appendChild(mount);
+  if(window.FarmhoodLive)mountLivePower(mount);
+  else{mount.innerHTML='';mount.appendChild(liveError());}
+  renderAllTimePower(app);
+}
+
+function mountLivePower(node){
+  let request=0,hasRendered=false,trendChart=null;
+  const openManagers=new Set();
+  const update=async force=>{
+    const token=++request;
+    if(hasRendered)node.setAttribute('aria-busy','true');
+    try{
+      const snapshot=await window.FarmhoodLive.load({force:!!force});
+      const [weeks,players]=await Promise.all([
+        window.FarmhoodLive.loadSeasonWeeks(snapshot),
+        window.FarmhoodLive.loadPlayers(snapshot,snapshot.currentWeek)
+      ]);
+      const ranking=window.FarmhoodLive.buildPower(snapshot,weeks,L.managers,titleCounts(),players);
+      if(token!==request)return;
+      const focused=document.activeElement&&node.contains(document.activeElement)&&document.activeElement.closest&&document.activeElement.closest('.power-rank-item');
+      const focusedManager=focused&&focused.dataset.manager;
+      if(trendChart&&typeof trendChart.destroy==='function'){trendChart.destroy();trendChart=null;}
+      node.innerHTML='';node.appendChild(liveStatusBar(snapshot,()=>update(true)));
+      if(players.source==='unavailable')node.appendChild(liveError('Starter projections are temporarily unavailable, so lineup strength is neutral and the remaining live signals stay unchanged.'));
+      node.appendChild(renderPowerPodium(ranking));
+      node.appendChild(renderPowerStorylines(ranking));
+      node.appendChild(renderPowerRankList(ranking,openManagers));
+      if(focusedManager){
+        const focusedItem=[...node.querySelectorAll('.power-rank-item')].find(item=>item.dataset.manager===focusedManager);
+        const summary=focusedItem&&focusedItem.querySelector('summary');if(summary)summary.focus({preventScroll:true});
+      }
+      if(ranking.trendLabels.length>1){
+        const canvas=chartCanvas(node,'Rank Movement <span class="badge muted">weekly checkpoints · current top 6</span>',340);
+        trendChart=drawPowerTrend(canvas,ranking);
+      }else{
+        const trend=el('section','section power-trend-empty');
+        trend.appendChild(el('h2','h','<span class="bar"></span>Rank Movement'));
+        trend.appendChild(el('div','note','The first trend line appears when Week 1 scoring begins. Every checkpoint after that compares against the previous cumulative ranking.'));
+        node.appendChild(trend);
+      }
+      if(!ranking.scoredWeeks){
+        node.appendChild(el('div','note','Preseason model: <b>80% all-time foundation + 20% current starting-lineup strength.</b> Results gain another 20 points of weight after each finalized week and fully take over after Week 4.'));
+      }else if(ranking.provisional){
+        node.appendChild(el('div','note live-provisional','● Provisional: the current week is still in progress, so scores and matchup leaders can move this table until Sleeper finalizes the results.'));
+      }
+      node.appendChild(el('div','note live-formula','2026 formula: <b>30% all-play · 25% scoring · 20% record · 15% starting-lineup strength · 10% recent form.</b> Historical weight fades completely by Week 4.'));
+      node.setAttribute('aria-busy','false');
+      hasRendered=true;
+    }catch(_err){
+      if(token!==request)return;
+      node.setAttribute('aria-busy','false');
+      if(hasRendered)return;
+      node.innerHTML='';node.appendChild(liveError('Live power rankings are temporarily unavailable. The all-time table below is unchanged.'));
+    }
+  };
+  update(false);
+  startLivePolling(()=>update(true));
+}
+
+function powerMove(row,ranking){
+  if(!ranking.scoredWeeks)return {text:'—',label:'Preseason position',cls:'flat'};
+  if(row.movement>0)return {text:'↑'+row.movement,label:`Up ${row.movement} ${row.movement===1?'spot':'spots'}`,cls:'up'};
+  if(row.movement<0)return {text:'↓'+Math.abs(row.movement),label:`Down ${Math.abs(row.movement)} ${Math.abs(row.movement)===1?'spot':'spots'}`,cls:'down'};
+  return {text:'—',label:'No change',cls:'flat'};
+}
+
+function renderPowerPodium(ranking){
+  const section=el('section','power-overview');
+  section.appendChild(el('h2','h',`<span class="bar"></span>Live Power Board <span class="badge blue">${ranking.confidence}</span>`));
+  const podium=el('div','power-podium');
+  ranking.rows.slice(0,3).forEach(row=>{
+    const move=powerMove(row,ranking),card=el('article',`podium-card place-${row.rank}`);
+    card.innerHTML=`<div class="podium-rank">#${row.rank}</div>${avatarImg(row.name,row.rank===1?70:58)}
+      <div class="podium-name">${row.name}</div><span class="power-tag ${row.tag.tone}">${row.tag.label}</span>
+      <div class="podium-score mono">${row.power.toFixed(1)}</div><div class="podium-score-label">Power score</div>
+      <div class="podium-meta"><span>${recordLabel(row)}</span><span>${row.projected==null?'Proj —':'Proj '+row.projected.toFixed(1)}</span>
+      <span class="power-delta ${move.cls}" title="${move.label}">${move.text}</span></div>`;
+    podium.appendChild(card);
+  });
+  section.appendChild(podium);return section;
+}
+
+function renderPowerStorylines(ranking){
+  const strip=el('div','power-story-strip');
+  const riser=[...ranking.rows].sort((a,b)=>b.movement-a.movement||a.rank-b.rank)[0];
+  const lineup=[...ranking.rows].filter(row=>row.projected!=null).sort((a,b)=>b.projected-a.projected)[0];
+  const luck=[...ranking.rows].sort((a,b)=>Math.abs(b.luckWins)-Math.abs(a.luckWins))[0];
+  const stories=ranking.scoredWeeks
+    ? [
+        ['Biggest riser',riser&&riser.movement>0?riser.name:'Board holding',riser&&riser.movement>0?`Up ${riser.movement} since the last checkpoint`:'No upward movement yet'],
+        ['Lineup favorite',lineup?lineup.name:'—',lineup?lineup.projected.toFixed(1)+' projected this week':'Projection feed pending'],
+        ['Luck watch',luck&&Math.abs(luck.luckWins)>=.05?luck.name:'Even so far',luck&&Math.abs(luck.luckWins)>=.05?(luck.luckWins>=0?'+':'')+luck.luckWins.toFixed(1)+' wins vs expected':'No schedule edge yet']
+      ]
+    : [
+        ['Board status','Preseason','Movement begins with Week 1'],
+        ['Lineup favorite',lineup?lineup.name:'—',lineup?lineup.projected.toFixed(1)+' projected this week':'Projection feed pending'],
+        ['Confidence',ranking.confidence,'History + current starters']
+      ];
+  stories.forEach(([label,value,meta])=>{
+    const card=el('div','power-story');
+    const a=el('span','power-story-label'),b=el('strong','power-story-value'),c=el('span','power-story-meta');
+    a.textContent=label;b.textContent=value;c.textContent=meta;card.append(a,b,c);strip.appendChild(card);
+  });
+  return strip;
+}
+
+function renderPowerRankList(ranking,openManagers){
+  const section=el('section','section power-rank-section');
+  section.appendChild(el('h2','h','<span class="bar"></span>Full Rankings <span class="badge muted">open any row for the math</span>'));
+  const list=el('div','power-rank-list');
+  ranking.rows.forEach(row=>{
+    const move=powerMove(row,ranking),details=el('details','power-rank-item');details.dataset.manager=row.name;details.open=openManagers.has(row.name);
+    const summary=el('summary','power-rank-summary');
+    summary.innerHTML=`<span class="power-list-rank">${medalRank(row.rank-1)}</span>
+      <span class="power-list-manager">${avatarImg(row.name,38)}<span><b>${row.name}</b><small class="power-tag ${row.tag.tone}">${row.tag.label}</small></span></span>
+      <span class="power-list-metric hide-power-mobile"><small>Move</small><b class="power-delta ${move.cls}" title="${move.label}">${move.text}</b></span>
+      <span class="power-list-metric"><small>Record</small><b class="mono">${recordLabel(row)}</b></span>
+      <span class="power-list-metric hide-power-mobile"><small>All-play</small><b class="mono">${ranking.scoredWeeks?pct(row.allPlayPct):'–'}</b></span>
+      <span class="power-list-metric hide-power-tablet"><small>Pts/G</small><b class="mono">${ranking.scoredWeeks?row.ppg.toFixed(1):'–'}</b></span>
+      <span class="power-list-metric power-week"><small>Week Pts / Proj</small><b class="mono">${row.currentPoints==null?'–':row.currentPoints.toFixed(1)} <i>/</i> ${row.projected==null?'–':row.projected.toFixed(1)}</b></span>
+      <span class="power-list-score"><small>Power</small><b class="mono">${row.power.toFixed(1)}</b></span>
+      <span class="power-list-cue" aria-hidden="true"></span>`;
+    details.appendChild(summary);details.appendChild(renderPowerExplanation(row,ranking));
+    details.addEventListener('toggle',()=>{if(details.open)openManagers.add(row.name);else openManagers.delete(row.name);});
+    list.appendChild(details);
+  });
+  section.appendChild(list);return section;
+}
+
+function renderPowerExplanation(row,ranking){
+  const panel=el('div','power-explanation');
+  const intro=el('p','power-reason');intro.textContent=row.reason;panel.appendChild(intro);
+  const factors=el('div','power-factors');
+  row.factors.forEach(factor=>{
+    const item=el('div','power-factor'),head=el('div','power-factor-head');
+    const label=el('span',''),value=el('span','mono');label.textContent=factor.label;value.textContent=`${Math.round(factor.value*100)} · ${Math.round(factor.weight*100)}% weight`;
+    head.append(label,value);const track=el('div','power-factor-track'),fill=el('span','power-factor-fill');fill.style.width=Math.max(3,Math.min(100,factor.value*100))+'%';
+    track.appendChild(fill);item.append(head,track);factors.appendChild(item);
+  });
+  panel.appendChild(factors);
+  const facts=el('div','power-facts');
+  const blend=row.historyWeight?`${Math.round(row.historyWeight*100)}% history + ${Math.round((1-row.historyWeight)*100)}% ${ranking.scoredWeeks?'2026':'lineup'}`:'100% 2026 form';
+  [
+    ['Expected wins',ranking.scoredWeeks?row.expectedWins.toFixed(1):'–'],
+    ['Actual wins',ranking.scoredWeeks?(row.wins+row.ties*.5).toFixed(1):'–'],
+    ['Luck',ranking.scoredWeeks?(row.luckWins>=0?'+':'')+row.luckWins.toFixed(1):'–'],
+    ['Model blend',blend]
+  ].forEach(([label,value])=>{const fact=el('div','power-fact'),a=el('span',''),b=el('strong','mono');a.textContent=label;b.textContent=value;fact.append(a,b);facts.appendChild(fact);});
+  panel.appendChild(facts);
+  const history=el('div','power-rank-history');
+  history.textContent='Rank checkpoints: '+ranking.trendLabels.map((label,index)=>`${label} #${ranking.trend[row.name][index]}`).join(' · ');
+  panel.appendChild(history);return panel;
+}
+
+function drawPowerTrend(canvas,ranking){
+  if(typeof Chart==='undefined'||!canvas||!canvas.getContext)return null;
+  const colors=['#7D5F1A','#1E5A38','#A0432E','#5C6E5F','#856519','#2B764A'];
+  return new Chart(canvas,{type:'line',data:{labels:ranking.trendLabels,datasets:ranking.rows.slice(0,6).map((row,index)=>({
+    label:row.name,data:ranking.trend[row.name],borderColor:colors[index],backgroundColor:colors[index],borderWidth:2,pointRadius:3,tension:.28
+  }))},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'nearest',intersect:false},
+    plugins:{legend:{display:true,labels:{color:'#173B27',boxWidth:12,padding:12,font:{size:10}}},
+      tooltip:{backgroundColor:'#F8F5EB',borderColor:'rgba(23,59,39,.3)',borderWidth:1,titleColor:'#173B27',bodyColor:'#173B27',padding:10}},
+    scales:{x:{grid:{color:'rgba(23,59,39,.1)'},ticks:{color:'#736A50'}},
+      y:{reverse:true,min:1,max:12,grid:{color:'rgba(23,59,39,.1)'},ticks:{stepSize:1,color:'#736A50',callback:value=>'#'+value}}}}});
+}
+
+function renderAllTimePower(app){
+  const details=el('details','archive-panel alltime-power');
+  const summary=el('summary','archive-summary');summary.textContent='Open the original all-time power index';details.appendChild(summary);
+  const body=el('div','archive-body');
+  const sec=el('section','section');
+  sec.appendChild(el('h2','h','<span class="bar"></span>All-Time Power Index <span class="badge muted">2019–2025</span>'));
   const ms=L.managers.map(m=>{
     const g=m.wins+m.losses, ppg=m.pf/g, wp=winPct(m);
     return {...m,g,ppg,wp};
@@ -262,13 +538,16 @@ function renderPower(){
          <div class="bar-track" style="width:90px"><div class="bar-fill gold" style="width:${w.toFixed(0)}%"></div></div>
          <b class="mono" style="color:var(--gold);min-width:42px;display:inline-block">${m.score.toFixed(1)}</b></div></td>`));
   });
-  t.appendChild(tb);tc.appendChild(t);app.appendChild(tc);
+  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);body.appendChild(sec);
 
   // power index chart — gold = has a ring, blue = ringless
-  drawBar(chartCanvas(app,'Power Index, Visualized',380),
-    ms.map(m=>m.name), ms.map(m=>+m.score.toFixed(1)),
-    ms.map(m=>titlesOf(m.name)>0?'#B8912E':'#5C6E5F'), true);
-  app.appendChild(el('div','note',`<span style="color:var(--gold)">●</span> champion &nbsp; <span style="color:var(--blue-2)">●</span> ringless &nbsp;·&nbsp; Formula: <b>55%</b> career win-rate + <b>7 pts</b> per championship + scoring rate vs. league average. Pts/Gm normalizes the 13- and 14-game seasons.`)).style.marginTop='16px';
+  const allTimeCanvas=chartCanvas(body,'Power Index, Visualized',380);
+  body.appendChild(el('div','note',`<span style="color:var(--gold)">●</span> champion &nbsp; <span style="color:var(--blue-2)">●</span> ringless &nbsp;·&nbsp; Formula: <b>55%</b> career win-rate + <b>7 pts</b> per championship + scoring rate vs. league average. Pts/Gm normalizes the 13- and 14-game seasons.`)).style.marginTop='16px';
+  details.appendChild(body);app.appendChild(details);
+  let chartDrawn=false;
+  details.addEventListener('toggle',()=>{if(!details.open||chartDrawn)return;chartDrawn=true;
+    drawBar(allTimeCanvas,ms.map(m=>m.name),ms.map(m=>+m.score.toFixed(1)),ms.map(m=>titlesOf(m.name)>0?'#B8912E':'#5C6E5F'),true);
+  });
 }
 
 /* ---------- RECORDS ---------- */
@@ -555,37 +834,204 @@ function renderAllTimeFun(app){
 /* ---------- MATCHUPS ---------- */
 function renderMatchups(){
   const app=$('#app');
-  app.appendChild(header('Weekly Matchups','Matchups',
-    'Week-by-week scores. The 2026 season is pre-draft — showing the full 2025 season below.'));
-  app.appendChild(el('div','note','🔮 2026 hasn’t kicked off yet (pre-draft). Live weekly sync turns on automatically at Week 1. Showing 2025 results.')).style.marginBottom='20px';
+  app.appendChild(header('2026 Live Scoreboard','Matchups',
+    'Official weekly matchups, scores and standings from Sleeper. The board refreshes automatically throughout the season.'));
+  const mount=el('section','live-matchups');
+  mount.appendChild(liveLoading('Loading the Week 1 schedule…'));app.appendChild(mount);
+  const archive=renderArchivedMatchups(app);
+  if(window.FarmhoodLive)mountLiveMatchups(mount,archive);
+  else{mount.innerHTML='';mount.appendChild(liveError());archive.open=true;}
+}
 
-  const sel=el('div','weeksel');
-  const board=el('div','');
+function mountLiveMatchups(node,archive){
+  let request=0,selectedWeek=null,hasRendered=false;
+  const openMatchups=new Set();
+  const update=async force=>{
+    const token=++request;
+    if(hasRendered)node.setAttribute('aria-busy','true');
+    try{
+      const snapshot=await window.FarmhoodLive.load({force:!!force});
+      if(selectedWeek==null||selectedWeek>snapshot.currentWeek)selectedWeek=snapshot.currentWeek;
+      const rows=selectedWeek===snapshot.currentWeek?snapshot.matchups:await window.FarmhoodLive.loadWeek(selectedWeek);
+      const players=await window.FarmhoodLive.loadPlayers(snapshot,selectedWeek);
+      if(token!==request)return;
+      renderLiveMatchups(node,snapshot,selectedWeek,rows,players,openMatchups,
+        week=>{selectedWeek=week;update(false);},()=>update(true));
+      node.setAttribute('aria-busy','false');
+      hasRendered=true;
+    }catch(_err){
+      if(token!==request)return;
+      node.setAttribute('aria-busy','false');
+      if(hasRendered)return;
+      node.innerHTML='';node.appendChild(liveError('The 2026 scoreboard could not connect. The complete 2025 archive is open below.'));
+      archive.open=true;
+    }
+  };
+  update(false);
+  startLivePolling(()=>update(true));
+}
+
+function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatchups,onSelect,onRefresh){
+  const focused=document.activeElement&&node.contains(document.activeElement)&&document.activeElement.closest&&document.activeElement.closest('.matchup-detail');
+  const focusedKey=focused&&focused.dataset.matchupKey;
+  node.innerHTML='';node.appendChild(liveStatusBar(snapshot,onRefresh));
+  const phase=window.FarmhoodLive.phase(snapshot),scored=window.FarmhoodLive.hasScoring(rows);
+  const weekState=selectedWeek<snapshot.currentWeek?(scored?'Final':'No scores'):
+    phase.key==='live'?'Live':phase.key==='final'?'Final':'Scheduled';
+  const title=el('h2','h');
+  title.innerHTML=`<span class="bar"></span>Week ${selectedWeek} Scoreboard <span class="badge ${weekState==='Live'?'gold':'muted'}">${weekState}</span>`;
+  node.appendChild(title);
+  const selector=el('div','weeksel');
+  Array.from({length:Math.max(1,snapshot.currentWeek)},(_,index)=>index+1).forEach(week=>{
+    const button=el('button',week===selectedWeek?'on':'',String(week));button.type='button';
+    button.setAttribute('aria-label',`Show 2026 Week ${week}`);button.setAttribute('aria-pressed',String(week===selectedWeek));
+    button.addEventListener('click',()=>onSelect(week));selector.appendChild(button);
+  });
+  node.appendChild(selector);
+  const feedNote=el('div','lineup-feed-note');
+  feedNote.textContent=playerFeed.source==='unavailable'
+    ? 'Live scoring is connected. Player projections are temporarily unavailable.'
+    : `League-scoring projections ${playerFeed.stale?'from the last available feed':'refreshed '+liveTime(playerFeed.fetchedAt)} · starter scores refresh every minute`;
+  node.appendChild(feedNote);
+  const board=el('div','live-board');node.appendChild(board);
+  drawLiveWeek(selectedWeek,rows,snapshot,board,weekState,playerFeed,openMatchups);
+  if(focusedKey){
+    const match=[...board.querySelectorAll('.matchup-detail')].find(item=>item.dataset.matchupKey===focusedKey);
+    const summary=match&&match.querySelector('summary');if(summary)summary.focus({preventScroll:true});
+  }
+
+  const standings=window.FarmhoodLive.standings(snapshot);
+  const completed=Math.max(0,...standings.map(row=>row.games));
+  const sec=el('section','section live-standings');
+  sec.appendChild(el('h2','h',`<span class="bar"></span>Official 2026 Standings <span class="badge muted">through Week ${completed}</span>`));
+  const tc=el('div','tablecard'),table=el('table','tbl');
+  table.innerHTML='<thead><tr><th>#</th><th>Manager</th><th class="r">W-L</th><th class="r">Win %</th><th class="r">Points For</th></tr></thead>';
+  const body=el('tbody');
+  standings.forEach((row,index)=>body.appendChild(el('tr','',
+    `<td>${medalRank(index)}</td><td><span class="who-name">${row.name}</span></td>
+     <td class="r mono">${recordLabel(row)}</td><td class="r mono">${row.games?pct(row.winPct):'–'}</td>
+     <td class="r mono">${row.games?row.pf.toFixed(1):'–'}</td>`)));
+  table.appendChild(body);tc.appendChild(table);sec.appendChild(tc);node.appendChild(sec);
+  node.appendChild(el('div','note live-source-note','Open any matchup to see both starting lineups. Scores and official records come directly from Sleeper; standings update after Sleeper finalizes the week.'));
+}
+
+function drawLiveWeek(week,rows,snapshot,board,weekState,playerFeed,openMatchups){
+  board.innerHTML='';
+  const groups=window.FarmhoodLive.groupMatchups(rows,snapshot.rosters),weekStarted=window.FarmhoodLive.hasScoring(rows);
+  if(!groups.length){board.appendChild(el('div','note',`No matchups are posted for Week ${week} yet.`));return;}
+  groups.forEach(group=>{
+    if(group.sides.length<2){
+      const side=group.sides[0],bye=el('div','mw mw-bye');
+      bye.innerHTML=`<div class="side"><span class="nm">${side.name}</span></div><span class="vs">BYE</span>`;
+      board.appendChild(bye);return;
+    }
+    const [a,b]=group.sides,pa=a.points==null?0:a.points,pb=b.points==null?0:b.points;
+    const tied=Math.abs(pa-pb)<=0.0001,started=weekStarted&&window.FarmhoodLive.hasScoring(group.sides);
+    const aClass=started&&!tied&&pa>pb?'w':started&&!tied?'l':'';
+    const bClass=started&&!tied&&pb>pa?'w':started&&!tied?'l':'';
+    const status=weekState==='Live'?(started?(tied?'TIED':'LIVE'):'UP NEXT'):weekState.toUpperCase();
+    const lineups=[
+      window.FarmhoodLive.lineupFor(a,snapshot.rosterPositions,playerFeed),
+      window.FarmhoodLive.lineupFor(b,snapshot.rosterPositions,playerFeed)
+    ];
+    const projected=lineups.map(lineup=>{
+      const values=lineup.map(player=>player.projection).filter(value=>value!=null);
+      return values.length?values.reduce((sum,value)=>sum+value,0):null;
+    });
+    const aProjection=projected[0]==null?'–':projected[0].toFixed(1),bProjection=projected[1]==null?'–':projected[1].toFixed(1);
+    const key=week+':'+group.id,details=el('details','matchup-detail');details.dataset.matchupKey=key;
+    details.open=openMatchups.has(key);
+    const row=el('summary','mw matchup-summary');
+    row.innerHTML=
+      `<span class="side matchup-side ${aClass}"><span class="nm">${a.name}</span><span class="matchup-totals">
+         <span class="matchup-total projected"><small>Proj</small><b>${aProjection}</b></span>
+         <span class="matchup-total actual"><small>Pts</small><b>${pa.toFixed(1)}</b></span></span></span>
+       <span class="vs"><span>VS</span><small>${status}</small></span>
+       <span class="side right matchup-side ${bClass}"><span class="nm">${b.name}</span><span class="matchup-totals">
+         <span class="matchup-total projected"><small>Proj</small><b>${bProjection}</b></span>
+         <span class="matchup-total actual"><small>Pts</small><b>${pb.toFixed(1)}</b></span></span></span>
+       <span class="lineup-cue"><span class="cue-open">View lineups</span><span class="cue-close">Hide lineups</span><i aria-hidden="true"></i></span>`;
+    details.appendChild(row);details.appendChild(renderLineupPanel(group,snapshot,playerFeed,lineups));
+    details.addEventListener('toggle',()=>{if(details.open)openMatchups.add(key);else openMatchups.delete(key);});
+    board.appendChild(details);
+  });
+}
+
+function renderLineupPanel(group,snapshot,playerFeed,lineups){
+  const panel=el('div','lineup-panel'),sides=group.sides.slice(0,2);
+  const head=el('div','lineup-duel-head'),leftName=el('strong',''),rightName=el('strong',''),label=el('span','');
+  leftName.textContent=sides[0].name;rightName.textContent=sides[1].name;label.textContent='Starters';
+  head.append(leftName,label,rightName);panel.appendChild(head);
+  const list=el('div','lineup-duels'),length=Math.max(lineups[0].length,lineups[1].length);
+  for(let index=0;index<length;index++){
+    const slotName=(lineups[0][index]&&lineups[0][index].slot)||(lineups[1][index]&&lineups[1][index].slot)||'FLEX';
+    const empty={id:'0',slot:slotName,name:'Empty slot',position:slotName,team:'',opponent:'',injury:'',projection:null,points:null,image:''};
+    const left=lineups[0][index]||empty,right=lineups[1][index]||empty;
+    const duel=el('div','lineup-duel');duel.setAttribute('role','group');
+    duel.setAttribute('aria-label',(left.slot||right.slot||'Starter')+' matchup');
+    duel.appendChild(renderDuelPlayer(left,'left'));
+    const slot=el('span','duel-slot');slot.textContent=left.slot||right.slot||'—';duel.appendChild(slot);
+    duel.appendChild(renderDuelPlayer(right,'right'));list.appendChild(duel);
+  }
+  panel.appendChild(list);
+  const foot=el('div','lineup-footnote');
+  foot.textContent=playerFeed.source==='unavailable'?'Projections unavailable · live points still refresh automatically':"Projections use Farmhood's scoring settings · live points are official Sleeper scores";
+  panel.appendChild(foot);return panel;
+}
+
+function renderDuelPlayer(player,direction){
+  const card=el('div','duel-player '+direction+(player.id==='0'?' empty':''));
+  const photo=el('span','player-photo'),fallback=el('span','player-photo-fallback');
+  fallback.textContent=(player.position||player.slot||'—').slice(0,4);photo.appendChild(fallback);
+  if(player.image){
+    const image=document.createElement('img');image.className='player-headshot';image.src=player.image;image.alt='';image.loading='lazy';
+    image.addEventListener('error',()=>image.remove());photo.appendChild(image);
+  }
+  const text=el('span','starter-copy'),name=el('strong','starter-name'),meta=el('span','starter-meta');
+  name.textContent=player.name;
+  const opponent=player.opponent?' vs '+player.opponent:'';
+  meta.textContent=[player.position,(player.team+opponent).trim(),player.injury].filter(Boolean).join(' · ');
+  if(player.injury)meta.classList.add('has-injury');
+  text.append(name,meta);
+  const numbers=el('span','duel-numbers');
+  const points=el('span','duel-number actual'),pointsLabel=el('small',''),pointsValue=el('b','mono');
+  pointsLabel.textContent='Pts';pointsValue.textContent=player.points==null?'–':player.points.toFixed(1);points.append(pointsLabel,pointsValue);
+  const projection=el('span','duel-number projected'),projectionLabel=el('small',''),projectionValue=el('b','mono');
+  projectionLabel.textContent='Proj';projectionValue.textContent=player.projection==null?'–':player.projection.toFixed(1);projection.append(projectionLabel,projectionValue);
+  numbers.append(points,projection);
+  if(player.points!=null&&Math.abs(player.points)>0.0001)points.classList.add('has-points');
+  if(direction==='left')card.append(photo,text,numbers);else card.append(numbers,text,photo);
+  return card;
+}
+
+function renderArchivedMatchups(app){
+  const details=el('details','archive-panel');
+  const summary=el('summary','archive-summary');summary.textContent='Open the complete 2025 matchup archive';details.appendChild(summary);
+  const body=el('div','archive-body');
+  const sel=el('div','weeksel'),board=el('div','');
   const weeks=Object.keys(L.weekly2025).map(Number).sort((a,b)=>a-b);
-  weeks.forEach(w=>{const b=el('button',w===14?'on':'',w);b.onclick=()=>{[...sel.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');drawWeek(w,board);};sel.appendChild(b);});
-  app.appendChild(sel);app.appendChild(board);
-  drawWeek(14,board);
+  weeks.forEach(w=>{const b=el('button',w===14?'on':'',w);b.type='button';
+    b.onclick=()=>{[...sel.children].forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});b.classList.add('on');b.setAttribute('aria-pressed','true');drawArchivedWeek(w,board);};
+    b.setAttribute('aria-label',`Show archived 2025 Week ${w}`);b.setAttribute('aria-pressed',String(w===14));sel.appendChild(b);});
+  body.appendChild(sel);body.appendChild(board);drawArchivedWeek(14,board);
 
-  // final standings
   const sec=el('section','section');
   sec.appendChild(el('h2','h','<span class="bar"></span>2025 Final Standings'));
-  const tc=el('div','tablecard');const t=el('table','tbl');
+  const tc=el('div','tablecard'),t=el('table','tbl');
   t.innerHTML='<thead><tr><th>#</th><th>Manager</th><th class="r">W-L</th><th class="r">Points For</th></tr></thead>';
   const tb=el('tbody');
-  L.standings2025.forEach((s,i)=>{
-    tb.appendChild(el('tr','',
-      `<td>${medalRank(i)}</td>
-       <td><span class="who-name">${s.name}</span> ${s.champ?'<span class="badge gold">🏆 Champ</span>':''}</td>
-       <td class="r mono">${s.w}-${s.l}</td>
-       <td class="r mono">${s.pf.toFixed(1)}</td>`));
-  });
-  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
+  L.standings2025.forEach((s,i)=>tb.appendChild(el('tr','',
+    `<td>${medalRank(i)}</td><td><span class="who-name">${s.name}</span> ${s.champ?'<span class="badge gold">🏆 Champ</span>':''}</td>
+     <td class="r mono">${s.w}-${s.l}</td><td class="r mono">${s.pf.toFixed(1)}</td>`)));
+  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);body.appendChild(sec);
+  details.appendChild(body);app.appendChild(details);return details;
 }
-function drawWeek(w,board){
+
+function drawArchivedWeek(w,board){
   board.innerHTML='';
   const rows=L.weekly2025[w], names=L.names2025;
   const by={};rows.forEach(([r,m,p])=>{(by[m]=by[m]||[]).push([r,p]);});
-  board.appendChild(el('h2','h',`<span class="bar"></span>Week ${w}`));
+  board.appendChild(el('h2','h',`<span class="bar"></span>2025 · Week ${w}`));
   Object.values(by).forEach(([[ra,pa],[rb,pb]])=>{
     const aw=pa>pb;
     const row=el('div','mw');
@@ -759,7 +1205,7 @@ function openProfile(name){
 function renderDraftOrder(app){
   const d=L.draft2026; if(!d||!d.order) return;
   const sec=el('section','');
-  sec.appendChild(el('h2','h',`<span class="bar"></span>${d.season} Draft Order <span class="badge blue" style="font-weight:600">${d.type} · ${d.rounds} rounds · ${d.scoring}</span>`));
+  sec.appendChild(el('h2','h',`<span class="bar"></span>${d.season} Draft Order <span class="badge ${d.status==='complete'?'gold':'blue'}" style="font-weight:600">${d.status==='complete'?'Draft complete':d.type+' · '+d.rounds+' rounds'}</span>`));
   const list=el('div','draft-order');
   d.order.forEach((n,i)=>{
     const row=el('div','do-row'+(i===0?' first':''));
@@ -768,12 +1214,16 @@ function renderDraftOrder(app){
     list.appendChild(row);
   });
   sec.appendChild(list);
-  sec.appendChild(el('div','note',`Snake format — the order reverses each round, so <b>${d.order[d.order.length-1]}</b> picks 1.${d.teams} and 2.01 back to back. Draft date not scheduled yet.`)).style.marginTop='14px';
+  let completed='';
+  try{completed=d.completedAt?new Intl.DateTimeFormat(undefined,{month:'long',day:'numeric',year:'numeric'}).format(new Date(d.completedAt)):'';}catch(_err){}
+  sec.appendChild(el('div','note',d.status==='complete'
+    ? `All ${d.rounds*d.teams} picks are in${completed?' · completed '+completed:''}. The 2026 rosters now feed the live scoreboard and power rankings.`
+    : `Snake format — the order reverses each round, so <b>${d.order[d.order.length-1]}</b> picks 1.${d.teams} and 2.01 back to back.`)).style.marginTop='14px';
   app.appendChild(sec);
 }
 function renderDraft(){
   const app=$('#app');
-  app.appendChild(header('The Draft','Draft','The 2026 order is set — plus every steal and bust in league history, ranked by season points against draft slot.'));
+  app.appendChild(header('The Draft','Draft','The 2026 draft is complete — plus every steal and bust in league history, ranked by season points against draft slot.'));
   renderDraftOrder(app);
   const E=L.extra;
   if(!E){app.appendChild(el('div','note','🔓 Run <b>scripts/extras.py</b> to pull draft data (picks + player scoring). This page lights up once it finishes.')).style.marginTop='8px';return;}

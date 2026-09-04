@@ -54,9 +54,35 @@ window.LEAGUE = {
 
   // 2026 draft (from Sleeper draft_id 1377086848312045568). Verified against slot_to_roster_id.
   draft2026: {
-    season: 2026, type: "Snake", rounds: 15, teams: 12, scoring: "Half-PPR", status: "pre_draft",
+    season: 2026, type: "Snake", rounds: 15, teams: 12, scoring: "Half-PPR", status: "complete",
+    draftId: "1377086848312045568", completedAt: 1788058806259,
     order: ["vpitello34","maco71","jwislek_20","akaaashh","pgorny","Siccboi",
             "cuch","sidjunlee","martinch94","Archibaldo","Blumbo","turi70"]
+  },
+
+  // Live 2026 feed. Owner IDs are the stable identity boundary; arbitrary Sleeper
+  // team names, mascot messages and player nicknames never enter the site.
+  live2026: {
+    season: 2026,
+    leagueId: "1377086848295260160",
+    regularSeasonWeeks: 14,
+    refreshMs: 60000,
+    owners: {
+      "79220990290575360":"Blumbo",
+      "87253894098731008":"turi70",
+      "89787120084205568":"akaaashh",
+      "92288423205158912":"cuch",
+      "92391164216754176":"martinch94",
+      "450705025862201344":"Archibaldo",
+      "450707444838952960":"jwislek_20",
+      "450755017129848832":"Siccboi",
+      "450905805542125568":"maco71",
+      "450908261617496064":"pgorny",
+      "463423832728793088":"sidjunlee",
+      "464552386170449920":"vpitello34"
+    },
+    // Safe fallback only; live joins use owner IDs so roster reordering is harmless.
+    rosterNames: {1:"Blumbo",2:"akaaashh",3:"Archibaldo",4:"jwislek_20",5:"cuch",6:"martinch94",7:"turi70",8:"Siccboi",9:"maco71",10:"pgorny",11:"sidjunlee",12:"vpitello34"}
   },
 
   // Playoff appearances, computed from winners_bracket per season (Sleeper era 2019–2025).
