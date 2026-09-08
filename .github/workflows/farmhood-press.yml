@@ -3,6 +3,14 @@ name: Farmhood Press draft
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: Test the AI connection or generate an edition
+        required: true
+        default: generate
+        type: choice
+        options:
+          - generate
+          - connection-test
       edition:
         description: Edition to generate
         required: true
@@ -31,7 +39,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: farmhood-press-${{ inputs.edition }}-week-${{ inputs.week }}
+  group: farmhood-press-${{ inputs.operation }}-${{ inputs.edition }}-week-${{ inputs.week }}
   cancel-in-progress: false
 
 jobs:
@@ -60,13 +68,19 @@ jobs:
             exit 1
           fi
 
+      - name: Test the OpenAI connection
+        if: inputs.operation == 'connection-test'
+        run: node scripts/press/check-openai.mjs
+
       - name: Create the review branch
+        if: inputs.operation == 'generate'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
         run: git checkout -b "press/${EDITION}-2026-week-${WEEK}-${GITHUB_RUN_ID}"
 
       - name: Generate the edition
+        if: inputs.operation == 'generate'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
@@ -74,9 +88,11 @@ jobs:
         run: node scripts/press/generate.mjs --type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE"
 
       - name: Validate facts and publication files
+        if: inputs.operation == 'generate'
         run: node scripts/press/validate.mjs
 
       - name: Commit the draft
+        if: inputs.operation == 'generate'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
@@ -93,6 +109,7 @@ jobs:
           git push --set-upstream origin HEAD
 
       - name: Open a draft pull request
+        if: inputs.operation == 'generate'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
