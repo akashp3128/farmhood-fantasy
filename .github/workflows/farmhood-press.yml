@@ -1,0 +1,110 @@
+name: Farmhood Press draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Edition to generate
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - recap
+      week:
+        description: 2026 fantasy week
+        required: true
+        default: "1"
+        type: string
+      tone:
+        description: Editorial tone
+        required: true
+        default: spicy
+        type: choice
+        options:
+          - straight
+          - spicy
+          - chaos
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: farmhood-press-${{ inputs.edition }}-week-${{ inputs.week }}
+  cancel-in-progress: false
+
+jobs:
+  generate-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out the publication
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Verify newsroom credential
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Add OPENAI_API_KEY as a repository Actions secret before generating an edition."
+            exit 1
+          fi
+
+      - name: Create the review branch
+        env:
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+        run: git checkout -b "press/${EDITION}-2026-week-${WEEK}-${GITHUB_RUN_ID}"
+
+      - name: Generate the edition
+        env:
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+          TONE: ${{ inputs.tone }}
+        run: node scripts/press/generate.mjs --type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE"
+
+      - name: Validate facts and publication files
+        run: node scripts/press/validate.mjs
+
+      - name: Commit the draft
+        env:
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+        run: |
+          git config user.name "farmhood-press[bot]"
+          git config user.email "farmhood-press[bot]@users.noreply.github.com"
+          git add content/
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "The generated edition did not change any publication files."
+            exit 1
+          fi
+          git commit -m "Draft ${EDITION} edition for 2026 Week ${WEEK}"
+          git push --set-upstream origin HEAD
+
+      - name: Open a draft pull request
+        env:
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+          TONE: ${{ inputs.tone }}
+        run: |
+          if gh pr create --draft --base main \
+              --title "Farmhood Press: ${EDITION} edition for Week ${WEEK}" \
+              --body "AI-generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, prediction ledger, frozen fact snapshot, lineage metadata, and factual validation are included in this pull request. Review the prose and merge to publish through GitHub Pages."; then
+            echo "A draft pull request was opened for review." >> "$GITHUB_STEP_SUMMARY"
+          else
+            branch=$(git branch --show-current)
+            compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${branch}?expand=1"
+            echo "The draft branch was pushed, but repository policy did not allow the workflow to open a pull request." >> "$GITHUB_STEP_SUMMARY"
+            echo "Open this review link: ${compare_url}" >> "$GITHUB_STEP_SUMMARY"
+          fi

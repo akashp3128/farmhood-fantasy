@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "leagueId": "1377086848295260160",
+  "name": "Farmhood Fantasy",
+  "founded": 2014,
+  "sleeperEraStart": 2019,
+  "activeSeason": 2026,
+  "teamCount": 12,
+  "scoring": "Half-PPR",
+  "publication": "The Farmhood Press",
+  "byline": "Farmhood Intelligence Desk",
+  "defaultTone": "spicy",
+  "predictionPolicy": {
+    "originalForecast": "Published before the first NFL kickoff and preserved permanently.",
+    "latestForecast": "May update for starter swaps, injury designations and projection changes until the affected player locks.",
+    "recap": "Grades the original forecast and separately records the final pre-lock forecast."
+  },
+  "sourcePriority": [
+    "Official finalized Sleeper data",
+    "Deterministic Farmhood calculations",
+    "Editor-approved league canon",
+    "Published prose, which is never a factual source"
+  ]
+}

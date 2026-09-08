@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "featuredArticleId": "2026-week-01-preview",
+  "updatedAt": "2026-09-08T06:56:38Z",
+  "articles": [
+    {
+      "articleId": "2026-week-01-preview",
+      "path": "content/articles/2026/week-01-preview.json",
+      "type": "week_preview",
+      "edition": "Pregame Edition",
+      "season": 2026,
+      "week": 1,
+      "status": "published",
+      "title": "The Tower Reopens With a Dynasty on Defense and 22 Question Marks",
+      "dek": "Week 1 brings a vulnerable reigning champion, six competitive projection lines, and enough Questionable tags to keep Lineup Watch employed through kickoff.",
+      "publishedAt": "2026-09-08T06:56:38Z",
+      "dataAsOf": "2026-09-08T06:56:38.000Z",
+      "storylines": ["The title defense starts as a test", "The points king gets the first move", "Lineup management enters the opening headline"],
+      "tags": ["Week 1", "Predictions", "Lineup Watch"]
+    }
+  ]
+}

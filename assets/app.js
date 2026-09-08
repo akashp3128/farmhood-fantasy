@@ -28,6 +28,7 @@ const titleYearsOf = name => { const a=championsAll(); return Object.keys(a).fil
 
 const PAGES = [
   ['index.html','Home','home'],
+  ['press.html','The Press','press'],
   ['managers.html','Managers','managers'],
   ['power-rankings.html','Power Rankings','power'],
   ['records.html','Records','records'],
@@ -279,7 +280,7 @@ function mountHomeLive(node){
       });
       node.appendChild(grid);
       const actions=el('div','live-actions');
-      [['matchups.html','Open live scoreboard'],['power-rankings.html','View live power rankings']].forEach(([href,label])=>{
+      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['power-rankings.html','View live power rankings']].forEach(([href,label])=>{
         const a=el('a','live-link',label+' →');a.href=href;actions.appendChild(a);
       });
       node.appendChild(actions);hasRendered=true;

@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-01-preview",
+  "type": "week_preview",
+  "season": 2026,
+  "week": 1,
+  "status": "published",
+  "edition": "Pregame Edition",
+  "title": "The Tower Reopens With a Dynasty on Defense and 22 Question Marks",
+  "dek": "Week 1 brings a vulnerable reigning champion, six competitive projection lines, and enough Questionable tags to keep Lineup Watch employed through kickoff.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-09-08T06:56:38Z",
+  "updatedAt": "2026-09-08T06:56:38Z",
+  "dataAsOf": "2026-09-08T06:56:38.000Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "A new Farmhood season begins with the old hierarchy under immediate pressure. Three-time champion martinch94 owns the rings, but the opening projections give maco71 the advantage in the week's most narratively loaded matchup: the reigning dynasty against the manager who broke the scoring record without taking home the trophy.",
+      "The projection board sees more uncertainty than certainty. No favorite reaches a 61% win probability, and three matchups sit within four projected points. Pregame swaps have already tightened the board, while 22 Questionable designations keep the ink from drying.",
+      "These are the official opening calls. They will stay on the record for The Receipts. Lineup Watch below will keep moving with starter swaps, injury designations and projections until each affected player locks."
+    ],
+    "pullQuote": "The picks are permanent. The excuses are already questionable.",
+    "keyStat": {
+      "label": "Opening-week watch",
+      "value": "22 Questionable",
+      "note": "No starter was listed Out in the frozen preview snapshot."
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "martinch94",
+      "managerB": "maco71",
+      "projectedScoreA": 109.50,
+      "projectedScoreB": 117.40,
+      "predictedWinner": "maco71",
+      "winProbability": 0.6080,
+      "headline": "The dynasty opens from the unfamiliar side of the line",
+      "analysis": "maco71 carries the stronger starting projection, led by Bijan Robinson, while martinch94 needs James Cook and Ashton Jeanty to erase an early paper deficit. The model sides with the points king, cautiously.",
+      "keyPlayer": "Bijan Robinson",
+      "upsetPath": "martinch94 needs his running backs to outperform their current projections and the lower-projected flex group to hold serve.",
+      "historyNote": "martinch94 enters as the three-time and reigning champion; maco71 enters after setting the 2025 single-season scoring record without a title.",
+      "injuryWatch": ["Ashton Jeanty — listed Questionable", "Tucker Kraft — listed Questionable"],
+      "factIds": ["champion:2025", "points:2025:maco71", "2026:w1:m1:projection:martinch94", "2026:w1:m1:projection:maco71"]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "Blumbo",
+      "managerB": "sidjunlee",
+      "projectedScoreA": 116.10,
+      "projectedScoreB": 121.82,
+      "predictedWinner": "sidjunlee",
+      "winProbability": 0.5788,
+      "headline": "The week's highest projection belongs to sidjunlee",
+      "analysis": "Lamar Jackson and Amon-Ra St. Brown give sidjunlee the strongest projected total on the board. Blumbo has enough balance to keep it close, but the favorite owns the best ceiling entering the week.",
+      "keyPlayer": "Lamar Jackson",
+      "upsetPath": "Blumbo needs the Chase Brown and Kenneth Walker pairing to win the backfield comparison while Zay Flowers clears his designation.",
+      "historyNote": "Blumbo won the inaugural Sleeper title in 2019; sidjunlee authored an 11-3 regular season in 2022.",
+      "injuryWatch": ["Zay Flowers — listed Questionable", "Breece Hall — listed Questionable"],
+      "factIds": ["champion:2019", "record:2022:sidjunlee", "2026:w1:m2:projection:Blumbo", "2026:w1:m2:projection:sidjunlee"]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "akaaashh",
+      "managerB": "pgorny",
+      "projectedScoreA": 116.04,
+      "projectedScoreB": 117.07,
+      "predictedWinner": "pgorny",
+      "winProbability": 0.5143,
+      "headline": "A filled kicker slot turns the week's widest gap into a coin flip",
+      "analysis": "A pregame lineup correction moved akaaashh within 1.03 projected points of pgorny. Jayden Daniels, Derrick Henry and Puka Nacua still give pgorny the slightest lean, but this call now belongs in pencil.",
+      "keyPlayer": "Puka Nacua",
+      "upsetPath": "Christian McCaffrey must beat his current projection while akaaashh's newly completed lineup holds serve across the flex spots.",
+      "historyNote": "",
+      "injuryWatch": ["Christian McCaffrey — listed Questionable", "Malik Nabers — listed Questionable", "Puka Nacua — listed Questionable", "Sam LaPorta — listed Questionable"],
+      "factIds": ["2026:w1:m3:projection:akaaashh", "2026:w1:m3:projection:pgorny", "2026:w1:m3:pick"]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "Archibaldo",
+      "managerB": "vpitello34",
+      "projectedScoreA": 113.49,
+      "projectedScoreB": 118.79,
+      "predictedWinner": "vpitello34",
+      "winProbability": 0.5731,
+      "headline": "Josh Allen and Jahmyr Gibbs tilt a competitive opener",
+      "analysis": "vpitello34 has the projection edge, but this is not a runaway. Archibaldo counters with Dak Prescott, CeeDee Lamb and a lineup with no injury designation in the frozen snapshot.",
+      "keyPlayer": "Jahmyr Gibbs",
+      "upsetPath": "Archibaldo needs the Prescott-Lamb pairing to beat its combined projection and turn a modest paper deficit into a Sunday swing.",
+      "historyNote": "",
+      "injuryWatch": ["Rome Odunze — listed Questionable"],
+      "factIds": ["2026:w1:m4:projection:Archibaldo", "2026:w1:m4:projection:vpitello34"]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "jwislek_20",
+      "managerB": "cuch",
+      "projectedScoreA": 115.09,
+      "projectedScoreB": 118.50,
+      "predictedWinner": "cuch",
+      "winProbability": 0.5472,
+      "headline": "The prediction desk's closest call",
+      "analysis": "A 3.41-point projected margin is barely a preference. cuch gets the nod behind Jalen Hurts and Jaxon Smith-Njigba, while jwislek_20 can flip the call with one ceiling game from Ja'Marr Chase or Brock Bowers.",
+      "keyPlayer": "Jalen Hurts",
+      "upsetPath": "jwislek_20 needs the Burrow-Chase stack to turn correlation into a lead before the flex spots decide the finish.",
+      "historyNote": "",
+      "injuryWatch": ["Bhayshul Tuten — listed Questionable", "Ja'Marr Chase — listed Questionable", "George Kittle — listed Questionable", "Luther Burden — listed Questionable"],
+      "factIds": ["2026:w1:m5:projection:jwislek_20", "2026:w1:m5:projection:cuch"]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "turi70",
+      "managerB": "Siccboi",
+      "projectedScoreA": 117.59,
+      "projectedScoreB": 114.27,
+      "predictedWinner": "turi70",
+      "winProbability": 0.5460,
+      "headline": "A narrow favorite with an unusually crowded injury column",
+      "analysis": "turi70 owns a small projection edge through Justin Herbert, Saquon Barkley and Justin Jefferson. Siccboi answers with Jonathan Taylor and Drake London, keeping this well inside upset range.",
+      "keyPlayer": "Jonathan Taylor",
+      "upsetPath": "Siccboi needs Taylor to create separation and the two Questionable flex starters to remain available at lock.",
+      "historyNote": "",
+      "injuryWatch": ["D'Andre Swift — listed Questionable", "Tee Higgins — listed Questionable", "Tyler Warren — listed Questionable", "Cameron Dicker — listed Questionable", "Chuba Hubbard — listed Questionable", "Mike Evans — listed Questionable"],
+      "factIds": ["2026:w1:m6:projection:turi70", "2026:w1:m6:projection:Siccboi"]
+    }
+  ],
+  "storylines": [
+    {"title":"The title defense starts as a test","body":"martinch94 begins the chase for a fourth ring as an opening-week projection underdog. The history is imposing; the current lineup has to answer for itself.","subjects":["martinch94","maco71"],"storylineId":"2026-title-defense-martin"},
+    {"title":"The points king gets the first move","body":"maco71 spent 2025 setting the scoring standard without winning the title. Week 1 offers an immediate chance to turn that production into a result against the reigning champion.","subjects":["maco71"],"storylineId":"2026-maco-finish-the-job"},
+    {"title":"Lineup management enters the opening headline","body":"Pregame swaps have already tightened multiple projection lines. The frozen preview contains 22 Questionable designations but no starter listed Out, so Lineup Watch must separate routine tags from changes that actually move a forecast.","subjects":["akaaashh","jwislek_20","Siccboi"],"storylineId":"2026-lineup-watch"}
+  ],
+  "awards": [],
+  "receipts": null,
+  "lineupSnapshot": {
+    "capturedAt": "2026-09-08T06:56:38.000Z",
+    "teams": [
+      {"name":"Blumbo","rosterId":1,"projection":116.10,"lineupHash":"12508.9224.8151.8146.9997.5012.2133.9487.13545.SEA","starterIds":["12508","9224","8151","8146","9997","5012","2133","9487","13545","SEA"]},
+      {"name":"akaaashh","rosterId":2,"projection":116.04,"lineupHash":"11564.4034.7611.11632.7526.8131.13287.9754.12185.NE","starterIds":["11564","4034","7611","11632","7526","8131","13287","9754","12185","NE"]},
+      {"name":"Archibaldo","rosterId":3,"projection":113.49,"lineupHash":"3294.12507.7543.6786.7525.7002.13286.5045.2747.JAX","starterIds":["3294","12507","7543","6786","7525","7002","13286","5045","2747","JAX"]},
+      {"name":"jwislek_20","rosterId":4,"projection":115.09,"lineupHash":"6770.12490.8132.7564.8144.11604.11635.4037.11533.LAC","starterIds":["6770","12490","8132","7564","8144","11604","11635","4037","11533","LAC"]},
+      {"name":"cuch","rosterId":5,"projection":118.50,"lineupHash":"6904.7588.12481.9488.5859.4217.12519.5967.7839.BAL","starterIds":["6904","7588","12481","9488","5859","4217","12519","5967","7839","BAL"]},
+      {"name":"martinch94","rosterId":6,"projection":109.50,"lineupHash":"11560.8138.12527.12526.11631.12517.8676.10232.3451.LAR","starterIds":["11560","8138","12527","12526","11631","12517","8676","10232","3451","LAR"]},
+      {"name":"turi70","rosterId":7,"projection":117.59,"lineupHash":"6797.4866.6790.6794.6801.12518.8167.6806.8259.MIN","starterIds":["6797","4866","6790","6794","6801","12518","8167","6806","8259","MIN"]},
+      {"name":"Siccboi","rosterId":8,"projection":114.27,"lineupHash":"3163.6813.11584.8112.10229.12506.7594.2216.12711.HOU","starterIds":["3163","6813","11584","8112","10229","12506","7594","2216","12711","HOU"]},
+      {"name":"maco71","rosterId":9,"projection":117.40,"lineupHash":"421.9509.8150.7569.4983.9484.12512.11628.11792.PIT","starterIds":["421","9509","8150","7569","4983","9484","12512","11628","11792","PIT"]},
+      {"name":"pgorny","rosterId":10,"projection":117.07,"lineupHash":"11566.3198.11583.9493.12514.10859.8148.10222.11786.PHI","starterIds":["11566","3198","11583","9493","12514","10859","8148","10222","11786","PHI"]},
+      {"name":"sidjunlee","rosterId":11,"projection":121.82,"lineupHash":"4881.9226.8155.7547.5927.8130.8228.11586.12015.DEN","starterIds":["4881","9226","8155","7547","5927","8130","8228","11586","12015","DEN"]},
+      {"name":"vpitello34","rosterId":12,"projection":118.79,"lineupHash":"4984.9221.5892.8137.11620.7553.11581.1466.11539.CHI","starterIds":["4984","9221","5892","8137","11620","7553","11581","1466","11539","CHI"]}
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-01-pre-7c5960b62857e042",
+    "predictionId": "farmhood-2026-week-01-original",
+    "dataAsOf": "2026-09-08T06:56:38.000Z",
+    "promptVersion": "farmhood-press-v1",
+    "model": "AI-authored seed edition"
+  },
+  "factCheck": {
+    "snapshotId": "farmhood-2026-week-01-pre-7c5960b62857e042",
+    "status": "passed",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6,
+    "unsupportedNumericClaims": 0
+  },
+  "tags": ["Week 1", "Predictions", "Lineup Watch"]
+}

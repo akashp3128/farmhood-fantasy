@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "predictionSetId": "farmhood-2026-week-01-original",
+  "season": 2026,
+  "week": 1,
+  "state": "locked_original",
+  "generatedAt": "2026-09-08T06:56:38.000Z",
+  "factsAsOf": "2026-09-08T06:56:38.000Z",
+  "sourceSnapshotId": "farmhood-2026-week-01-pre-7c5960b62857e042",
+  "lockedAt": "2026-09-08T06:56:38.000Z",
+  "lockReason": "Original Week 1 Press prediction published; later lineup changes belong to the separately versioned Latest Forecast.",
+  "immutableAfterKickoff": true,
+  "model": {
+    "id": "farmhood-deterministic-v1",
+    "method": "Bounded logistic transform of the difference between league-scored starting-lineup projections.",
+    "scale": 18,
+    "minimumProbability": 0.15,
+    "maximumProbability": 0.85
+  },
+  "predictions": [
+    {
+      "predictionId": "2026-w1-m1",
+      "matchupId": 1,
+      "managerA": "martinch94",
+      "managerB": "maco71",
+      "projectedScoreA": 109.5,
+      "projectedScoreB": 117.4,
+      "predictedWinner": "maco71",
+      "winProbability": 0.608,
+      "factIds": [
+        "2026:w1:m1:projection:martinch94",
+        "2026:w1:m1:projection:maco71",
+        "2026:w1:m1:pick"
+      ]
+    },
+    {
+      "predictionId": "2026-w1-m2",
+      "matchupId": 2,
+      "managerA": "Blumbo",
+      "managerB": "sidjunlee",
+      "projectedScoreA": 116.1,
+      "projectedScoreB": 121.82,
+      "predictedWinner": "sidjunlee",
+      "winProbability": 0.5788,
+      "factIds": [
+        "2026:w1:m2:projection:Blumbo",
+        "2026:w1:m2:projection:sidjunlee",
+        "2026:w1:m2:pick"
+      ]
+    },
+    {
+      "predictionId": "2026-w1-m3",
+      "matchupId": 3,
+      "managerA": "akaaashh",
+      "managerB": "pgorny",
+      "projectedScoreA": 116.04,
+      "projectedScoreB": 117.07,
+      "predictedWinner": "pgorny",
+      "winProbability": 0.5143,
+      "factIds": [
+        "2026:w1:m3:projection:akaaashh",
+        "2026:w1:m3:projection:pgorny",
+        "2026:w1:m3:pick"
+      ]
+    },
+    {
+      "predictionId": "2026-w1-m4",
+      "matchupId": 4,
+      "managerA": "Archibaldo",
+      "managerB": "vpitello34",
+      "projectedScoreA": 113.49,
+      "projectedScoreB": 118.79,
+      "predictedWinner": "vpitello34",
+      "winProbability": 0.5731,
+      "factIds": [
+        "2026:w1:m4:projection:Archibaldo",
+        "2026:w1:m4:projection:vpitello34",
+        "2026:w1:m4:pick"
+      ]
+    },
+    {
+      "predictionId": "2026-w1-m5",
+      "matchupId": 5,
+      "managerA": "jwislek_20",
+      "managerB": "cuch",
+      "projectedScoreA": 115.09,
+      "projectedScoreB": 118.5,
+      "predictedWinner": "cuch",
+      "winProbability": 0.5472,
+      "factIds": [
+        "2026:w1:m5:projection:jwislek_20",
+        "2026:w1:m5:projection:cuch",
+        "2026:w1:m5:pick"
+      ]
+    },
+    {
+      "predictionId": "2026-w1-m6",
+      "matchupId": 6,
+      "managerA": "turi70",
+      "managerB": "Siccboi",
+      "projectedScoreA": 117.59,
+      "projectedScoreB": 114.27,
+      "predictedWinner": "turi70",
+      "winProbability": 0.546,
+      "factIds": [
+        "2026:w1:m6:projection:turi70",
+        "2026:w1:m6:projection:Siccboi",
+        "2026:w1:m6:pick"
+      ]
+    }
+  ],
+  "grading": null
+}

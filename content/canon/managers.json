@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "managers": [
+    {"ownerId":"79220990290575360","displayName":"Blumbo","approvedLore":[{"summary":"Won the inaugural Sleeper season in 2019.","factIds":["champion:2019"]}],"active":true},
+    {"ownerId":"87253894098731008","displayName":"turi70","approvedLore":[{"summary":"Finished 2-12 in 2025.","factIds":["record:2025:turi70"]}],"active":true},
+    {"ownerId":"89787120084205568","displayName":"akaaashh","approvedLore":[{"summary":"Won the 2017 Founders Era title.","factIds":["champion:2017"]}],"active":true},
+    {"ownerId":"92288423205158912","displayName":"cuch","approvedLore":[{"summary":"Current league commissioner.","factIds":["role:commissioner"]}],"active":true},
+    {"ownerId":"92391164216754176","displayName":"martinch94","approvedLore":[{"summary":"Three-time champion and reigning 2025 champion.","factIds":["champion:2020","champion:2021","champion:2025"]}],"active":true},
+    {"ownerId":"450705025862201344","displayName":"Archibaldo","approvedLore":[{"summary":"The all-time expected-wins ledger has treated him especially harshly.","factIds":["alltime:luck:Archibaldo"]}],"active":true},
+    {"ownerId":"450707444838952960","displayName":"jwislek_20","approvedLore":[{"summary":"Won the 2024 title and posted the best 2025 regular-season record.","factIds":["champion:2024","record:2025:jwislek_20"]}],"active":true},
+    {"ownerId":"450755017129848832","displayName":"Siccboi","approvedLore":[{"summary":"Won the 2015 Founders Era title.","factIds":["champion:2015"]}],"active":true},
+    {"ownerId":"450905805542125568","displayName":"maco71","approvedLore":[{"summary":"Set the league single-season scoring record in 2025 and remains without a championship.","factIds":["points:2025:maco71","titles:maco71"]}],"active":true},
+    {"ownerId":"450908261617496064","displayName":"pgorny","approvedLore":[{"summary":"Won consecutive championships in 2022 and 2023.","factIds":["champion:2022","champion:2023"]}],"active":true},
+    {"ownerId":"463423832728793088","displayName":"sidjunlee","approvedLore":[{"summary":"Posted an 11-3 regular season in 2022.","factIds":["record:2022:sidjunlee"]}],"active":true},
+    {"ownerId":"464552386170449920","displayName":"vpitello34","approvedLore":[{"summary":"Owns the best active-manager career win percentage and the 2016 title.","factIds":["alltime:winpct:vpitello34","champion:2016"]}],"active":true}
+  ],
+  "defaultBoundaries": {
+    "allowedRoastTopics": ["fantasy results","roster decisions","draft history"],
+    "blockedTopics": ["family","health","work","appearance","private life"]
+  }
+}

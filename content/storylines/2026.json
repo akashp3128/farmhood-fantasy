@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "season": 2026,
+  "storylines": [
+    {
+      "storylineId": "2026-title-defense-martin",
+      "title": "The title defense",
+      "status": "active",
+      "thesis": "martinch94 begins 2026 trying to defend a third championship.",
+      "subjects": ["martinch94"],
+      "supportingFactIds": ["champion:2025", "titles:martinch94"],
+      "counterFactIds": [],
+      "lastUpdatedWeek": 1,
+      "cooldownUntilWeek": 2
+    },
+    {
+      "storylineId": "2026-maco-finish-the-job",
+      "title": "Can the points king finally finish?",
+      "status": "active",
+      "thesis": "maco71 enters 2026 after setting the 2025 scoring record without winning the title.",
+      "subjects": ["maco71"],
+      "supportingFactIds": ["points:2025:maco71", "titles:maco71"],
+      "counterFactIds": [],
+      "lastUpdatedWeek": 1,
+      "cooldownUntilWeek": 2
+    },
+    {
+      "storylineId": "2026-lineup-watch",
+      "title": "The first availability test",
+      "status": "emerging",
+      "thesis": "Week 1 begins with multiple Questionable designations and meaningful pregame lineup changes, making lineup management part of the opening story.",
+      "subjects": ["akaaashh", "jwislek_20", "Siccboi"],
+      "supportingFactIds": ["2026:w1:projection-coverage"],
+      "counterFactIds": [],
+      "lastUpdatedWeek": 1,
+      "cooldownUntilWeek": 2
+    }
+  ]
+}
