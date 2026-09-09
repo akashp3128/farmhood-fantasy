@@ -38,6 +38,7 @@ const PAGES = [
   ['trades.html','Trades','trades'],
   ['fun.html','Fun Stats','fun'],
   ['matchups.html','Matchups','matchups'],
+  ['payouts.html','Payouts','payouts'],
 ];
 
 function mountChrome(active){
@@ -195,21 +196,12 @@ function renderHome(){
   right.appendChild(cf);
 
   const pot=L.pot||{total:3000,buyIn:250,teams:L.managers.length};
-  const ledger=el('div','ledger');
-  const shut=`<div class="lg-tag">The League Meme, Immortalized</div>
-     <div class="lg-quote">“I pay when he pays.”</div>
-     <div class="lg-sub">— everyone, to Ian, 2015 · Click to open the 2026 ledger →</div>`;
-  const open=`<div class="lg-tag">The 2026 Ledger</div>
-     <div class="lg-row"><span class="lg-amt">$${pot.total.toLocaleString()} <span class="lg-of">pot</span></span></div>
-     <div class="lg-note">Buy-in $${pot.buyIn} · ${pot.teams} managers.</div>`;
-  ledger.innerHTML=shut;
-  let lgOpen=false;
-  clickable(ledger,()=>{
-    lgOpen=!lgOpen;
-    ledger.innerHTML=lgOpen?open:shut;
-    ledger.setAttribute('aria-expanded',String(lgOpen));
-  },'Toggle the 2026 ledger');
-  ledger.setAttribute('aria-expanded','false');
+  const ledger=el('a','ledger payout-home-card');ledger.href='payouts.html';
+  ledger.innerHTML=`<div class="lg-tag">The 2026 Payout Center</div>
+     <div class="lg-row"><span class="lg-amt">$${pot.total.toLocaleString()} <span class="lg-of">pot</span></span><span class="lg-count">$${pot.buyIn} × ${pot.teams}</span></div>
+     <div class="lg-note">Weekly prizes · rivalry money · championship purse</div>
+     <div class="lg-sub">“I pay when he pays.” · Open the verified ledger →</div>`;
+  if(window.FarmhoodPayouts)window.FarmhoodPayouts.mountHomeSummary(ledger);
   right.appendChild(ledger);
   grid.appendChild(right);
   app.appendChild(grid);
@@ -239,6 +231,7 @@ function renderHome(){
    ['history.html','History','Champion by champion, 2014 to today.'],
    ['fun.html','Fun Stats','Luck index, blowouts, manager of the week.'],
    ['matchups.html','Matchups','Live 2026 scores, schedule and official standings.'],
+   ['payouts.html','2026 Payouts','$3,000 allocated across weekly prizes, rivalries and the championship purse.'],
    ['draft.html','2026 Draft Order','The order is set — see who picks where before kickoff.']
   ].forEach(([h,ti,d])=>{
     const c=el('a','card hover explore-card',`<h3>${ti}<span class="card-arrow">→</span></h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
@@ -280,7 +273,7 @@ function mountHomeLive(node){
       });
       node.appendChild(grid);
       const actions=el('div','live-actions');
-      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['power-rankings.html','View live power rankings']].forEach(([href,label])=>{
+      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['power-rankings.html','View live power rankings'],['payouts.html','View weekly payouts']].forEach(([href,label])=>{
         const a=el('a','live-link',label+' →');a.href=href;actions.appendChild(a);
       });
       node.appendChild(actions);hasRendered=true;
@@ -845,19 +838,20 @@ function renderMatchups(){
 }
 
 function mountLiveMatchups(node,archive){
-  let request=0,selectedWeek=null,hasRendered=false;
+  const requestedWeek=typeof location!=='undefined'&&/^#week-(\d{1,2})$/.test(location.hash)?Number(location.hash.slice(6)):null;
+  let request=0,selectedWeek=requestedWeek,hasRendered=false;
   const openMatchups=new Set();
   const update=async force=>{
     const token=++request;
     if(hasRendered)node.setAttribute('aria-busy','true');
     try{
       const snapshot=await window.FarmhoodLive.load({force:!!force});
-      if(selectedWeek==null||selectedWeek>snapshot.currentWeek)selectedWeek=snapshot.currentWeek;
+      if(selectedWeek==null||selectedWeek<1||selectedWeek>snapshot.regularSeasonWeeks)selectedWeek=snapshot.currentWeek;
       const rows=selectedWeek===snapshot.currentWeek?snapshot.matchups:await window.FarmhoodLive.loadWeek(selectedWeek);
       const players=await window.FarmhoodLive.loadPlayers(snapshot,selectedWeek);
       if(token!==request)return;
       renderLiveMatchups(node,snapshot,selectedWeek,rows,players,openMatchups,
-        week=>{selectedWeek=week;update(false);},()=>update(true));
+        week=>{selectedWeek=week;if(typeof history!=='undefined')history.replaceState(null,'',`#week-${week}`);update(false);},()=>update(true));
       node.setAttribute('aria-busy','false');
       hasRendered=true;
     }catch(_err){
@@ -878,12 +872,12 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   node.innerHTML='';node.appendChild(liveStatusBar(snapshot,onRefresh));
   const phase=window.FarmhoodLive.phase(snapshot),scored=window.FarmhoodLive.hasScoring(rows);
   const weekState=selectedWeek<snapshot.currentWeek?(scored?'Final':'No scores'):
-    phase.key==='live'?'Live':phase.key==='final'?'Final':'Scheduled';
+    selectedWeek>snapshot.currentWeek?'Scheduled':phase.key==='live'?'Live':phase.key==='final'?'Final':'Scheduled';
   const title=el('h2','h');
   title.innerHTML=`<span class="bar"></span>Week ${selectedWeek} Scoreboard <span class="badge ${weekState==='Live'?'gold':'muted'}">${weekState}</span>`;
   node.appendChild(title);
   const selector=el('div','weeksel');
-  Array.from({length:Math.max(1,snapshot.currentWeek)},(_,index)=>index+1).forEach(week=>{
+  Array.from({length:snapshot.regularSeasonWeeks},(_,index)=>index+1).forEach(week=>{
     const button=el('button',week===selectedWeek?'on':'',String(week));button.type='button';
     button.setAttribute('aria-label',`Show 2026 Week ${week}`);button.setAttribute('aria-pressed',String(week===selectedWeek));
     button.addEventListener('click',()=>onSelect(week));selector.appendChild(button);
@@ -894,8 +888,10 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
     ? 'Live scoring is connected. Player projections are temporarily unavailable.'
     : `League-scoring projections ${playerFeed.stale?'from the last available feed':'refreshed '+liveTime(playerFeed.fetchedAt)} · starter scores refresh every minute`;
   node.appendChild(feedNote);
+  const payoutMount=el('div','payout-matchup-context');node.appendChild(payoutMount);
   const board=el('div','live-board');node.appendChild(board);
   drawLiveWeek(selectedWeek,rows,snapshot,board,weekState,playerFeed,openMatchups);
+  if(window.FarmhoodPayouts)window.FarmhoodPayouts.mountMatchupContext(payoutMount,board,selectedWeek);
   if(focusedKey){
     const match=[...board.querySelectorAll('.matchup-detail')].find(item=>item.dataset.matchupKey===focusedKey);
     const summary=match&&match.querySelector('summary');if(summary)summary.focus({preventScroll:true});
@@ -941,6 +937,7 @@ function drawLiveWeek(week,rows,snapshot,board,weekState,playerFeed,openMatchups
     });
     const aProjection=projected[0]==null?'–':projected[0].toFixed(1),bProjection=projected[1]==null?'–':projected[1].toFixed(1);
     const key=week+':'+group.id,details=el('details','matchup-detail');details.dataset.matchupKey=key;
+    details.dataset.managerA=a.name;details.dataset.managerB=b.name;
     details.open=openMatchups.has(key);
     const row=el('summary','mw matchup-summary');
     row.innerHTML=
@@ -982,6 +979,7 @@ function renderLineupPanel(group,snapshot,playerFeed,lineups){
 
 function renderDuelPlayer(player,direction){
   const card=el('div','duel-player '+direction+(player.id==='0'?' empty':''));
+  card.dataset.playerId=player.id||'0';
   const photo=el('span','player-photo'),fallback=el('span','player-photo-fallback');
   fallback.textContent=(player.position||player.slot||'—').slice(0,4);photo.appendChild(fallback);
   if(player.image){
@@ -1140,7 +1138,9 @@ function renderMoneyBoard(app){
          <b class="mono" style="color:#2E7D4F;min-width:58px;display:inline-block">$${v.toLocaleString()}</b></div></td>`));
   });
   t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
-  app.appendChild(el('div','note','4-season payout totals. Pat (pgorny) leads the league\'s all-time bankroll.')).style.marginTop='14px';
+  const note=el('div','note','4-season payout totals. Pat (pgorny) leads the league\'s all-time bankroll. ');
+  const current=document.createElement('a');current.href='payouts.html';current.textContent='Open the separate 2026 payout ledger →';current.style.fontWeight='800';
+  note.appendChild(current);app.appendChild(note).style.marginTop='14px';
 }
 function renderManagers(){
   const app=$('#app');

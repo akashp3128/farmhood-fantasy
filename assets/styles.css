@@ -138,7 +138,7 @@ h2.h .bar{display:none}
 .cf-quote{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--muted);margin-top:12px;
   border-top:1px dotted rgba(23,59,39,.35);padding-top:10px}
 
-/* ledger (click to toggle) */
+/* home payout ledger link */
 .ledger{background:var(--text);color:var(--bg2);padding:18px 20px;cursor:pointer;transition:.15s}
 .ledger:hover{background:#1E5A38}
 .lg-tag{font-size:11px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase;color:var(--gold-hi)}
@@ -550,6 +550,77 @@ h2.h .bar{display:none}
 .win-right{text-align:right}
 .win-amt{display:block;font-family:var(--serif);font-size:24px;font-weight:700;color:var(--blue);letter-spacing:0;font-variant-numeric:tabular-nums;line-height:1}
 .win-rank{display:block;font-size:11px;color:var(--muted-2);margin-top:4px}
+
+/* ---- 2026 payout center ---- */
+.payout-home-card{display:block}.payout-home-card:focus-visible{outline-color:var(--gold-hi)}
+.payout-center{margin-top:24px}
+.payout-update-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);
+  border-left:4px solid var(--blue);padding:11px 14px;font-size:11px;color:var(--muted-2)}
+.payout-update-status strong{color:var(--text);text-transform:uppercase;letter-spacing:1px;font-size:10px;margin-right:4px}
+.payout-update-status time{font-family:var(--serif);font-style:italic}.payout-live-dot{width:8px;height:8px;border-radius:50%;background:var(--win);box-shadow:0 0 0 4px rgba(43,118,74,.14)}
+.payout-refresh{margin-left:auto;color:var(--blue);font-weight:800;border-bottom:1px solid transparent}.payout-refresh:hover{border-color:var(--blue)}
+.payout-review-note{margin-top:12px;border-left-color:var(--loss)}
+.payout-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:2px solid var(--text);margin-top:18px;background:var(--surface)}
+.payout-summary-stat{display:flex;flex-direction:column;gap:4px;padding:21px 18px;text-align:center;border-right:1px dotted rgba(23,59,39,.35)}
+.payout-summary-stat:last-child{border-right:0}.payout-summary-value{font-family:var(--serif);font-size:29px;color:var(--gold-2);line-height:1.05}
+.payout-summary-label{font-size:9px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase}.payout-summary-stat small{font-size:10px;color:var(--muted-2)}
+.payout-allocation-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.payout-allocation-card{background:var(--surface);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:3px}
+.payout-allocation-card>span{font-size:9px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--blue-2)}
+.payout-allocation-card strong{font-family:var(--serif);font-size:23px;color:var(--text)}.payout-allocation-card small{font-size:10px;color:var(--muted-2)}
+.payout-prize-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.payout-season-prize{background:var(--surface);border:1px solid var(--line);padding:18px;min-height:160px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.payout-season-prize:first-child{border:2px solid var(--gold-solid);background:linear-gradient(180deg,var(--gold-dim),var(--surface))}
+.payout-prize-head{width:100%;display:flex;flex-direction:column;gap:3px}.payout-prize-head>span{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;font-weight:800;color:var(--muted-2)}
+.payout-amount{font-family:var(--serif);font-size:29px;color:var(--gold-2)}.payout-prize-note{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--muted-2);margin-top:auto}
+.payout-prize-winners{display:flex;flex-direction:column;gap:8px}.payout-status{display:inline-flex;width:max-content;border:1px solid var(--line);padding:3px 7px;
+  font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.payout-prize-shares{font-size:9px;color:var(--blue);font-weight:800}
+.payout-status.final{color:var(--surface);background:var(--blue);border-color:var(--blue)}.payout-status.provisional{color:#6F5416;background:var(--gold-dim);border-color:rgba(184,145,46,.5)}
+.payout-status.needs_review{color:var(--loss);border-color:rgba(160,67,46,.45);background:rgba(160,67,46,.07)}
+.payout-next-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.payout-next-card{display:flex;flex-direction:column;gap:2px;padding:16px 20px;border-right:1px solid var(--line-2)}.payout-next-card:last-child{border-right:0}
+.payout-next-card>span{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:800;color:var(--blue-2)}.payout-next-card strong{font-family:var(--serif);font-size:21px}
+.payout-next-card small{font-size:10px;color:var(--muted-2)}
+.payout-avatar{display:inline-grid;place-items:center;position:relative;border-radius:50%;overflow:hidden;background:var(--bg2);border:1px solid var(--line);flex:0 0 auto}
+.payout-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.payout-avatar-fallback{font-family:var(--serif);font-weight:700;color:var(--blue)}
+.payout-manager{display:inline-flex;align-items:center;gap:8px;min-width:0}.payout-manager-copy{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.payout-manager-copy strong{font-family:var(--serif);font-size:13px}.payout-manager-copy small{font-size:9px;color:var(--muted-2)}
+.payout-ledger-table{min-width:960px}.payout-ledger-table th,.payout-ledger-table td{vertical-align:top}.payout-week-number{font-family:var(--serif);white-space:nowrap}
+.payout-ledger-table tbody th{padding:12px 14px;border-bottom:1px dotted rgba(23,59,39,.35);color:var(--text);font-size:13px;letter-spacing:0;text-transform:none;font-weight:700}
+.payout-ledger-table tbody tr:last-child th{border-bottom:none}
+.payout-ledger-table td:nth-child(2){width:76px}.payout-ledger-table td:nth-child(3),.payout-ledger-table td:nth-child(4){min-width:210px}.payout-ledger-table td:nth-child(5){min-width:185px}
+.payout-award-cell{display:flex;flex-direction:column;gap:3px;min-height:38px}.payout-award-cell strong{font-family:var(--serif);font-size:12px}.payout-award-cell small{display:block;font-size:9px;color:var(--muted-2)}
+.payout-award-cell .payout-share{color:var(--blue);font-weight:800}.payout-awaiting{color:var(--muted-2);font-style:italic;font-weight:400!important}.payout-dash{color:var(--muted-2)}
+.payout-position-label{display:inline-flex;padding:2px 6px;margin-bottom:6px;border:1px solid rgba(184,145,46,.45);background:var(--gold-dim);color:#6F5416;font-size:8px;font-weight:800;letter-spacing:1px}
+.payout-player-line{display:flex;align-items:center;gap:7px}.payout-player-line>span:last-child{display:flex;flex-direction:column;line-height:1.15}
+.payout-player-photo{width:32px;height:32px;border-radius:50%;overflow:hidden;position:relative;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line);font-size:7px;font-weight:800}
+.payout-player-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--bg2)}
+.payout-cash-table{min-width:720px}.payout-total{color:var(--blue);font-weight:800;font-family:var(--serif)}
+.payout-rivalry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.payout-rivalry-card{display:flex;flex-direction:column;gap:3px;background:var(--surface);border:1px solid var(--line);padding:15px;transition:.15s}
+.payout-rivalry-card:hover{border-color:var(--gold-solid);transform:translateY(-1px)}.payout-rivalry-card strong{font-family:var(--serif);font-size:16px}.payout-rivalry-card small{font-size:10px;color:var(--muted-2)}
+.payout-rivalry-week{font-size:8px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--gold-2)}.payout-rivalry-card .payout-status{margin-top:7px}
+.payout-rules{margin-top:28px;border-top:3px double var(--blue);padding-top:12px}.payout-rules summary{cursor:pointer;font-family:var(--serif);font-size:17px;font-weight:700;padding:8px 0}
+.payout-rules ul{padding:8px 0 0 22px;color:var(--muted);font-size:12px}.payout-rules li{margin-bottom:8px}
+.payout-retry{margin-top:10px}
+.payout-matchup-context{margin:0 0 14px}.payout-context-loading{font-family:var(--serif);font-style:italic;font-size:10px;color:var(--muted-2)}
+.payout-week-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);background:var(--surface)}
+.payout-week-strip>span{display:flex;flex-direction:column;gap:2px;padding:10px 13px;border-right:1px dotted rgba(23,59,39,.3);min-width:0}.payout-week-strip>span:last-child{border-right:0}
+.payout-week-strip small{font-size:7px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--gold-2)}.payout-week-strip strong{font-family:var(--serif);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.payout-rivalry-matchup .matchup-summary{border:2px solid var(--gold-solid);background:var(--gold-dim)}.payout-rivalry-chip{font-style:normal;font-size:7px;letter-spacing:.7px;color:#6F5416;background:var(--gold-dim);border:1px solid rgba(184,145,46,.5);padding:2px 4px;margin-top:3px;white-space:nowrap}
+.payout-position-winner{position:relative;background:rgba(184,145,46,.08);outline:1px solid rgba(184,145,46,.45);outline-offset:2px}.payout-player-win-chip{position:absolute;right:2px;bottom:-7px;z-index:2;background:var(--gold-solid);color:var(--surface);font-size:6px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:1px 4px;white-space:nowrap}
+
+@media(max-width:800px){
+  .payout-summary-grid,.payout-allocation-grid,.payout-prize-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .payout-summary-stat:nth-child(2){border-right:0}.payout-summary-stat:nth-child(-n+2){border-bottom:1px dotted rgba(23,59,39,.35)}
+  .payout-rivalry-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .payout-summary-grid,.payout-allocation-grid,.payout-prize-grid,.payout-next-grid,.payout-rivalry-grid,.payout-week-strip{grid-template-columns:1fr}
+  .payout-summary-stat{border-right:0;border-bottom:1px dotted rgba(23,59,39,.35)}.payout-summary-stat:last-child{border-bottom:0}
+  .payout-next-card,.payout-week-strip>span{border-right:0;border-bottom:1px dotted rgba(23,59,39,.3)}.payout-next-card:last-child,.payout-week-strip>span:last-child{border-bottom:0}
+  .payout-update-status{align-items:flex-start}.payout-refresh{margin-left:0;width:100%}
+}
 
 /* profile modal */
 .modal-ov{position:fixed;inset:0;background:rgba(23,59,39,.45);backdrop-filter:blur(3px);

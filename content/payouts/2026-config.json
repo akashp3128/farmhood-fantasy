@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "season": 2026,
+  "leagueId": "1377086848295260160",
+  "currency": "USD",
+  "timezone": "America/Chicago",
+  "regularSeasonWeeks": 14,
+  "pot": {
+    "buyIn": 250,
+    "teams": 12,
+    "total": 3000
+  },
+  "seasonPrizes": {
+    "firstPlace": 1690,
+    "secondPlace": 250,
+    "thirdPlace": 100,
+    "regularSeasonPointsLeader": 100
+  },
+  "weeklyPrizes": {
+    "highestScore": 30,
+    "positionLeader": 10
+  },
+  "rivalryPrize": 50,
+  "positionSchedule": {
+    "1": "RB",
+    "2": "WR",
+    "3": "DEF",
+    "4": "QB",
+    "5": "RB",
+    "6": "TE",
+    "7": "WR",
+    "8": "K",
+    "9": "DEF",
+    "10": "FLEX",
+    "11": "QB",
+    "12": "RB",
+    "13": "FLEX",
+    "14": "QB"
+  },
+  "managers": [
+    { "ownerId": "79220990290575360", "rosterId": 1, "manager": "Blumbo", "firstName": "Albert" },
+    { "ownerId": "87253894098731008", "rosterId": 7, "manager": "turi70", "firstName": "Sal" },
+    { "ownerId": "89787120084205568", "rosterId": 2, "manager": "akaaashh", "firstName": "Akash" },
+    { "ownerId": "92288423205158912", "rosterId": 5, "manager": "cuch", "firstName": "Dom" },
+    { "ownerId": "92391164216754176", "rosterId": 6, "manager": "martinch94", "firstName": "Martin" },
+    { "ownerId": "450705025862201344", "rosterId": 3, "manager": "Archibaldo", "firstName": "Sasha" },
+    { "ownerId": "450707444838952960", "rosterId": 4, "manager": "jwislek_20", "firstName": "Jimmy" },
+    { "ownerId": "450755017129848832", "rosterId": 8, "manager": "Siccboi", "firstName": "Ian" },
+    { "ownerId": "450905805542125568", "rosterId": 9, "manager": "maco71", "firstName": "Marco" },
+    { "ownerId": "450908261617496064", "rosterId": 10, "manager": "pgorny", "firstName": "Pat" },
+    { "ownerId": "463423832728793088", "rosterId": 11, "manager": "sidjunlee", "firstName": "Sid" },
+    { "ownerId": "464552386170449920", "rosterId": 12, "manager": "vpitello34", "firstName": "Vince" }
+  ],
+  "rivalries": [
+    { "id": "ian-sal", "week": 1, "matchupId": 6, "managerA": "Siccboi", "managerB": "turi70", "labelA": "Ian", "labelB": "Sal" },
+    { "id": "sasha-sid", "week": 2, "matchupId": 3, "managerA": "Archibaldo", "managerB": "sidjunlee", "labelA": "Sasha", "labelB": "Sid" },
+    { "id": "akash-vince", "week": 4, "matchupId": 6, "managerA": "akaaashh", "managerB": "vpitello34", "labelA": "Akash", "labelB": "Vince" },
+    { "id": "jimmy-marco", "week": 5, "matchupId": 1, "managerA": "jwislek_20", "managerB": "maco71", "labelA": "Jimmy", "labelB": "Marco" },
+    { "id": "albert-pat", "week": 8, "matchupId": 6, "managerA": "Blumbo", "managerB": "pgorny", "labelA": "Albert", "labelB": "Pat" },
+    { "id": "martin-dom", "week": 10, "matchupId": 3, "managerA": "martinch94", "managerB": "cuch", "labelA": "Martin", "labelB": "Dom" }
+  ],
+  "rules": {
+    "weeklyPositionEligibility": "Starting players only. QB, RB, WR, TE, K and DEF awards follow the player's listed position. FLEX awards follow the occupied starting FLEX slot.",
+    "ties": "Exact ties split that prize evenly among the tied owners.",
+    "finalization": "Weekly awards become official only after the week is complete and the Tuesday reconciliation runs.",
+    "corrections": "Each run rebuilds every completed week, so later official Sleeper stat corrections flow into the ledger."
+  }
+}

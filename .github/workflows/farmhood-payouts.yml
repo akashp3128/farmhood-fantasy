@@ -1,0 +1,113 @@
+name: Farmhood payouts
+
+on:
+  schedule:
+    - cron: "0 9 * 1,9-12 2"
+      timezone: "America/Chicago"
+    - cron: "17 10 * 1,9-12 2"
+      timezone: "America/Chicago"
+  workflow_dispatch:
+    inputs:
+      force_pages_rebuild:
+        description: Rebuild the public site even when the ledger is already current
+        required: true
+        default: false
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: farmhood-payout-reconciliation
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pages: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out the ledger
+        uses: actions/checkout@v5
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Reconcile finalized Sleeper results
+        id: reconcile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          args=()
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            args+=(--scheduled)
+          fi
+          node scripts/payouts/update.mjs "${args[@]}"
+
+      - name: Validate every payout dollar
+        run: |
+          node scripts/payouts/test.mjs
+          node scripts/payouts/validate.mjs
+
+      - name: Commit an updated ledger
+        id: commit
+        if: steps.reconcile.outputs.changed == 'true'
+        run: |
+          git config user.name "farmhood-payouts[bot]"
+          git config user.email "farmhood-payouts[bot]@users.noreply.github.com"
+          git add content/payouts/2026.json
+          git diff --cached --check
+          git commit -m "Update 2026 payout ledger"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "- Ledger commit: $(git rev-parse --short HEAD)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ensure the public site has the current ledger
+        env:
+          FORCE_REBUILD: ${{ inputs.force_pages_rebuild || 'false' }}
+        run: |
+          required_sha=$(git rev-parse HEAD)
+          git fetch --quiet origin main
+          target_sha=$(git rev-parse origin/main)
+          if ! git merge-base --is-ancestor "$required_sha" "$target_sha"; then
+            echo "Remote main no longer contains the reconciled payout commit."
+            exit 1
+          fi
+          latest=$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest" 2>/dev/null || true)
+          latest_sha=$(jq -r '.commit // ""' <<< "$latest")
+          latest_status=$(jq -r '.status // "missing"' <<< "$latest")
+
+          if [ "$FORCE_REBUILD" = "true" ] || [ "$latest_sha" != "$target_sha" ] || [ "$latest_status" = "errored" ] || [ "$latest_status" = "missing" ]; then
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" >/dev/null
+            echo "- Pages build: requested for ${target_sha:0:7}" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$latest_status" = "built" ]; then
+            echo "- Pages build: already live at ${target_sha:0:7}" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          for attempt in {1..30}; do
+            latest=$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest")
+            latest_sha=$(jq -r '.commit // ""' <<< "$latest")
+            latest_status=$(jq -r '.status // "missing"' <<< "$latest")
+            git fetch --quiet origin main
+            if git cat-file -e "${latest_sha}^{commit}" 2>/dev/null && git merge-base --is-ancestor "$required_sha" "$latest_sha" && [ "$latest_status" = "built" ]; then
+              echo "- Pages build: verified live at ${latest_sha:0:7}" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [ "$latest_sha" = "$(git rev-parse origin/main)" ] && [ "$latest_status" = "errored" ]; then
+              echo "The Pages build failed for $latest_sha."
+              exit 1
+            fi
+            sleep 4
+          done
+          echo "Timed out waiting for Pages to publish $target_sha."
+          exit 1

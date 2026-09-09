@@ -1,0 +1,673 @@
+{
+  "schemaVersion": 1,
+  "season": 2026,
+  "leagueId": "1377086848295260160",
+  "currency": "USD",
+  "status": {
+    "currentWeek": 1,
+    "completedThroughWeek": 0,
+    "season": "pending",
+    "nextRun": "Tuesday at 9:00 AM America/Chicago"
+  },
+  "accounting": {
+    "totalCents": 300000,
+    "seasonPoolCents": 214000,
+    "weeklyHighPoolCents": 42000,
+    "positionPoolCents": 14000,
+    "rivalryPoolCents": 30000,
+    "awardedCents": 0,
+    "reservedCents": 300000
+  },
+  "rules": {
+    "weeklyPositionEligibility": "Starting players only. QB, RB, WR, TE, K and DEF awards follow the player's listed position. FLEX awards follow the occupied starting FLEX slot.",
+    "ties": "Exact ties split that prize evenly among the tied owners.",
+    "finalization": "Weekly awards become official only after the week is complete and the Tuesday reconciliation runs.",
+    "corrections": "Each run rebuilds every completed week, so later official Sleeper stat corrections flow into the ledger."
+  },
+  "seasonPrizes": {
+    "status": "pending",
+    "prizes": [
+      {
+        "key": "firstPlace",
+        "label": "First Place",
+        "status": "pending",
+        "awardCents": 169000,
+        "leaders": [],
+        "allocations": []
+      },
+      {
+        "key": "secondPlace",
+        "label": "Second Place",
+        "status": "pending",
+        "awardCents": 25000,
+        "leaders": [],
+        "allocations": []
+      },
+      {
+        "key": "thirdPlace",
+        "label": "Third Place",
+        "status": "pending",
+        "awardCents": 10000,
+        "leaders": [],
+        "allocations": []
+      },
+      {
+        "key": "regularSeasonPointsLeader",
+        "label": "Regular-Season Points Champion",
+        "status": "pending",
+        "awardCents": 10000,
+        "leaders": [],
+        "allocations": []
+      }
+    ]
+  },
+  "weekly": [
+    {
+      "week": 1,
+      "status": "pending",
+      "position": "RB",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "RB",
+        "players": []
+      },
+      "rivalry": {
+        "id": "ian-sal",
+        "week": 1,
+        "matchupId": 6,
+        "status": "pending",
+        "awardCents": 5000,
+        "participants": [
+          {
+            "ownerId": "450755017129848832",
+            "rosterId": 8,
+            "manager": "Siccboi",
+            "firstName": "Ian"
+          },
+          {
+            "ownerId": "87253894098731008",
+            "rosterId": 7,
+            "manager": "turi70",
+            "firstName": "Sal"
+          }
+        ],
+        "scores": [],
+        "leaders": [],
+        "allocations": []
+      },
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 2,
+      "status": "pending",
+      "position": "WR",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "WR",
+        "players": []
+      },
+      "rivalry": {
+        "id": "sasha-sid",
+        "week": 2,
+        "matchupId": 3,
+        "status": "pending",
+        "awardCents": 5000,
+        "participants": [
+          {
+            "ownerId": "450705025862201344",
+            "rosterId": 3,
+            "manager": "Archibaldo",
+            "firstName": "Sasha"
+          },
+          {
+            "ownerId": "463423832728793088",
+            "rosterId": 11,
+            "manager": "sidjunlee",
+            "firstName": "Sid"
+          }
+        ],
+        "scores": [],
+        "leaders": [],
+        "allocations": []
+      },
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 3,
+      "status": "pending",
+      "position": "DEF",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "DEF",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 4,
+      "status": "pending",
+      "position": "QB",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "QB",
+        "players": []
+      },
+      "rivalry": {
+        "id": "akash-vince",
+        "week": 4,
+        "matchupId": 6,
+        "status": "pending",
+        "awardCents": 5000,
+        "participants": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash"
+          },
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince"
+          }
+        ],
+        "scores": [],
+        "leaders": [],
+        "allocations": []
+      },
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 5,
+      "status": "pending",
+      "position": "RB",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "RB",
+        "players": []
+      },
+      "rivalry": {
+        "id": "jimmy-marco",
+        "week": 5,
+        "matchupId": 1,
+        "status": "pending",
+        "awardCents": 5000,
+        "participants": [
+          {
+            "ownerId": "450707444838952960",
+            "rosterId": 4,
+            "manager": "jwislek_20",
+            "firstName": "Jimmy"
+          },
+          {
+            "ownerId": "450905805542125568",
+            "rosterId": 9,
+            "manager": "maco71",
+            "firstName": "Marco"
+          }
+        ],
+        "scores": [],
+        "leaders": [],
+        "allocations": []
+      },
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 6,
+      "status": "pending",
+      "position": "TE",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "TE",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 7,
+      "status": "pending",
+      "position": "WR",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "WR",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 8,
+      "status": "pending",
+      "position": "K",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "K",
+        "players": []
+      },
+      "rivalry": {
+        "id": "albert-pat",
+        "week": 8,
+        "matchupId": 6,
+        "status": "pending",
+        "awardCents": 5000,
+        "participants": [
+          {
+            "ownerId": "79220990290575360",
+            "rosterId": 1,
+            "manager": "Blumbo",
+            "firstName": "Albert"
+          },
+          {
+            "ownerId": "450908261617496064",
+            "rosterId": 10,
+            "manager": "pgorny",
+            "firstName": "Pat"
+          }
+        ],
+        "scores": [],
+        "leaders": [],
+        "allocations": []
+      },
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 9,
+      "status": "pending",
+      "position": "DEF",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "DEF",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 10,
+      "status": "pending",
+      "position": "FLEX",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "FLEX",
+        "players": []
+      },
+      "rivalry": {
+        "id": "martin-dom",
+        "week": 10,
+        "matchupId": 3,
+        "status": "pending",
+        "awardCents": 5000,
+        "participants": [
+          {
+            "ownerId": "92391164216754176",
+            "rosterId": 6,
+            "manager": "martinch94",
+            "firstName": "Martin"
+          },
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom"
+          }
+        ],
+        "scores": [],
+        "leaders": [],
+        "allocations": []
+      },
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 11,
+      "status": "pending",
+      "position": "QB",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "QB",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 12,
+      "status": "pending",
+      "position": "RB",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "RB",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 13,
+      "status": "pending",
+      "position": "FLEX",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "FLEX",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    },
+    {
+      "week": 14,
+      "status": "pending",
+      "position": "QB",
+      "highScore": {
+        "status": "pending",
+        "awardCents": 3000,
+        "leaders": [],
+        "allocations": []
+      },
+      "positionPrize": {
+        "status": "pending",
+        "awardCents": 1000,
+        "leaders": [],
+        "allocations": [],
+        "position": "QB",
+        "players": []
+      },
+      "rivalry": null,
+      "finalizedAt": null,
+      "correctedAt": null,
+      "sourceDigest": null
+    }
+  ],
+  "managerTotals": [
+    {
+      "ownerId": "89787120084205568",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "firstName": "Akash",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "450705025862201344",
+      "rosterId": 3,
+      "manager": "Archibaldo",
+      "firstName": "Sasha",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "79220990290575360",
+      "rosterId": 1,
+      "manager": "Blumbo",
+      "firstName": "Albert",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "92288423205158912",
+      "rosterId": 5,
+      "manager": "cuch",
+      "firstName": "Dom",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "450707444838952960",
+      "rosterId": 4,
+      "manager": "jwislek_20",
+      "firstName": "Jimmy",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "450905805542125568",
+      "rosterId": 9,
+      "manager": "maco71",
+      "firstName": "Marco",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "92391164216754176",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "firstName": "Martin",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "450908261617496064",
+      "rosterId": 10,
+      "manager": "pgorny",
+      "firstName": "Pat",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "450755017129848832",
+      "rosterId": 8,
+      "manager": "Siccboi",
+      "firstName": "Ian",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "463423832728793088",
+      "rosterId": 11,
+      "manager": "sidjunlee",
+      "firstName": "Sid",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "87253894098731008",
+      "rosterId": 7,
+      "manager": "turi70",
+      "firstName": "Sal",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    },
+    {
+      "ownerId": "464552386170449920",
+      "rosterId": 12,
+      "manager": "vpitello34",
+      "firstName": "Vince",
+      "weeklyHighCents": 0,
+      "positionCents": 0,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 0
+    }
+  ],
+  "audit": {
+    "status": "passed",
+    "flags": []
+  },
+  "source": {
+    "provider": "Sleeper",
+    "leagueId": "1377086848295260160",
+    "completedThroughWeek": 0,
+    "teamScorePolicy": "custom_points when present, otherwise points",
+    "playerScorePolicy": "players_points cross-checked against starters_points"
+  },
+  "revision": "863caba77eae549928002f8738c6e58ef2b73ab358c23da3bd98dcb908d4a1f1",
+  "updatedAt": "2026-09-09T05:46:41.367Z"
+}
