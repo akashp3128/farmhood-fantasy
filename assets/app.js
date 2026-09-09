@@ -112,6 +112,8 @@ function mobileNavigation(active){
 }
 
 function mountChrome(active){
+  document.body.classList.add(`page-${active}`);
+  const main=document.getElementById('app');if(main)main.setAttribute('tabindex','-1');
   // favicon (SVG logo), injected once
   if(document.head && typeof document.createElement==='function'){
     const l=document.createElement('link');l.rel='icon';l.type='image/jpeg';l.href='assets/logo.jpg';document.head.appendChild(l);
@@ -131,6 +133,7 @@ function mountChrome(active){
   const links=desktopNavigation(active);
   inner.appendChild(links); nav.appendChild(inner);
   document.body.prepend(nav);
+  const skip=el('a','skip-link','Skip to main content');skip.href='#app';document.body.prepend(skip);
 
   const foot = el('footer','',
     `<div>Farmhood Fantasy · Founded 2014 · Data from the Sleeper API</div>
@@ -139,6 +142,15 @@ function mountChrome(active){
   const mobile=mobileNavigation(active);document.body.append(mobile.dialog,mobile.nav);
   easterEgg();
   /* chat assistant removed — Almanac redesign */
+}
+
+function clarityDisclosure(title,description,content,options){
+  const settings=options||{},details=el('details','clarity-disclosure'+(settings.className?' '+settings.className:''));
+  if(settings.open)details.open=true;
+  const summary=el('summary',''),copy=el('span','clarity-disclosure-copy'),label=el('strong','',title);copy.appendChild(label);
+  if(description)copy.appendChild(el('span','',description));summary.appendChild(copy);details.appendChild(summary);
+  const body=el('div','clarity-disclosure-body');
+  (Array.isArray(content)?content:[content]).filter(Boolean).forEach(node=>body.appendChild(node));details.appendChild(body);return details;
 }
 
 function medalRank(i){
@@ -159,6 +171,16 @@ function liveDate(value){
 function recordLabel(row){
   return `${row.wins}-${row.losses}${row.ties?'-'+row.ties:''}`;
 }
+function liveFocusKey(root){
+  const active=document.activeElement;
+  const focused=active&&root&&root.contains(active)&&active.dataset?active.dataset.liveFocusKey||'':'';
+  return focused||(root&&root.dataset&&root.dataset.restoreLiveFocus)||'';
+}
+function restoreLiveFocus(root,key){
+  if(!root||!key)return;
+  const target=[...root.querySelectorAll('[data-live-focus-key]')].find(item=>item.dataset.liveFocusKey===key);
+  if(target&&!target.disabled){target.focus({preventScroll:true});delete root.dataset.restoreLiveFocus;}
+}
 function liveStatusBar(snapshot,onRefresh){
   const state=window.FarmhoodLive.phase(snapshot), bar=el('div','live-status '+state.key+(snapshot.stale?' cache':''));
   const main=el('div','live-status-main');
@@ -170,7 +192,8 @@ function liveStatusBar(snapshot,onRefresh){
   main.appendChild(detail);bar.appendChild(main);
   if(onRefresh){
     const button=el('button','live-refresh','Refresh');button.type='button';
-    button.addEventListener('click',async()=>{button.disabled=true;button.textContent='Refreshing…';
+    button.dataset.liveFocusKey='refresh';
+    button.addEventListener('click',async()=>{const host=button.closest('.live-home,.live-power,.live-matchups');if(host)host.dataset.restoreLiveFocus='refresh';button.disabled=true;button.textContent='Refreshing…';
       try{await onRefresh();}finally{if(button.isConnected){button.disabled=false;button.textContent='Refresh';}}
     });
     bar.appendChild(button);
@@ -227,7 +250,6 @@ function renderHome(){
     s.innerHTML=`<div class="k">${k}</div><div class="l">${l}</div><div class="l-sub">${sub||'&nbsp;'}</div>`;
     stats.appendChild(s);
   });
-  app.appendChild(stats);
 
   // 2026 live pulse — historical content remains available if Sleeper is offline.
   if(window.FarmhoodLive){
@@ -239,8 +261,7 @@ function renderHome(){
   // ---- stat of the day ----
   app.appendChild(el('div','sotd',`<span class="sotd-tag">Stat of the Day</span><span class="sotd-txt">${statOfTheDay()}</span>`)).style.marginTop='16px';
 
-  // ---- two-column: title count | champion + ledger ----
-  const grid=el('div','home-grid');
+  // ---- title archive + current champion and money ----
   const tcnt=titleCounts();
   const winners=Object.keys(tcnt).sort((a,b)=>tcnt[b]-tcnt[a]||titleYearsOf(a)[0]-titleYearsOf(b)[0]);
   const left=el('div','tl-wrap');
@@ -252,7 +273,6 @@ function renderHome(){
   });
   lh+=`<div class="tl-note">Founders Era titles (2014–18, NFL.com) counted in full. Yogi, 2014 champion, has left the neighborhood.</div>`;
   left.innerHTML=lh;
-  grid.appendChild(left);
 
   const right=el('div','home-right');
   const cf=el('div','champ-frame');
@@ -272,14 +292,17 @@ function renderHome(){
      <div class="lg-sub">“I pay when he pays.” · Open the verified ledger →</div>`;
   if(window.FarmhoodPayouts)window.FarmhoodPayouts.mountHomeSummary(ledger);
   right.appendChild(ledger);
-  grid.appendChild(right);
-  app.appendChild(grid);
+  right.classList.add('home-current-cards');
+  const currentSection=el('section','home-current-section');
+  currentSection.appendChild(el('h2','h','<span class="bar"></span>Around the League'));
+  currentSection.appendChild(right);app.appendChild(currentSection);
 
   // all-time records strip (once backfill has run)
+  let recordsSection=null;
   if(L.allTime){
     const A=L.allTime, hw=A.highest_weeks[0], b=A.biggest_blowout, lk=A.luck[0], mo=motwLeaders(A);
-    const secR=el('section','section');
-    secR.appendChild(el('h2','h','<span class="bar"></span>League Records'));
+    recordsSection=el('section','section');
+    recordsSection.appendChild(el('h2','h','<span class="bar"></span>League Records'));
     const gr=el('div','grid g2');
     [['Highest week ever',`${hw.name} · ${hw.pts.toFixed(1)}`,`${hw.season}, Week ${hw.week}`],
      ['Biggest blowout ever',`+${b.margin}`,`${b.winner} over ${b.loser}, ${b.season}`],
@@ -288,24 +311,11 @@ function renderHome(){
     ].forEach(([t,v,m])=>gr.appendChild(el('a','card hover',
       `<div class="meta" style="font-size:12px;font-weight:700;color:var(--blue-2)">${t}</div>
        <div class="big" style="font-size:22px;margin:5px 0 2px">${v}</div><div class="meta">${m}</div>`)).href='fun.html');
-    secR.appendChild(gr);app.appendChild(secR);
+    recordsSection.appendChild(gr);
   }
 
-  // quick links
-  const sec3=el('section','section');
-  sec3.appendChild(el('h2','h','<span class="bar"></span>Explore'));
-  const g=el('div','grid g3');
-  [['power-rankings.html','Power Rankings','Live 2026 form layered over the all-time strength index.'],
-   ['records.html','Records','Every all-time leaderboard — wins, points, win %.'],
-   ['history.html','History','Champion by champion, 2014 to today.'],
-   ['fun.html','Fun Stats','Luck index, blowouts, manager of the week.'],
-   ['matchups.html','Matchups','Live 2026 scores, schedule and official standings.'],
-   ['payouts.html','2026 Payouts','$3,000 allocated across weekly prizes, rivalries and the championship purse.'],
-   ['draft.html','2026 Draft Order','The order is set — see who picks where before kickoff.']
-  ].forEach(([h,ti,d])=>{
-    const c=el('a','card hover explore-card',`<h3>${ti}<span class="card-arrow">→</span></h3><div class="meta">${d}</div>`);c.href=h;g.appendChild(c);
-  });
-  sec3.appendChild(g); app.appendChild(sec3);
+  const almanac=el('div','home-almanac');almanac.append(stats,left);if(recordsSection)almanac.appendChild(recordsSection);
+  app.appendChild(clarityDisclosure('Open Almanac Highlights','Legacy totals, title history and all-time records',almanac,{className:'home-almanac-disclosure'}));
   animateCounts();
 }
 
@@ -412,7 +422,7 @@ function renderPower(){
 }
 
 function mountLivePower(node){
-  let request=0,hasRendered=false,trendChart=null;
+  let request=0,hasRendered=false,trendChart=null,insightsOpen=false;
   const openManagers=new Set();
   const update=async force=>{
     const token=++request;
@@ -425,33 +435,37 @@ function mountLivePower(node){
       ]);
       const ranking=window.FarmhoodLive.buildPower(snapshot,weeks,L.managers,titleCounts(),players);
       if(token!==request)return;
+      const focusedControl=liveFocusKey(node);
       const focused=document.activeElement&&node.contains(document.activeElement)&&document.activeElement.closest&&document.activeElement.closest('.power-rank-item');
       const focusedManager=focused&&focused.dataset.manager;
       if(trendChart&&typeof trendChart.destroy==='function'){trendChart.destroy();trendChart=null;}
       node.innerHTML='';node.appendChild(liveStatusBar(snapshot,()=>update(true)));
       if(players.source==='unavailable')node.appendChild(liveError('Starter projections are temporarily unavailable, so lineup strength is neutral and the remaining live signals stay unchanged.'));
       node.appendChild(renderPowerPodium(ranking));
-      node.appendChild(renderPowerStorylines(ranking));
+      if(ranking.provisional)node.appendChild(el('div','note live-provisional','● Provisional: the current week is still in progress, so scores and matchup leaders can move this table until Sleeper finalizes the results.'));
       node.appendChild(renderPowerRankList(ranking,openManagers));
-      if(focusedManager){
-        const focusedItem=[...node.querySelectorAll('.power-rank-item')].find(item=>item.dataset.manager===focusedManager);
-        const summary=focusedItem&&focusedItem.querySelector('summary');if(summary)summary.focus({preventScroll:true});
-      }
+      const insights=el('div','power-insights');insights.appendChild(renderPowerStorylines(ranking));
+      let trendCanvas=null;
       if(ranking.trendLabels.length>1){
-        const canvas=chartCanvas(node,'Rank Movement <span class="badge muted">weekly checkpoints · current top 6</span>',340);
-        trendChart=drawPowerTrend(canvas,ranking);
+        trendCanvas=chartCanvas(insights,'Rank Movement <span class="badge muted">weekly checkpoints · current top 6</span>',340);
       }else{
         const trend=el('section','section power-trend-empty');
         trend.appendChild(el('h2','h','<span class="bar"></span>Rank Movement'));
         trend.appendChild(el('div','note','The first trend line appears when Week 1 scoring begins. Every checkpoint after that compares against the previous cumulative ranking.'));
-        node.appendChild(trend);
+        insights.appendChild(trend);
       }
       if(!ranking.scoredWeeks){
-        node.appendChild(el('div','note','Preseason model: <b>80% all-time foundation + 20% current starting-lineup strength.</b> Results gain another 20 points of weight after each finalized week and fully take over after Week 4.'));
-      }else if(ranking.provisional){
-        node.appendChild(el('div','note live-provisional','● Provisional: the current week is still in progress, so scores and matchup leaders can move this table until Sleeper finalizes the results.'));
+        insights.appendChild(el('div','note','Preseason model: <b>80% all-time foundation + 20% current starting-lineup strength.</b> Results gain another 20 points of weight after each finalized week and fully take over after Week 4.'));
       }
-      node.appendChild(el('div','note live-formula','2026 formula: <b>30% all-play · 25% scoring · 20% record · 15% starting-lineup strength · 10% recent form.</b> Historical weight fades completely by Week 4.'));
+      insights.appendChild(el('div','note live-formula','2026 formula: <b>30% all-play · 25% scoring · 20% record · 15% starting-lineup strength · 10% recent form.</b> Historical weight fades completely by Week 4.'));
+      const disclosure=clarityDisclosure('Movement & Method','Storylines, checkpoint chart and the complete scoring formula',insights,{className:'power-insights-disclosure',open:insightsOpen});
+      disclosure.querySelector(':scope>summary').dataset.liveFocusKey='power-insights';
+      disclosure.addEventListener('toggle',()=>{insightsOpen=disclosure.open;if(disclosure.open&&trendCanvas&&!trendChart)trendChart=drawPowerTrend(trendCanvas,ranking);});
+      node.appendChild(disclosure);if(disclosure.open&&trendCanvas)trendChart=drawPowerTrend(trendCanvas,ranking);
+      if(focusedManager){
+        const focusedItem=[...node.querySelectorAll('.power-rank-item')].find(item=>item.dataset.manager===focusedManager);
+        const summary=focusedItem&&focusedItem.querySelector('summary');if(summary)summary.focus({preventScroll:true});
+      }else restoreLiveFocus(node,focusedControl);
       node.setAttribute('aria-busy','false');
       hasRendered=true;
     }catch(_err){
@@ -561,6 +575,7 @@ function renderPowerExplanation(row,ranking){
 }
 
 function drawPowerTrend(canvas,ranking){
+  describeChart(canvas,ranking.rows.slice(0,6).map(row=>`${row.name}: ${ranking.trendLabels.map((label,index)=>`${label} rank ${ranking.trend[row.name][index]}`).join(', ')}`).join('. '));
   if(typeof Chart==='undefined'||!canvas||!canvas.getContext)return null;
   const colors=['#7D5F1A','#1E5A38','#A0432E','#5C6E5F','#856519','#2B764A'];
   return new Chart(canvas,{type:'line',data:{labels:ranking.trendLabels,datasets:ranking.rows.slice(0,6).map((row,index)=>({
@@ -634,7 +649,7 @@ function renderRecords(){
        <td class="r mono">${m.pf.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})}</td>
        <td class="r"><span class="rings">${rings(titlesOf(m.name))||'<span style=color:var(--muted-2)>–</span>'}</span></td>`));
   });
-  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
+  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);
 
   // record cards
   const wins=ms[0], pf=[...ms].sort((a,b)=>b.pf-a.pf)[0],
@@ -654,6 +669,7 @@ function renderRecords(){
        <div class="meta">${meta}</div>`));
   });
   sec2.appendChild(g);app.appendChild(sec2);
+  app.appendChild(clarityDisclosure('Complete Manager Ledger','All 12 managers · wins, losses, points and championships',sec,{className:'records-ledger-disclosure'}));
 
   // single-season notes
   const sec3=el('section','section');
@@ -672,32 +688,36 @@ function renderRecords(){
   ].forEach(([t1,v,m])=>{
     g3.appendChild(el('div','card',`<h3>${t1}</h3><div class="big" style="font-size:24px;margin:4px 0">${v}</div><div class="meta">${m}</div>`));
   });
-  sec3.appendChild(g3);app.appendChild(sec3);
+  sec3.appendChild(g3);app.appendChild(clarityDisclosure('Season & Game Marks','Best records, highest weeks, lowest weeks and biggest blowouts',sec3,{className:'records-marks-disclosure'}));
 
   // all-time points-for chart
+  const charts=el('div','records-chart-archive');
+  const chartJobs=[];
   const pfRank=[...L.managers].sort((a,b)=>b.pf-a.pf);
-  drawBar(chartCanvas(app,'All-Time Points For',380),
-    pfRank.map(m=>m.name), pfRank.map(m=>Math.round(m.pf)),
-    pfRank.map(()=>'#B8912E'), true);
+  const pointsCanvas=chartCanvas(charts,'All-Time Points For',380);
+  chartJobs.push(()=>drawBar(pointsCanvas,pfRank.map(m=>m.name),pfRank.map(m=>Math.round(m.pf)),pfRank.map(()=>'#B8912E'),true));
 
   // playoff appearances chart
   if(L.playoffAppearances){
     const pa=Object.entries(L.playoffAppearances).sort((a,b)=>b[1]-a[1]);
-    drawBar(chartCanvas(app,`Playoff Appearances <span class="badge muted" style="font-weight:600">of ${L.playoffSeasons} seasons (2019–25)</span>`,380),
-      pa.map(x=>x[0]), pa.map(x=>x[1]), pa.map(x=>x[1]>=5?'#B8912E':'#5C6E5F'), true);
+    const playoffCanvas=chartCanvas(charts,`Playoff Appearances <span class="badge muted" style="font-weight:600">of ${L.playoffSeasons} seasons (2019–25)</span>`,380);
+    chartJobs.push(()=>drawBar(playoffCanvas,pa.map(x=>x[0]),pa.map(x=>x[1]),pa.map(x=>x[1]>=5?'#B8912E':'#5C6E5F'),true));
   }
 
   // championship-game appearances (stacked won vs lost), all-time
   if(L.finalsAppearances){
     const fa=[...L.finalsAppearances].filter(x=>x.app>0).sort((a,b)=>b.app-a.app||b.won-a.won);
-    drawStacked(chartCanvas(app,`Championship Game Appearances <span class="badge muted" style="font-weight:600">all-time · <span style="color:var(--gold)">won</span> vs <span style="color:var(--loss)">lost</span></span>`,420),
-      fa.map(x=>x.name), fa.map(x=>x.won), fa.map(x=>x.lost));
-    app.appendChild(el('div','note','Every title game, 2014–present. Includes 2015 (Akash lost to ian) and 2020 (Joe lost to martinch94). The 2014, 2016, 2017 & 2018 runner-ups are still being recovered from the old NFL.com league.')).style.marginTop='14px';
+    const finalsCanvas=chartCanvas(charts,`Championship Game Appearances <span class="badge muted" style="font-weight:600">all-time · <span style="color:var(--gold)">won</span> vs <span style="color:var(--loss)">lost</span></span>`,420);
+    chartJobs.push(()=>drawStacked(finalsCanvas,fa.map(x=>x.name),fa.map(x=>x.won),fa.map(x=>x.lost)));
+    charts.appendChild(el('div','note','Every title game, 2014–present. Includes 2015 (Akash lost to ian) and 2020 (Joe lost to martinch94). The 2014, 2016, 2017 & 2018 runner-ups are still being recovered from the old NFL.com league.')).style.marginTop='14px';
   }
 
-  app.appendChild(el('div','note', A
+  charts.appendChild(el('div','note', A
     ? `Marks span all 7 seasons (2019–2025). Two managers from the 14-team 2019–2020 era are omitted from the active leaderboard.`
     : `Two managers played only the 14-team 2019–2020 era and are omitted. Single-week marks reflect 2025 until <b>scripts/backfill.py</b> pulls older weekly data.`)).style.marginTop='16px';
+  const chartsDisclosure=clarityDisclosure('Charts & Championship Detail','Scoring volume, playoff appearances and title-game results',charts,{className:'records-charts-disclosure'});
+  let chartsDrawn=false;chartsDisclosure.addEventListener('toggle',()=>{if(!chartsDisclosure.open||chartsDrawn)return;chartsDrawn=true;chartJobs.forEach(draw=>draw());});
+  app.appendChild(chartsDisclosure);
 }
 
 /* ---------- HISTORY ---------- */
@@ -729,7 +749,7 @@ function renderHistory(){
 
   // Founders Era — champions only
   const fsec=el('section','section');
-  fsec.appendChild(el('h2','h','<span class="bar"></span>Founders Era <span class="badge muted" style="font-weight:600">2014–2018 · NFL.com · champions only</span>'));
+  fsec.appendChild(el('h2','sr-only','Founders Era champions, 2014 through 2018'));
   Object.keys(L.foundersChampions||{}).map(Number).sort((a,b)=>b-a).forEach(y=>{
     const champ=L.foundersChampions[y], former=(L.formerChampions||[]).includes(champ);
     const c=el('div','champ-card');c.style.marginBottom='14px';
@@ -740,11 +760,11 @@ function renderHistory(){
     fsec.appendChild(c);
   });
   fsec.appendChild(el('div','note','The league began in 2014 on the NFL.com app and moved to Sleeper in 2019. Only champions carried over from the Founders Era — detailed stats start in 2019.'));
-  app.appendChild(fsec);
+  app.appendChild(clarityDisclosure('Founders Era','2014–2018 · champions preserved from NFL.com',fsec,{className:'history-founders-disclosure'}));
 
   // full champions timeline (2014–present)
   const sec2=el('section','section');
-  sec2.appendChild(el('h2','h','<span class="bar"></span>Champions Timeline <span class="badge muted" style="font-weight:600">since 2014</span>'));
+  sec2.appendChild(el('h2','sr-only','Complete champions timeline since 2014'));
   const tl=el('div','tablecard');const t=el('table','tbl');
   t.innerHTML='<thead><tr><th>Year</th><th>Champion</th><th class="r">Title #</th></tr></thead>';
   const tb=el('tbody');const seen={};const allC=championsAll();
@@ -755,14 +775,15 @@ function renderHistory(){
        <td><span class="who-name">${c}</span> <span class="rings">${'★'.repeat(seen[c])}</span></td>
        <td class="r mono" style="color:var(--muted)">${seen[c]}${seen[c]===1?'st':seen[c]===2?'nd':seen[c]===3?'rd':'th'} ring</td>`));
   });
-  t.appendChild(tb);tl.appendChild(t);sec2.appendChild(tl);app.appendChild(sec2);
+  t.appendChild(tb);tl.appendChild(t);sec2.appendChild(tl);
+  app.appendChild(clarityDisclosure('Complete Champions Ledger','Every champion and career ring number since 2014',sec2,{className:'history-ledger-disclosure'}));
 }
 
 /* ---------- FUN ---------- */
 function renderFun(){
   const app=$('#app');
-  app.appendChild(header('Fun Stats — 2025','Fun Stats',
-    'Luck, blowouts and bench heartbreak from the 2025 season. Every number reconciles to the official scores.'));
+  app.appendChild(header('Fun Stats','Fun Stats',
+    'Start with the unforgettable 2025 moments, then open the season tables or the complete all-time archive.'));
 
   // the curse callout
   app.appendChild(el('section','','')).appendChild(el('div','callout',
@@ -770,6 +791,7 @@ function renderFun(){
      <div class="meta" style="color:var(--muted)">Most points scored, most Manager-of-the-Week honors (4), the single highest week (177.1) — and an 8-6 finish with no title. The unluckiest team in the league by expected wins (−1.8).</div>`));
 
   // luck index
+  const seasonTables=el('div','fun-season-tables');
   const sec=el('section','section');
   sec.appendChild(el('h2','h','<span class="bar"></span>Luck Index <span class="badge muted" style="font-weight:600">actual − expected wins</span>'));
   const tc=el('div','tablecard');const t=el('table','tbl');
@@ -784,7 +806,7 @@ function renderFun(){
        <td class="r mono" style="color:var(--muted)">${x.expected.toFixed(2)}</td>
        <td class="r mono ${cls}">${sign}${x.luck.toFixed(2)}</td>`));
   });
-  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
+  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);seasonTables.appendChild(sec);
 
   // blowout + closest
   const sec2=el('section','section');const g=el('div','grid g2');
@@ -811,9 +833,14 @@ function renderFun(){
   mo.innerHTML=mh+'</tbody></table>';
   g3.appendChild(hi);g3.appendChild(mo);sec3.appendChild(g3);
   sec3.insertBefore(el('h2','h','<span class="bar"></span>Weekly Highs & Honors'),g3);
-  app.appendChild(sec3);
+  seasonTables.appendChild(sec3);
+  app.appendChild(clarityDisclosure('2025 Tables','Luck index, top weeks and Manager-of-the-Week totals',seasonTables,{className:'fun-season-disclosure'}));
 
-  if (L.allTime) renderAllTimeFun(app);
+  if(L.allTime){
+    const allTimeMount=el('div','fun-alltime-archive');
+    const allTimeDisclosure=clarityDisclosure('Open All-Time Fun Stats','Superlatives, luck, record weeks and rivalries from 2019–2025',allTimeMount,{className:'fun-alltime-disclosure'});
+    let rendered=false;allTimeDisclosure.addEventListener('toggle',()=>{if(!allTimeDisclosure.open||rendered)return;rendered=true;renderAllTimeFun(allTimeMount);});app.appendChild(allTimeDisclosure);
+  }
   else app.appendChild(el('div','note','🔓 All-time fun stats (2019–2025) unlock after running <b>scripts/backfill.py</b>. Showing 2025 for now.')).style.marginTop='22px';
 }
 
@@ -936,6 +963,7 @@ function mountLiveMatchups(node,archive){
 }
 
 function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatchups,onSelect,onRefresh){
+  const focusedControl=liveFocusKey(node);
   const focused=document.activeElement&&node.contains(document.activeElement)&&document.activeElement.closest&&document.activeElement.closest('.matchup-detail');
   const focusedKey=focused&&focused.dataset.matchupKey;
   node.innerHTML='';node.appendChild(liveStatusBar(snapshot,onRefresh));
@@ -945,13 +973,24 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   const title=el('h2','h');
   title.innerHTML=`<span class="bar"></span>Week ${selectedWeek} Scoreboard <span class="badge ${weekState==='Live'?'gold':'muted'}">${weekState}</span>`;
   node.appendChild(title);
-  const selector=el('div','weeksel');
+  const selector=el('div','matchup-week-toolbar');selector.setAttribute('role','group');selector.setAttribute('aria-label','Choose fantasy week');
+  const previous=el('button','matchup-week-step','← Previous');previous.type='button';previous.disabled=selectedWeek<=1;
+  previous.dataset.liveFocusKey='previous-week';
+  previous.addEventListener('click',()=>onSelect(Math.max(1,selectedWeek-1)));
+  const selectWrap=el('label','matchup-week-select'),selectLabel=el('span','','Jump to week'),select=document.createElement('select');
+  select.setAttribute('aria-label','Jump to fantasy week');
+  select.dataset.liveFocusKey='week-select';
   Array.from({length:snapshot.regularSeasonWeeks},(_,index)=>index+1).forEach(week=>{
-    const button=el('button',week===selectedWeek?'on':'',String(week));button.type='button';
-    button.setAttribute('aria-label',`Show 2026 Week ${week}`);button.setAttribute('aria-pressed',String(week===selectedWeek));
-    button.addEventListener('click',()=>onSelect(week));selector.appendChild(button);
+    const option=document.createElement('option');option.value=String(week);option.textContent=`Week ${week}`;option.selected=week===selectedWeek;select.appendChild(option);
   });
-  node.appendChild(selector);
+  select.addEventListener('change',()=>onSelect(Number(select.value)));selectWrap.append(selectLabel,select);
+  const current=el('button','matchup-week-current','Current');current.type='button';current.disabled=selectedWeek===snapshot.currentWeek;
+  current.dataset.liveFocusKey='current-week';
+  current.setAttribute('aria-label',`Return to current Week ${snapshot.currentWeek}`);current.addEventListener('click',()=>onSelect(snapshot.currentWeek));
+  const next=el('button','matchup-week-step','Next →');next.type='button';next.disabled=selectedWeek>=snapshot.regularSeasonWeeks;
+  next.dataset.liveFocusKey='next-week';
+  next.addEventListener('click',()=>onSelect(Math.min(snapshot.regularSeasonWeeks,selectedWeek+1)));
+  selector.append(previous,selectWrap,current,next);node.appendChild(selector);
   const feedNote=el('div','lineup-feed-note');
   feedNote.textContent=playerFeed.source==='unavailable'
     ? 'Live scoring is connected. Player projections are temporarily unavailable.'
@@ -961,15 +1000,10 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   const board=el('div','live-board');node.appendChild(board);
   drawLiveWeek(selectedWeek,rows,snapshot,board,weekState,playerFeed,openMatchups);
   if(window.FarmhoodPayouts)window.FarmhoodPayouts.mountMatchupContext(payoutMount,board,selectedWeek);
-  if(focusedKey){
-    const match=[...board.querySelectorAll('.matchup-detail')].find(item=>item.dataset.matchupKey===focusedKey);
-    const summary=match&&match.querySelector('summary');if(summary)summary.focus({preventScroll:true});
-  }
 
   const standings=window.FarmhoodLive.standings(snapshot);
   const completed=Math.max(0,...standings.map(row=>row.games));
-  const sec=el('section','section live-standings');
-  sec.appendChild(el('h2','h',`<span class="bar"></span>Official 2026 Standings <span class="badge muted">through Week ${completed}</span>`));
+  const sec=el('section','live-standings');
   const tc=el('div','tablecard'),table=el('table','tbl');
   table.innerHTML='<thead><tr><th>#</th><th>Manager</th><th class="r">W-L</th><th class="r">Win %</th><th class="r">Points For</th></tr></thead>';
   const body=el('tbody');
@@ -977,8 +1011,14 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
     `<td>${medalRank(index)}</td><td><span class="who-name">${row.name}</span></td>
      <td class="r mono">${recordLabel(row)}</td><td class="r mono">${row.games?pct(row.winPct):'–'}</td>
      <td class="r mono">${row.games?row.pf.toFixed(1):'–'}</td>`)));
-  table.appendChild(body);tc.appendChild(table);sec.appendChild(tc);node.appendChild(sec);
-  node.appendChild(el('div','note live-source-note','Open any matchup to see both starting lineups. Scores and official records come directly from Sleeper; standings update after Sleeper finalizes the week.'));
+  table.appendChild(body);tc.appendChild(table);sec.appendChild(tc);
+  sec.appendChild(el('div','note live-source-note','Scores and official records come directly from Sleeper; standings update after Sleeper finalizes the week.'));
+  const standingsDisclosure=clarityDisclosure('Official 2026 Standings',`Through Week ${completed} · open for the full table`,sec,{className:'matchup-standings-disclosure'});
+  standingsDisclosure.querySelector(':scope>summary').dataset.liveFocusKey='standings';node.appendChild(standingsDisclosure);
+  if(focusedKey){
+    const match=[...board.querySelectorAll('.matchup-detail')].find(item=>item.dataset.matchupKey===focusedKey);
+    const summary=match&&match.querySelector('summary');if(summary)summary.focus({preventScroll:true});
+  }else restoreLiveFocus(node,focusedControl);
 }
 
 function drawLiveWeek(week,rows,snapshot,board,weekState,playerFeed,openMatchups){
@@ -1118,6 +1158,7 @@ function renderStory(){
     'Seven Sleeper-era seasons (2019–2025) of dynasties, collapses, and the cruelest rule in fantasy: the best team rarely wins. Every storyline below is drawn from the verified record.'));
 
   const tl=el('section','section');
+  tl.appendChild(el('h2','h','<span class="bar"></span>Season by Season'));
   L.stories.forEach((s,i)=>{
     const ct = titlesOf(s.champion);
     const ringTxt = ct>1 ? `${rings(ct)} (career)` : 'Champion';
@@ -1139,7 +1180,7 @@ function renderStory(){
   app.appendChild(tl);
 
   const sec=el('section','section');
-  sec.appendChild(el('h2','h','<span class="bar"></span>Recurring Storylines'));
+  sec.appendChild(el('h2','sr-only','Recurring Storylines'));
   const g=el('div','grid g2');
   L.throughlines.forEach(t=>{
     g.appendChild(el('div','card',
@@ -1147,17 +1188,17 @@ function renderStory(){
        <h3 style="font-size:17px;color:var(--gold);margin-bottom:6px">${t.title}</h3>
        <div class="meta" style="color:var(--muted);line-height:1.6">${t.text}</div>`));
   });
-  sec.appendChild(g);app.appendChild(sec);
+  sec.appendChild(g);app.appendChild(clarityDisclosure('Recurring Storylines','Themes that keep returning across Farmhood seasons',sec,{className:'story-themes-disclosure'}));
 
   if(L.oddities){
     const so=el('section','section');
-    so.appendChild(el('h2','h','<span class="bar"></span>All-Time Oddities'));
+    so.appendChild(el('h2','sr-only','All-Time Oddities'));
     const go=el('div','grid g2');
     L.oddities.forEach(o=>go.appendChild(el('div','card',
       `<div style="font-size:26px;margin-bottom:8px">${o.icon}</div>
        <h3 style="font-size:17px;color:var(--gold);margin-bottom:6px">${o.title}</h3>
        <div class="meta" style="color:var(--muted);line-height:1.6">${o.text}</div>`)));
-    so.appendChild(go);app.appendChild(so);
+    so.appendChild(go);app.appendChild(clarityDisclosure('All-Time Oddities','The strangest verified patterns in the record',so,{className:'story-oddities-disclosure'}));
   }
 }
 
@@ -1188,50 +1229,92 @@ function badgesFor(name){
   if(t===0 && winPct(m)>=0.5) out.push(['🥈','Bridesmaid']);
   return out;
 }
-function renderMoneyBoard(app){
-  if(!L.winnings)return;
+function renderMoneyBoard(target){
+  if(!L.winnings)return null;
   const rows=Object.entries(L.winnings).sort((a,b)=>b[1]-a[1]);
-  const max=rows[0][1], total=rows.reduce((s,r)=>s+r[1],0);
-  const sec=el('section','section');
-  sec.appendChild(el('h2','h',`<span class="bar"></span>💰 The Money Board <span class="badge" style="font-weight:600;background:rgba(63,209,140,.14);color:#2E7D4F">$${total.toLocaleString()} paid out</span>`));
-  const tc=el('div','tablecard');const t=el('table','tbl');
-  t.innerHTML='<thead><tr><th>#</th><th>Manager</th><th class="r">All-Time Winnings</th></tr></thead>';
-  const tb=el('tbody');
-  rows.forEach(([n,v],i)=>{
-    const mgr=L.managers.find(x=>x.name===n);
-    tb.appendChild(el('tr','',
-      `<td>${medalRank(i)}</td>
-       <td>${avatarImg(n,28)} <span class="who-name">${n}</span> ${titlesOf(n)?'<span class="rings">'+rings(titlesOf(n))+'</span>':''}</td>
-       <td class="r"><div style="display:flex;align-items:center;gap:12px;justify-content:flex-end">
-         <div class="bar-track" style="width:110px"><div class="bar-fill" style="width:${(v/max*100).toFixed(0)}%;background:linear-gradient(90deg,#1E5A38,#2E7D4F)"></div></div>
-         <b class="mono" style="color:#2E7D4F;min-width:58px;display:inline-block">$${v.toLocaleString()}</b></div></td>`));
-  });
-  t.appendChild(tb);tc.appendChild(t);sec.appendChild(tc);app.appendChild(sec);
-  const note=el('div','note','4-season payout totals. Pat (pgorny) leads the league\'s all-time bankroll. ');
-  const current=document.createElement('a');current.href='payouts.html';current.textContent='Open the separate 2026 payout ledger →';current.style.fontWeight='800';
-  note.appendChild(current);app.appendChild(note).style.marginTop='14px';
+  const total=rows.reduce((sum,[,amount])=>sum+amount,0);
+  const board=el('aside','money-board');
+  board.id='money-board';board.setAttribute('aria-labelledby','money-board-title');
+
+  const head=el('div','money-board-head');
+  const title=el('h2','money-board-title','The Money Board');title.id='money-board-title';
+  head.append(title,el('span','money-board-kicker','Recorded winnings · 4-season archive'));
+  board.appendChild(head);
+
+  const summary=el('div','money-board-summary');
+  summary.innerHTML=`<strong>$${total.toLocaleString()}</strong><span>recorded across the league</span>`;
+  board.appendChild(summary);
+
+  const makeRow=([name,amount],index)=>{
+    const item=el('li','money-board-item'+(index<3?' money-board-podium':''));
+    const button=el('button','money-board-row');button.type='button';
+    button.setAttribute('aria-label',`Rank ${index+1}: ${name}, $${amount.toLocaleString()} in recorded winnings. View profile.`);
+    button.innerHTML=`
+      <span class="money-board-rank" aria-hidden="true">${medalRank(index)}</span>
+      ${avatarImg(name,index<3?34:28)}
+      <span class="money-board-manager">
+        <strong>${name}</strong>
+        ${titlesOf(name)?`<span class="rings" aria-hidden="true">${rings(titlesOf(name))}</span>`:'<small>Chasing a first ring</small>'}
+      </span>
+      <span class="money-board-amount">$${amount.toLocaleString()}</span>`;
+    button.addEventListener('click',()=>openProfile(name));
+    item.appendChild(button);return item;
+  };
+
+  const leaders=el('ol','money-board-list money-board-leaders');
+  leaders.setAttribute('aria-label','Top three recorded winnings');
+  rows.slice(0,3).forEach((row,index)=>leaders.appendChild(makeRow(row,index)));
+  board.appendChild(leaders);
+
+  if(rows.length>3){
+    const more=el('details','money-board-more');
+    const toggle=el('summary','money-board-more-toggle');
+    toggle.innerHTML=`<span>Full standings</span><strong>Ranks 4–${rows.length}</strong>`;
+    more.appendChild(toggle);
+    const rest=el('ol','money-board-list money-board-rest');rest.start=4;
+    rest.setAttribute('aria-label',`Recorded winnings ranks 4 through ${rows.length}`);
+    rows.slice(3).forEach((row,index)=>rest.appendChild(makeRow(row,index+3)));
+    more.appendChild(rest);board.appendChild(more);
+  }
+
+  const footer=el('div','money-board-footer');
+  footer.appendChild(el('p','','Historical winnings stay separate from current-season awards.'));
+  const current=el('a','money-board-payout-link','Open 2026 Payouts →');current.href='payouts.html';
+  footer.appendChild(current);board.appendChild(footer);
+  if(target)target.appendChild(board);
+  return board;
 }
 function renderManagers(){
   const app=$('#app');
-  app.appendChild(header('The Managers','Managers','Twelve managers, seven seasons. The money board, then tap anyone for their full résumé, rivalries, badges, and winnings.'));
-  renderMoneyBoard(app);
-  const g0=el('h2','h','<span class="bar"></span>All Managers');app.appendChild(g0);
+  app.appendChild(header('The Managers','Managers','Meet the twelve owners behind Farmhood Fantasy. Choose a manager for their record, championships, rivalries, badges, and recorded winnings.'));
+
+  const layout=el('div','managers-layout');
+  const directory=el('section','manager-directory');directory.setAttribute('aria-labelledby','manager-directory-title');
+  const directoryHead=el('div','manager-directory-head');
+  const heading=el('h2','h','<span class="bar"></span>Manager Directory');heading.id='manager-directory-title';
+  const jump=el('a','manager-money-jump','Jump to Money Board ↓');jump.href='#money-board';
+  directoryHead.append(heading,jump);directory.appendChild(directoryHead);
+  directory.appendChild(el('p','manager-directory-intro','Ordered by championships, then all-time wins. Select any manager to open their complete league profile.'));
+
   const ms=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name)||b.wins-a.wins);
-  const g=el('div','mgr-grid');
+  const grid=el('div','mgr-grid');
   ms.forEach(m=>{
-    const c=el('button','mgr-card');
-    const w=(L.winnings||{})[m.name];
-    c.innerHTML=`${avatarImg(m.name,68)}
+    const card=el('button','mgr-card');card.type='button';
+    const winnings=(L.winnings||{})[m.name],titles=titlesOf(m.name);
+    card.innerHTML=`${avatarImg(m.name,68)}
       <div class="mgr-nm">${m.name}</div>
       <div class="mgr-rec">${m.wins}-${m.losses} · ${pct(winPct(m))}</div>
       ${m.name===L.commissioner?'<span class="commish-tag">⚖️ Commissioner</span>':''}
-      <div class="rings">${rings(titlesOf(m.name))||'<span style="color:var(--muted-2);font-size:11px">no rings</span>'}</div>
-      ${w!=null?`<div class="mgr-win">$${w.toLocaleString()}</div>`:''}`;
-    clickable(c,()=>openProfile(m.name),`View ${m.name}'s profile`);
-    g.appendChild(c);
+      <div class="rings">${rings(titles)||'<span class="mgr-no-rings">No rings yet</span>'}</div>
+      ${winnings!=null?`<div class="mgr-win">$${winnings.toLocaleString()} recorded</div>`:''}`;
+    card.setAttribute('aria-label',`View ${m.name}'s profile: ${m.wins} wins, ${m.losses} losses${titles?`, ${titles} championship${titles===1?'':'s'}`:', no championships yet'}${winnings!=null?`, $${winnings.toLocaleString()} in recorded winnings`:''}.`);
+    card.addEventListener('click',()=>openProfile(m.name));grid.appendChild(card);
   });
-  app.appendChild(g);
-  app.appendChild(el('div','note','Tap a manager for their full card. Avatars come straight from each owner\'s Sleeper profile.')).style.marginTop='18px';
+  directory.appendChild(grid);
+  directory.appendChild(el('div','note manager-directory-note','Profiles include each manager\'s full résumé and head-to-head rivalries. Avatars come from Sleeper.'));
+  layout.appendChild(directory);
+  const moneyBoard=renderMoneyBoard();if(moneyBoard)layout.appendChild(moneyBoard);
+  app.appendChild(layout);
 }
 function openProfile(name){
   const m=L.managers.find(x=>x.name===name),A=L.allTime;
@@ -1245,16 +1328,20 @@ function openProfile(name){
   const rivRows=rivs.map(r=>{const opp=r.a===name?r.b:r.a,w=r.a===name?r.a_wins:r.b_wins,l=r.a===name?r.b_wins:r.a_wins;
     return `<tr><td>${avatarImg(opp,26)} <span class="who-name">${opp}</span></td>
       <td class="r mono ${w>l?'pos':w<l?'neg':''}">${w}–${l}</td></tr>`;}).join('');
-  const ov=el('div','modal-ov');
-  const box=el('div','modal');
+  const previousFocus=document.activeElement;
+  const dialog=document.createElement('dialog');dialog.className='manager-profile-dialog';
+  const safeName=name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  const titleId=`manager-profile-title-${safeName}`,descriptionId=`manager-profile-description-${safeName}`;
+  dialog.setAttribute('aria-labelledby',titleId);dialog.setAttribute('aria-describedby',descriptionId);dialog.setAttribute('aria-modal','true');
+  const box=el('div','modal manager-profile-panel');
   box.innerHTML=
-    `<button class="modal-x" aria-label="Close">✕</button>
+    `<button class="modal-x" type="button" aria-label="Close ${name}'s profile"><span aria-hidden="true">✕</span></button>
      <div class="prof-head">${avatarImg(name,86)}
-       <div><div class="prof-nm">${name}</div>
+       <div><h2 class="prof-nm" id="${titleId}">${name}</h2>
          <div class="rings" style="font-size:16px">${rings(titlesOf(name))}</div>
-         <div class="meta">${titlesOf(name)?titleYearsOf(name).join(', ')+' champion':'Chasing a first ring'}</div></div></div>
+         <div class="meta" id="${descriptionId}">${titlesOf(name)?titleYearsOf(name).join(', ')+' champion':'Chasing a first ring'}</div></div></div>
      ${win!=null?`<div class="winnings">
-       <div><span class="win-label">💰 All-Time Winnings</span><span class="win-cap">4-season total</span></div>
+       <div><span class="win-label">💰 Recorded Winnings</span><span class="win-cap">4-season archive</span></div>
        <div class="win-right"><span class="win-amt">$${win.toLocaleString()}</span><span class="win-rank">#${winRank} of ${winTotal}</span></div></div>`:''}
      <div class="prof-stats">
        <div><b>${m.wins}-${m.losses}</b><span>Record</span></div>
@@ -1266,9 +1353,41 @@ function openProfile(name){
      </div>
      ${badges?`<div class="prof-badges">${badges}</div>`:''}
      ${rivs.length?`<div class="prof-sec">All-Time Rivalries</div><div class="tablecard"><table class="tbl"><tbody>${rivRows}</tbody></table></div>`:''}`;
-  ov.appendChild(box);
-  ov.addEventListener('click',e=>{if(e.target===ov||e.target.classList.contains('modal-x'))document.body.removeChild(ov);});
-  document.body.appendChild(ov);
+  dialog.appendChild(box);document.body.appendChild(dialog);
+
+  const closeButton=box.querySelector('.modal-x');
+  const previousOverflow=document.body.style.overflow;
+  let cleaned=false;
+  const finishClose=()=>{
+    if(cleaned)return;cleaned=true;
+    document.documentElement.classList.remove('manager-profile-open');
+    document.body.style.overflow=previousOverflow;
+    if(dialog.parentNode)dialog.parentNode.removeChild(dialog);
+    if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus();
+  };
+  const closeDialog=()=>{
+    if(typeof dialog.close==='function'&&dialog.hasAttribute('open'))dialog.close();
+    else{dialog.removeAttribute('open');finishClose();}
+  };
+  const focusable=()=>[...box.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+  dialog.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();closeDialog();return;}
+    if(event.key!=='Tab')return;
+    const nodes=focusable();if(!nodes.length){event.preventDefault();box.focus();return;}
+    const first=nodes[0],last=nodes[nodes.length-1],index=nodes.indexOf(document.activeElement);
+    if(event.shiftKey&&index<=0){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&(index===-1||index===nodes.length-1)){event.preventDefault();first.focus();}
+  });
+  dialog.addEventListener('cancel',event=>{event.preventDefault();closeDialog();});
+  dialog.addEventListener('close',finishClose,{once:true});
+  dialog.addEventListener('click',event=>{if(event.target===dialog)closeDialog();});
+  closeButton.addEventListener('click',closeDialog);
+
+  document.documentElement.classList.add('manager-profile-open');document.body.style.overflow='hidden';
+  if(typeof dialog.showModal==='function'){
+    try{dialog.showModal();}catch(_error){dialog.setAttribute('open','');}
+  }else dialog.setAttribute('open','');
+  if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(()=>closeButton.focus());else closeButton.focus();
 }
 
 /* ---------- DRAFT ---------- */
@@ -1297,6 +1416,7 @@ function renderDraft(){
   renderDraftOrder(app);
   const E=L.extra;
   if(!E){app.appendChild(el('div','note','🔓 Run <b>scripts/extras.py</b> to pull draft data (picks + player scoring). This page lights up once it finishes.')).style.marginTop='8px';return;}
+  const insights=el('div','draft-insights');
   const tbl=(title,rows,ptsColor)=>{
     const sec=el('section','section');
     sec.appendChild(el('h2','h',`<span class="bar"></span>${title}`));
@@ -1306,10 +1426,11 @@ function renderDraft(){
       <td class="r mono" style="color:${ptsColor};font-weight:700">${p.pts.toFixed(1)}</td>
       <td>${avatarImg(p.by,24)} ${p.by}</td>
       <td class="r mono" style="color:var(--muted)">${p.season}</td></tr>`);
-    tc.innerHTML=h+'</tbody></table>';sec.appendChild(tc);app.appendChild(sec);
+    tc.innerHTML=h+'</tbody></table>';sec.appendChild(tc);insights.appendChild(sec);
   };
   tbl('💎 Biggest Steals <span class="badge muted" style="font-weight:600">round 7+</span>', E.steals, 'var(--gold)');
   tbl('🪦 Biggest Busts <span class="badge muted" style="font-weight:600">rounds 1–2</span>', E.busts, 'var(--loss)');
+  app.appendChild(clarityDisclosure('Historical Draft Insights','Biggest steals and early-round busts across the archive',insights,{className:'draft-insights-disclosure'}));
 }
 
 /* ---------- TRADES ---------- */
@@ -1346,19 +1467,28 @@ function renderTrades(){
   sec2.appendChild(el('h2','h','<span class="bar"></span>Most Active Traders'));
   const tc=el('div','tablecard');let h='<table class="tbl"><thead><tr><th>Manager</th><th class="r">Trades</th></tr></thead><tbody>';
   Object.entries(E.trader_counts).forEach(([n,c])=>h+=`<tr><td>${avatarImg(n,26)} <span class="who-name">${n}</span></td><td class="r"><div style="display:flex;align-items:center;gap:10px;justify-content:flex-end"><div class="bar-track" style="width:${Math.min(120,c*14)}px"><div class="bar-fill gold" style="width:100%"></div></div><b class="mono">${c}</b></div></td></tr>`);
-  tc.innerHTML=h+'</tbody></table>';sec2.appendChild(tc);app.appendChild(sec2);
+  tc.innerHTML=h+'</tbody></table>';sec2.appendChild(tc);
+  app.appendChild(clarityDisclosure('Trader Leaderboard','All-time activity totals by manager',sec2,{className:'trades-leaderboard-disclosure'}));
 }
 
 /* ---------- CHARTS (Chart.js, guarded so headless/no-CDN still renders) ---------- */
+let chartDescriptionCount=0;
+function describeChart(canvas,text){
+  if(!canvas||!canvas.parentNode||!text)return;
+  let description=canvas.parentNode.querySelector('.chart-data-summary');
+  if(!description){description=el('p','sr-only chart-data-summary');description.id=`chart-data-summary-${++chartDescriptionCount}`;canvas.parentNode.appendChild(description);}
+  description.textContent=text;canvas.setAttribute('aria-describedby',description.id);
+}
 function chartCanvas(app,title,height){
   const sec=el('section','section');
   sec.appendChild(el('h2','h',`<span class="bar"></span>${title}`));
   const wrap=el('div','chart-wrap');wrap.style.height=(height||340)+'px';
-  const cv=document.createElement('canvas');wrap.appendChild(cv);
+  const cv=document.createElement('canvas');cv.setAttribute('role','img');cv.setAttribute('aria-label',String(title).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+' chart');wrap.appendChild(cv);
   sec.appendChild(wrap);app.appendChild(sec);
   return cv;
 }
 function drawBar(cv,labels,data,colors,horizontal){
+  describeChart(cv,labels.map((label,index)=>`${label}: ${data[index]}`).join('. '));
   if(typeof Chart==='undefined'||!cv||!cv.getContext)return;
   new Chart(cv,{type:'bar',
     data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:6,borderWidth:0,maxBarThickness:30}]},
@@ -1368,6 +1498,7 @@ function drawBar(cv,labels,data,colors,horizontal){
               y:{grid:{display:false},ticks:{color:'#173B27',font:{weight:'600'}}}}}});
 }
 function drawStacked(cv,labels,wins,losses){
+  describeChart(cv,labels.map((label,index)=>`${label}: ${wins[index]} won, ${losses[index]} lost`).join('. '));
   if(typeof Chart==='undefined'||!cv||!cv.getContext)return;
   new Chart(cv,{type:'bar',
     data:{labels,datasets:[
@@ -1387,17 +1518,26 @@ function openRoster(year){
     return `<div class="rsl"><span class="rsl-slot ${cls}">${p.slot}</span>
       <span class="rsl-name">${p.name}</span>
       <span class="rsl-meta">${[p.pos,p.team].filter(Boolean).join(' · ')}</span></div>`;}).join('');
-  const ov=el('div','modal-ov'), box=el('div','modal');
-  box.innerHTML=`<button class="modal-x" aria-label="Close">✕</button>
+  const previousFocus=document.activeElement,dialog=document.createElement('dialog'),box=el('div','modal manager-profile-panel roster-profile-panel');
+  dialog.className='manager-profile-dialog roster-profile-dialog';dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-labelledby',`roster-profile-${year}`);
+  box.innerHTML=`<button class="modal-x" type="button" aria-label="Close ${year} championship roster"><span aria-hidden="true">✕</span></button>
     <div class="prof-head">${avatarImg(r.champion,74)}<div>
       <div class="yr">${year} CHAMPION 🏆</div>
-      <div class="prof-nm">${r.champion}</div>
+      <h2 class="prof-nm" id="roster-profile-${year}">${r.champion}</h2>
       <div class="meta">Title-winning starting lineup</div></div></div>
     <div class="prof-sec">Starters</div>
     <div class="roster-list">${rows}</div>`;
-  ov.appendChild(box);
-  ov.addEventListener('click',e=>{if(e.target===ov||e.target.classList.contains('modal-x'))document.body.removeChild(ov);});
-  document.body.appendChild(ov);
+  dialog.appendChild(box);document.body.appendChild(dialog);
+  const closeButton=box.querySelector('.modal-x'),previousOverflow=document.body.style.overflow;
+  const finish=()=>{document.documentElement.classList.remove('manager-profile-open');document.body.style.overflow=previousOverflow;if(dialog.parentNode)dialog.remove();if(previousFocus&&previousFocus.isConnected)previousFocus.focus();};
+  const closeDialog=()=>{if(typeof dialog.close==='function'&&dialog.hasAttribute('open'))dialog.close();else{dialog.removeAttribute('open');finish();}};
+  dialog.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();closeDialog();return;}if(event.key!=='Tab')return;
+    const nodes=[...box.querySelectorAll('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')];if(!nodes.length)return;
+    const first=nodes[0],last=nodes[nodes.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+  });
+  dialog.addEventListener('cancel',event=>{event.preventDefault();closeDialog();});dialog.addEventListener('close',finish,{once:true});dialog.addEventListener('click',event=>{if(event.target===dialog)closeDialog();});closeButton.addEventListener('click',closeDialog);
+  document.documentElement.classList.add('manager-profile-open');document.body.style.overflow='hidden';if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');closeButton.focus();
 }
 
 /* ---------- CHAT ASSISTANT (client-side, no backend) ---------- */
@@ -1517,7 +1657,7 @@ function mountChat(){
 }
 
 function header(title,eyebrow,sub){
-  const s=el('section','');
+  const s=el('header','page-intro');
   s.innerHTML=`<div class="eyebrow">${eyebrow}</div><h1 class="title">${title}</h1><p class="sub">${sub}</p>`;
   return s;
 }

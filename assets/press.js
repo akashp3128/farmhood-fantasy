@@ -18,6 +18,7 @@
     watchPlayers:null,
     watchError:'',
     watchBusy:false,
+    watchFocusKey:'',
     watchTimer:null,
     articleRequest:0
   };
@@ -57,7 +58,9 @@
 
   function dateLabel(value,withTime){
     if(!value)return '';
-    const parsed=new Date(value);
+    const raw=clean(value,'');
+    const numeric=/^\d{10,13}$/.test(raw)?Number(raw):null;
+    const parsed=new Date(numeric===null?value:(raw.length===10?numeric*1000:numeric));
     if(Number.isNaN(parsed.getTime()))return clean(value,'');
     try{
       const options=withTime
@@ -107,7 +110,7 @@
       make('span','','Est. 2026'),
       make('span','',new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric'}).format(new Date()))
     );
-    masthead.append(strip,make('h1','press-name','The Farmhood Press'),make('p','press-tagline','Predictions, receipts and the stories shaping the season.'));
+    masthead.append(strip,make('div','press-name','The Farmhood Press'),make('p','press-tagline','Predictions, receipts and the stories shaping the season.'));
     app.appendChild(masthead);
 
     const tabs=make('div','press-tabs');
@@ -242,13 +245,13 @@
   function renderLoading(label){
     pressState.watchMount=null;pressState.panel.replaceChildren();
     const box=make('div','press-empty');box.setAttribute('role','status');
-    box.append(make('h2','','Newsroom desk'),make('p','',label));pressState.panel.appendChild(box);
+    box.append(make('h1','','Newsroom desk'),make('p','',label));pressState.panel.appendChild(box);
   }
 
   function renderEmptyEdition(title,description){
     pressState.watchMount=null;pressState.panel.replaceChildren();
     const box=make('div','press-empty');
-    box.append(make('h2','',title),make('p','',description));pressState.panel.appendChild(box);
+    box.append(make('h1','',title),make('p','',description));pressState.panel.appendChild(box);
   }
 
   async function selectTab(key,focusPanel){
@@ -265,7 +268,9 @@
         appendStandaloneWatch();
       }
     }
-    if(focusPanel)pressState.panel.focus({preventScroll:true});
+    if(focusPanel){
+      const selected=pressState.tabs.get(key);if(selected)selected.focus({preventScroll:true});
+    }
   }
 
   function renderCurrent(){
@@ -338,12 +343,12 @@
     }
     grid.appendChild(aside);pressState.panel.appendChild(grid);
 
-    renderMatchupDesk(data,pressState.panel);
     const baseline=article.lineupSnapshot||(article.source&&article.source.lineupSnapshot)||null;
     if(baseline&&pressState.watchSnapshot&&pressState.watchPlayers&&window.FarmhoodLive&&typeof window.FarmhoodLive.lineupWatch==='function'){
       pressState.watch=window.FarmhoodLive.lineupWatch(pressState.watchSnapshot,pressState.watchPlayers,baseline);
     }
-    const watch=make('section','press-watch');pressState.panel.appendChild(watch);pressState.watchMount=watch;renderLineupWatch();
+    const watch=make('section','press-watch press-watch-compact');pressState.panel.appendChild(watch);pressState.watchMount=watch;renderLineupWatch('compact');
+    renderMatchupDesk(data,pressState.panel);
     renderEditorialColumns(data,pressState.panel);
     renderSource(data,pressState.panel);
   }
@@ -402,7 +407,12 @@
         if(!value)return;
         const note=make('div','press-matchup-note');note.append(make('b','',label),make('span','',value));notes.appendChild(note);
       });
-      if(notes.childNodes.length)card.appendChild(notes);board.appendChild(card);
+      if(notes.childNodes.length){
+        const details=make('details','press-matchup-details');
+        details.append(make('summary','',notes.childNodes.length+' supporting '+(notes.childNodes.length===1?'note':'notes')),notes);
+        card.appendChild(details);
+      }
+      board.appendChild(card);
     });
     section.appendChild(board);parent.appendChild(section);
   }
@@ -460,7 +470,7 @@
   }
 
   function appendStandaloneWatch(){
-    const watch=make('section','press-watch');pressState.panel.appendChild(watch);pressState.watchMount=watch;renderLineupWatch();
+    const watch=make('section','press-watch press-watch-compact');pressState.panel.appendChild(watch);pressState.watchMount=watch;renderLineupWatch('compact');
   }
 
   function renderLiveDesk(){
@@ -470,7 +480,7 @@
     const pulse=make('div','press-live-pulse');
     pulse.append(make('b','',pressState.watchSnapshot?'Week '+pressState.watchSnapshot.currentWeek:'Connecting…'),make('span','','Latest forecast · not the frozen pick'));
     hero.append(copy,pulse);pressState.panel.appendChild(hero);
-    const watch=make('section','press-watch');pressState.panel.appendChild(watch);pressState.watchMount=watch;renderLineupWatch(true);
+    const watch=make('section','press-watch');pressState.panel.appendChild(watch);pressState.watchMount=watch;renderLineupWatch('expanded');
     const source=make('div','press-source');source.append(make('strong','','How this moves'),make('span','','Official Sleeper starters and league-scoring projections are recomputed on refresh.'),make('span','','A player locks when that player’s game begins.'));
     pressState.panel.appendChild(source);
   }
@@ -487,15 +497,96 @@
     return teams.find(team=>rosterId!==undefined&&String(team.rosterId)===String(rosterId))||teams.find(team=>teamName(team)===name)||null;
   }
 
-  function renderLineupWatch(expanded){
+  function teamSlotCount(team,key){
+    const value=team&&team[key];
+    return Array.isArray(value)?value.length:number(value,0);
+  }
+
+  function watchSummary(){
+    const teams=watchTeams();
+    return teams.reduce((summary,team)=>{
+      summary.injuries+=teamInjuries(team).length;
+      summary.pivots+=teamPivots(team).length;
+      summary.changed+=teamChanged(team)?1:0;
+      summary.empty+=teamSlotCount(team,'emptySlots')||0;
+      return summary;
+    },{injuries:0,pivots:0,changed:0,empty:0});
+  }
+
+  function openLiveDeskButton(){
+    const button=make('button','watch-open','Open Live Desk');
+    button.type='button';
+    button.dataset.watchFocusKey='open-live';
+    button.addEventListener('click',()=>selectTab('live',true));
+    return button;
+  }
+
+  function compactWatchMessage(summary){
+    if(summary.empty)return summary.empty+' empty starting '+(summary.empty===1?'slot needs':'slots need')+' attention.';
+    if(summary.injuries)return summary.injuries+' starter injury '+(summary.injuries===1?'alert is':'alerts are')+' being tracked.';
+    if(summary.pivots)return summary.pivots+' bench '+(summary.pivots===1?'pivot is':'pivots are')+' available before player lock.';
+    if(summary.changed)return summary.changed+' '+(summary.changed===1?'lineup has':'lineups have')+' changed since the published edition.';
+    return 'No new lineup warnings. All six live forecasts remain available at the desk.';
+  }
+
+  function renderCompactLineupWatch(mount){
+    const shell=make('div','watch-compact-shell');
+    const content=make('div','watch-compact-content');
+    const label=make('div','watch-compact-label');
+    label.append(make('span','watch-dot'),make('span','','Live roster pulse'));
+    content.appendChild(label);
+    const heading=make('h2','','Lineup Watch');heading.id='press-lineup-watch-title';content.appendChild(heading);
+
+    const updated=pressState.watch&&first(pressState.watch.updatedAt,pressState.watchSnapshot&&pressState.watchSnapshot.fetchedAt);
+    const status=make('p','watch-compact-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    if(pressState.watchBusy&&!pressState.watch)status.textContent='Checking starters, injuries and available bench pivots…';
+    else if(pressState.watchError&&!pressState.watch)status.textContent=pressState.watchError;
+    else if(!pressState.watch)status.textContent='Connecting to the official league feed…';
+    else status.textContent=pressState.watchError||compactWatchMessage(watchSummary());
+    content.appendChild(status);
+
+    if(pressState.watch){
+      const summary=watchSummary();
+      const facts=make('div','watch-compact-facts');
+      const alerts=[
+        [summary.empty,'Empty '+(summary.empty===1?'slot':'slots'),'alert'],
+        [summary.injuries,'Injury '+(summary.injuries===1?'alert':'alerts'),'alert'],
+        [summary.pivots,'Bench '+(summary.pivots===1?'pivot':'pivots'),'pivot'],
+        [summary.changed,'Changed '+(summary.changed===1?'lineup':'lineups'),'changed']
+      ].filter(([value])=>value>0);
+      (alerts.length?alerts:[['✓','No lineup alerts','clear']]).forEach(([value,labelName,tone])=>{
+        const fact=make('span','watch-compact-fact '+tone);
+        fact.append(make('strong','',value),make('span','',labelName));facts.appendChild(fact);
+      });
+      content.appendChild(facts);
+    }
+
+    const action=make('div','watch-compact-action');
+    action.append(openLiveDeskButton(),make('span','',updated?'Updated '+dateLabel(updated,true):'Updates automatically every minute'));
+    shell.append(content,action);mount.appendChild(shell);
+  }
+
+  function renderLineupWatch(mode){
     const mount=pressState.watchMount;if(!mount)return;
+    const active=document.activeElement;
+    if(active&&mount.contains(active)&&active.dataset&&active.dataset.watchFocusKey)pressState.watchFocusKey=active.dataset.watchFocusKey;
+    const restoreFocus=()=>{
+      if(!pressState.watchFocusKey)return;
+      const target=[...mount.querySelectorAll('[data-watch-focus-key]')].find(item=>item.dataset.watchFocusKey===pressState.watchFocusKey);
+      if(target&&!target.disabled){target.focus({preventScroll:true});pressState.watchFocusKey='';}
+    };
     mount.replaceChildren();
+    const compact=mode==='compact'||(!mode&&pressState.activeTab!=='live');
+    const expanded=mode==='expanded'||mode===true;
+    mount.classList.toggle('press-watch-compact',compact);
+    if(compact){renderCompactLineupWatch(mount);restoreFocus();return;}
     const head=make('div','watch-head'),title=make('div','watch-title');
     title.append(make('span','watch-dot'),make('h2','','Lineup Watch'));
     const actions=make('div','watch-actions');
     const updated=pressState.watch&&first(pressState.watch.updatedAt,pressState.watchSnapshot&&pressState.watchSnapshot.fetchedAt);
     actions.appendChild(make('span','',updated?'Updated '+dateLabel(updated,true):'Waiting for the league feed'));
     const refresh=make('button','watch-refresh',pressState.watchBusy?'Refreshing…':'Refresh');refresh.type='button';refresh.disabled=pressState.watchBusy;
+    refresh.dataset.watchFocusKey='refresh';
     refresh.addEventListener('click',()=>refreshLineupWatch(true));actions.appendChild(refresh);head.append(title,actions);mount.appendChild(head);
     const status=make('div','watch-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     if(pressState.watchBusy&&!pressState.watch)status.textContent='Checking starters, injuries and available bench pivots…';
@@ -508,7 +599,7 @@
     mount.appendChild(status);
 
     if(!pressState.watch){
-      mount.appendChild(make('div','watch-empty',pressState.watchError||'Live lineup intelligence is warming up. Published predictions and the archive remain available.'));return;
+      mount.appendChild(make('div','watch-empty',pressState.watchError||'Live lineup intelligence is warming up. Published predictions and the archive remain available.'));restoreFocus();return;
     }
     const matchups=list(pressState.watch.matchups);
     const board=make('div','watch-grid');
@@ -519,6 +610,7 @@
     }
     if(!board.childNodes.length)mount.appendChild(make('div','watch-empty','Sleeper has not posted this week’s lineups yet. Lineup Watch will populate automatically.'));
     else mount.appendChild(board);
+    restoreFocus();
   }
 
   function renderWatchMatchup(row,index,expanded){
@@ -557,11 +649,9 @@
     const pivotText=pivots.map(sentence).filter(Boolean);
     if(injuryText.length){const row=make('p','watch-callout injury');row.append(make('strong','','Injury watch: '),make('span','',injuryText.slice(0,expanded?6:2).join(' · ')));card.appendChild(row);}
     if(pivotText.length){const row=make('p','watch-callout pivot');row.append(make('strong','','Bench pivot: '),make('span','',pivotText.slice(0,expanded?6:2).join(' · ')));card.appendChild(row);}
-    const emptyCount=team=>Array.isArray(team&&team.emptySlots)?team.emptySlots.length:number(team&&team.emptySlots,0);
-    const empties=[emptyCount(teamA),emptyCount(teamB)].reduce((sum,value)=>sum+(value||0),0);
+    const empties=[teamSlotCount(teamA,'emptySlots'),teamSlotCount(teamB,'emptySlots')].reduce((sum,value)=>sum+(value||0),0);
     if(empties){const row=make('p','watch-callout injury');row.append(make('strong','','Lineup warning: '),make('span','',empties+' empty starting '+(empties===1?'slot':'slots')));card.appendChild(row);}
-    const lockedCount=team=>Array.isArray(team&&team.lockedSlots)?team.lockedSlots.length:number(team&&team.lockedSlots,0);
-    const locked=[lockedCount(teamA),lockedCount(teamB)].reduce((sum,value)=>sum+(value||0),0);
+    const locked=[teamSlotCount(teamA,'lockedSlots'),teamSlotCount(teamB,'lockedSlots')].reduce((sum,value)=>sum+(value||0),0);
     if(locked){const row=make('p','watch-callout locked');row.append(make('strong','','Locked: '),make('span','',locked+' starter '+(locked===1?'slot has':'slots have')+' begun play and will not receive bench-pivot suggestions.'));card.appendChild(row);}
   }
 
@@ -586,9 +676,9 @@
     if(pressState.watchBusy)return;
     const live=window.FarmhoodLive;
     if(!live||typeof live.load!=='function'){
-      pressState.watchError='Live Lineup Watch is unavailable in this browser.';renderLineupWatch();return;
+      pressState.watchError='Live Lineup Watch is unavailable in this browser.';renderLineupWatch(pressState.activeTab==='live'?'expanded':'compact');return;
     }
-    pressState.watchBusy=true;pressState.watchError='';renderLineupWatch(pressState.activeTab==='live');
+    pressState.watchBusy=true;pressState.watchError='';renderLineupWatch(pressState.activeTab==='live'?'expanded':'compact');
     try{
       const snapshot=await live.load({force:Boolean(force)});
       const playerFeed=typeof live.loadPlayers==='function'?await live.loadPlayers(snapshot,snapshot.currentWeek,{force:Boolean(force)}):{players:{},source:'unavailable'};
@@ -601,7 +691,7 @@
     }catch(_error){
       pressState.watchError=pressState.watch?'The newest check failed; showing the last available lineup snapshot.':'The live league feed could not connect. Published reporting is still available.';
     }finally{
-      pressState.watchBusy=false;renderLineupWatch(pressState.activeTab==='live');
+      pressState.watchBusy=false;renderLineupWatch(pressState.activeTab==='live'?'expanded':'compact');
     }
   }
 
