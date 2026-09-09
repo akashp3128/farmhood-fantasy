@@ -4,12 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Test the AI connection or generate an edition
+        description: Check the credential, test generation, or generate an edition
         required: true
         default: generate
         type: choice
         options:
           - generate
+          - credential-test
           - connection-test
       edition:
         description: Edition to generate
@@ -23,7 +24,26 @@ on:
         description: 2026 fantasy week
         required: true
         default: "1"
-        type: string
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+          - "7"
+          - "8"
+          - "9"
+          - "10"
+          - "11"
+          - "12"
+          - "13"
+          - "14"
+          - "15"
+          - "16"
+          - "17"
+          - "18"
       tone:
         description: Editorial tone
         required: true
@@ -33,13 +53,18 @@ on:
           - straight
           - spicy
           - chaos
+      force_regeneration:
+        description: Replace an existing unlocked draft (never replaces a locked original Preview)
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
   pull-requests: write
 
 concurrency:
-  group: farmhood-press-${{ inputs.operation }}-${{ inputs.edition }}-week-${{ inputs.week }}
+  group: farmhood-press-${{ inputs.operation }}
   cancel-in-progress: false
 
 jobs:
@@ -49,6 +74,7 @@ jobs:
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      PRESS_MAX_ESTIMATED_COST_USD: ${{ vars.PRESS_MAX_ESTIMATED_COST_USD }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out the publication
@@ -61,38 +87,65 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Verify newsroom credential
-        run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "Add OPENAI_API_KEY as a repository Actions secret before generating an edition."
-            exit 1
-          fi
-
-      - name: Test the OpenAI connection
-        if: inputs.operation == 'connection-test'
+      - name: Test the credential without generating tokens
+        if: inputs.operation == 'credential-test'
         run: node scripts/press/check-openai.mjs
 
-      - name: Create the review branch
-        if: inputs.operation == 'generate'
+      - name: Test generation readiness
+        if: inputs.operation == 'connection-test'
+        run: node scripts/press/check-openai.mjs --generation
+
+      - name: Check for an existing review draft
+        id: existing_draft
+        if: inputs.operation == 'generate' && inputs.force_regeneration != true
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
-        run: git checkout -b "press/${EDITION}-2026-week-${WEEK}-${GITHUB_RUN_ID}"
+        run: |
+          existing_ref=$(git ls-remote --heads origin "refs/heads/press/${EDITION}-2026-week-${WEEK}-*" | sed -n '1p')
+          existing_review=$(gh pr list --state open --limit 100 --json headRefName,url --jq '.[] | select(.headRefName | startswith("press/")) | "\(.headRefName) \(.url)"' | sed -n '1p')
+          if [ -n "$existing_ref" ] || [ -n "$existing_review" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "### Farmhood Press skipped safely" >> "$GITHUB_STEP_SUMMARY"
+            if [ -n "$existing_ref" ]; then
+              echo "- A review branch for ${EDITION} Week ${WEEK} already exists." >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "- Finish the open Farmhood Press review before buying another draft: ${existing_review}" >> "$GITHUB_STEP_SUMMARY"
+            fi
+            echo "- OpenAI requests: 0" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Estimated API cost: \$0.0000" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate the edition
-        if: inputs.operation == 'generate'
+        id: generate
+        if: inputs.operation == 'generate' && (inputs.force_regeneration == true || steps.existing_draft.outputs.found != 'true')
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
           TONE: ${{ inputs.tone }}
-        run: node scripts/press/generate.mjs --type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE"
+          FORCE_REGENERATION: ${{ inputs.force_regeneration }}
+        run: |
+          args=(--type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE")
+          if [ "$FORCE_REGENERATION" = "true" ]; then
+            args+=(--force)
+          fi
+          node scripts/press/generate.mjs "${args[@]}"
+
+      - name: Create the review branch
+        if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
+        env:
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+        run: git checkout -b "press/${EDITION}-2026-week-${WEEK}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
       - name: Validate facts and publication files
-        if: inputs.operation == 'generate'
+        if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
         run: node scripts/press/validate.mjs
 
       - name: Commit the draft
-        if: inputs.operation == 'generate'
+        if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
@@ -109,7 +162,7 @@ jobs:
           git push --set-upstream origin HEAD
 
       - name: Open a draft pull request
-        if: inputs.operation == 'generate'
+        if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
@@ -125,3 +178,11 @@ jobs:
             echo "The draft branch was pushed, but repository policy did not allow the workflow to open a pull request." >> "$GITHUB_STEP_SUMMARY"
             echo "Open this review link: ${compare_url}" >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Preserve a paid attempt that did not finish
+        if: failure() && steps.generate.outputs.paid_request == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: farmhood-press-usage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: content/usage/ledger.json
+          retention-days: 30

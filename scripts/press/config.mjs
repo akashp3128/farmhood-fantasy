@@ -1,5 +1,5 @@
 export const PRESS_SCHEMA_VERSION = 1;
-export const PROMPT_VERSION = 'farmhood-press-v1';
+export const PROMPT_VERSION = 'farmhood-press-v2-cost-guarded';
 export const PREDICTION_MODEL = 'farmhood-deterministic-v1';
 
 export const PRESS_CONFIG = Object.freeze({
@@ -10,7 +10,16 @@ export const PRESS_CONFIG = Object.freeze({
   sleeperApiRoot: 'https://api.sleeper.app',
   sleeperV1Root: 'https://api.sleeper.app/v1',
   openaiApiRoot: 'https://api.openai.com/v1',
-  openaiModel: 'gpt-6-astra',
+  openaiModel: 'gpt-5.6-terra',
+  maxOutputTokens: 3500,
+  maxRequestCharacters: 28000,
+  maxEstimatedCostUsd: 0.1,
+  pricingAsOf: '2026-09-08',
+  modelPricingPerMillionTokens: Object.freeze({
+    'gpt-6-astra': Object.freeze({ input: 10, cachedInput: 1, cacheWriteInput: 12.5, output: 50 }),
+    'gpt-5.6-terra': Object.freeze({ input: 2, cachedInput: 0.2, cacheWriteInput: 2.5, output: 12 }),
+    'gpt-5.6-luna': Object.freeze({ input: 0.2, cachedInput: 0.02, cacheWriteInput: 0.25, output: 1.2 })
+  }),
   projectionLogisticScale: 18,
   minimumProjectionCoverage: 0.8,
   byline: 'Farmhood Intelligence Desk',

@@ -4,7 +4,6 @@ const stringField = (maxLength) => ({ type: 'string', maxLength });
 
 export function articleCopySchema(snapshot, type) {
   const matchupIds = snapshot.matchups.map((matchup) => matchup.matchupId);
-  const playerIds = unique(snapshot.teams.flatMap((team) => team.starters.map((player) => player.id).filter((id) => id !== '0')));
   const managerNames = snapshot.teams.map((team) => team.manager);
   const factIds = unique([...(snapshot.factIds || []), ...snapshot.matchups.flatMap((matchup) => matchup.factIds)]);
   const matchupItem = {
@@ -13,22 +12,21 @@ export function articleCopySchema(snapshot, type) {
     properties: {
       matchupId: { type: 'integer', enum: matchupIds },
       headline: stringField(120),
-      analysis: stringField(700),
-      keyPlayerId: { type: 'string', enum: playerIds },
-      upsetPath: stringField(360),
-      historyNote: stringField(300),
-      factIds: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'string', enum: factIds } }
+      analysis: stringField(450),
+      upsetPath: stringField(280),
+      historyNote: stringField(220),
+      factIds: { type: 'array', minItems: 1, maxItems: 6, items: { type: 'string', enum: factIds } }
     },
-    required: ['matchupId', 'headline', 'analysis', 'keyPlayerId', 'upsetPath', 'historyNote', 'factIds']
+    required: ['matchupId', 'headline', 'analysis', 'upsetPath', 'historyNote', 'factIds']
   };
   const storylineItem = {
     type: 'object',
     additionalProperties: false,
     properties: {
       title: stringField(100),
-      body: stringField(500),
+      body: stringField(350),
       subjects: { type: 'array', minItems: 1, maxItems: 4, items: { type: 'string', enum: managerNames } },
-      factIds: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'string', enum: factIds } }
+      factIds: { type: 'array', minItems: 1, maxItems: 6, items: { type: 'string', enum: factIds } }
     },
     required: ['title', 'body', 'subjects', 'factIds']
   };
@@ -38,8 +36,8 @@ export function articleCopySchema(snapshot, type) {
     properties: {
       title: stringField(80),
       recipient: { type: 'string', enum: managerNames },
-      body: stringField(240),
-      factIds: { type: 'array', minItems: 1, maxItems: 5, items: { type: 'string', enum: factIds } }
+      body: stringField(200),
+      factIds: { type: 'array', minItems: 1, maxItems: 4, items: { type: 'string', enum: factIds } }
     },
     required: ['title', 'recipient', 'body', 'factIds']
   };
@@ -47,14 +45,14 @@ export function articleCopySchema(snapshot, type) {
     type: 'object',
     additionalProperties: false,
     properties: {
-      title: stringField(130),
-      dek: stringField(260),
-      lead: { type: 'array', minItems: 2, maxItems: 4, items: stringField(900) },
-      pullQuote: stringField(180),
+      title: stringField(120),
+      dek: stringField(220),
+      lead: { type: 'array', minItems: 2, maxItems: 3, items: stringField(600) },
+      pullQuote: stringField(150),
       keyStat: {
         type: 'object',
         additionalProperties: false,
-        properties: { label: stringField(60), value: stringField(60), note: stringField(180) },
+        properties: { label: stringField(50), value: stringField(50), note: stringField(150) },
         required: ['label', 'value', 'note']
       },
       matchups: { type: 'array', minItems: matchupIds.length, maxItems: matchupIds.length, items: matchupItem },
@@ -72,11 +70,9 @@ export function validateArticleCopy(copy, snapshot) {
   assert(JSON.stringify(actualIds) === JSON.stringify(expectedIds), 'Generated matchup IDs do not match the snapshot.');
   const factIds = new Set([...(snapshot.factIds || []), ...snapshot.matchups.flatMap((matchup) => matchup.factIds)]);
   const matchupById = new Map(snapshot.matchups.map((matchup) => [matchup.matchupId, matchup]));
-  const teamByName = new Map(snapshot.teams.map((team) => [team.manager, team]));
   copy.matchups.forEach((item) => {
     const matchup = matchupById.get(item.matchupId);
-    const validPlayers = new Set([matchup.managerA, matchup.managerB].flatMap((name) => teamByName.get(name).starters.map((player) => player.id)));
-    assert(validPlayers.has(item.keyPlayerId), `Key player ${item.keyPlayerId} is not a starter in matchup ${item.matchupId}.`);
+    assert(matchup, `Unknown generated matchup: ${item.matchupId}.`);
     item.factIds.forEach((id) => assert(factIds.has(id), `Unknown fact ID in generated matchup copy: ${id}`));
   });
   (copy.storylines || []).flatMap((item) => item.factIds || []).forEach((id) => assert(factIds.has(id), `Unknown storyline fact ID: ${id}`));

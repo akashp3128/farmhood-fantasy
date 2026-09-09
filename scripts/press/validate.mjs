@@ -10,6 +10,10 @@ function closeEnough(a, b) {
   return Number.isFinite(Number(a)) && Number.isFinite(Number(b)) && Math.abs(Number(a) - Number(b)) <= 0.02;
 }
 
+function assertNonnegativeNumber(value, label) {
+  assert(typeof value === 'number' && Number.isFinite(value) && value >= 0, `${label} must be a nonnegative number.`);
+}
+
 function assertPlainText(value, label) {
   if (typeof value !== 'string') return;
   assert(!/<\/?[a-z][^>]*>/i.test(value), `${label} contains raw HTML.`);
@@ -30,6 +34,31 @@ async function main() {
   const managers = new Set((canon?.managers || []).map((manager) => manager.displayName));
   assert(managers.size === PRESS_CONFIG.teamCount, `Expected ${PRESS_CONFIG.teamCount} canonical managers.`);
   const ids = new Set();
+
+  const usageLedger = await readJsonIfExists(path.join(root, 'content', 'usage', 'ledger.json'));
+  assert(usageLedger?.schemaVersion === 1 && Array.isArray(usageLedger.entries), 'AI usage ledger is missing or invalid.');
+  const usageIds = new Set();
+  const calculatedUsage = { requests: 0, inputTokens: 0, cachedInputTokens: 0, cacheWriteInputTokens: 0, outputTokens: 0, totalTokens: 0, estimatedCostUsd: 0 };
+  usageLedger.entries.forEach((entry) => {
+    assert(entry?.id && !usageIds.has(entry.id), `Duplicate AI usage entry: ${entry?.id || '(missing ID)'}`);
+    usageIds.add(entry.id);
+    assertNonnegativeNumber(entry.inputTokens, `${entry.id} inputTokens`);
+    assertNonnegativeNumber(entry.cachedInputTokens, `${entry.id} cachedInputTokens`);
+    assertNonnegativeNumber(entry.cacheWriteInputTokens, `${entry.id} cacheWriteInputTokens`);
+    assertNonnegativeNumber(entry.outputTokens, `${entry.id} outputTokens`);
+    assertNonnegativeNumber(entry.totalTokens, `${entry.id} totalTokens`);
+    assertNonnegativeNumber(entry.estimatedCostUsd, `${entry.id} estimatedCostUsd`);
+    assert(entry.cachedInputTokens + entry.cacheWriteInputTokens <= entry.inputTokens, `${entry.id} cached input exceeds total input.`);
+    assert(['response_received', 'rejected', 'draft_created'].includes(entry.outcome), `Invalid usage outcome for ${entry.id}.`);
+    calculatedUsage.requests += 1;
+    ['inputTokens', 'cachedInputTokens', 'cacheWriteInputTokens', 'outputTokens', 'totalTokens'].forEach((field) => { calculatedUsage[field] += entry[field]; });
+    calculatedUsage.estimatedCostUsd = Number((calculatedUsage.estimatedCostUsd + entry.estimatedCostUsd).toFixed(6));
+  });
+  Object.entries(calculatedUsage).forEach(([field, value]) => {
+    assertNonnegativeNumber(usageLedger.totals?.[field], `usage totals.${field}`);
+    const matches = field === 'estimatedCostUsd' ? Math.abs(usageLedger.totals[field] - value) < 0.000001 : usageLedger.totals[field] === value;
+    assert(matches, `AI usage total mismatch for ${field}.`);
+  });
 
   for (const meta of index.articles) {
     assert(meta && typeof meta === 'object', 'Invalid article metadata row.');
