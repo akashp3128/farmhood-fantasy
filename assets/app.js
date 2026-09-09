@@ -26,20 +26,90 @@ const titleCounts = () => { const c={}; Object.values(championsAll()).forEach(n=
 const titlesOf = name => titleCounts()[name]||0;
 const titleYearsOf = name => { const a=championsAll(); return Object.keys(a).filter(y=>a[y]===name).map(Number).sort((x,y)=>x-y); };
 
-const PAGES = [
-  ['index.html','Home','home'],
-  ['press.html','The Press','press'],
-  ['managers.html','Managers','managers'],
-  ['power-rankings.html','Power Rankings','power'],
-  ['records.html','Records','records'],
-  ['history.html','History','history'],
-  ['story.html','The Story','story'],
-  ['draft.html','Draft','draft'],
-  ['trades.html','Trades','trades'],
-  ['fun.html','Fun Stats','fun'],
-  ['matchups.html','Matchups','matchups'],
-  ['payouts.html','Payouts','payouts'],
+const PRIMARY_PAGES = [
+  ['matchups.html','Matchups','matchups','VS'],
+  ['power-rankings.html','Power Rankings','power','#'],
+  ['press.html','The Press','press','P'],
+  ['payouts.html','Payouts','payouts','$']
 ];
+const NAV_GROUPS = [
+  {label:'League',pages:[
+    ['managers.html','Managers','managers'],
+    ['draft.html','Draft','draft'],
+    ['trades.html','Trades','trades']
+  ]},
+  {label:'Archive',pages:[
+    ['records.html','Records','records'],
+    ['history.html','History','history'],
+    ['story.html','The Story','story'],
+    ['fun.html','Fun Stats','fun']
+  ]}
+];
+
+function pageLink(page,active,className){
+  const [href,label,key]=page,a=el('a',(className||'')+(key===active?' active':''));
+  a.href=href;a.textContent=label;if(key===active)a.setAttribute('aria-current','page');return a;
+}
+
+function desktopNavigation(active){
+  const links=el('nav','nav-links');links.setAttribute('aria-label','Primary navigation');
+  PRIMARY_PAGES.forEach(page=>links.appendChild(pageLink(page,active,'link')));
+  NAV_GROUPS.forEach(group=>{
+    const isActive=group.pages.some(page=>page[2]===active),details=el('details','nav-group'+(isActive?' active':''));
+    const summary=el('summary','nav-group-trigger'),label=el('span','',group.label),cue=el('span','nav-group-cue','⌄');
+    cue.setAttribute('aria-hidden','true');summary.append(label,cue);summary.setAttribute('aria-label',`${group.label} pages${isActive?', current section':''}`);details.appendChild(summary);
+    const menu=el('div','nav-menu');menu.setAttribute('aria-label',`${group.label} pages`);
+    group.pages.forEach(page=>menu.appendChild(pageLink(page,active,'nav-menu-link')));details.appendChild(menu);links.appendChild(details);
+    details.addEventListener('toggle',()=>{if(details.open)links.querySelectorAll('.nav-group').forEach(other=>{if(other!==details)other.open=false;});});
+  });
+  document.addEventListener('click',event=>{if(!links.contains(event.target))links.querySelectorAll('.nav-group[open]').forEach(group=>{group.open=false;});});
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Escape')return;
+    const group=event.target&&typeof event.target.closest==='function'?event.target.closest('.nav-group[open]'):null;
+    if(!group||!links.contains(group))return;
+    event.preventDefault();const trigger=group.querySelector('.nav-group-trigger');group.open=false;if(trigger)trigger.focus();
+  });
+  if(typeof matchMedia==='function'){
+    const mobile=matchMedia('(max-width: 900px)');if(typeof mobile.addEventListener==='function')mobile.addEventListener('change',event=>{if(event.matches)links.querySelectorAll('.nav-group[open]').forEach(group=>{group.open=false;});});
+  }
+  return links;
+}
+
+function mobileNavigation(active){
+  const nav=el('nav','mobile-nav');nav.setAttribute('aria-label','Mobile navigation');
+  PRIMARY_PAGES.forEach(page=>{
+    const [href,label,key,mark]=page,a=pageLink(page,active,'mobile-nav-link'),icon=el('span','mobile-nav-icon',mark),copy=el('span','mobile-nav-label',label==='Power Rankings'?'Power':label==='The Press'?'Press':label);
+    a.textContent='';icon.setAttribute('aria-hidden','true');a.append(icon,copy);nav.appendChild(a);
+  });
+
+  const groupedKeys=new Set(NAV_GROUPS.flatMap(group=>group.pages.map(page=>page[2]))),moreIsActive=groupedKeys.has(active)||active==='home',more=el('button','mobile-nav-link mobile-more-trigger'+(moreIsActive?' active':''));
+  more.type='button';more.setAttribute('aria-haspopup','dialog');more.setAttribute('aria-expanded','false');more.setAttribute('aria-controls','mobile-more-dialog');more.setAttribute('aria-label',`More${moreIsActive?', current section':''}`);
+  const moreIcon=el('span','mobile-nav-icon','•••'),moreLabel=el('span','mobile-nav-label','More');moreIcon.setAttribute('aria-hidden','true');more.append(moreIcon,moreLabel);nav.appendChild(more);
+
+  const dialog=document.createElement('dialog');dialog.id='mobile-more-dialog';dialog.className='mobile-more-dialog';dialog.setAttribute('aria-labelledby','mobile-more-title');dialog.setAttribute('aria-modal','true');
+  const panel=el('div','mobile-more-panel'),head=el('div','mobile-more-head'),heading=el('h2','');heading.id='mobile-more-title';heading.textContent='More from Farmhood';
+  const close=el('button','mobile-more-close','Close');close.type='button';head.append(heading,close);panel.appendChild(head);
+  const home=pageLink(['index.html','Home','home'],active,'mobile-more-home');home.appendChild(el('span','', 'The Farmhood front page'));panel.appendChild(home);
+  const groups=el('div','mobile-more-groups');
+  NAV_GROUPS.forEach(group=>{
+    const section=el('section','mobile-more-group'),title=el('h3','',group.label),list=el('div','mobile-more-links');section.appendChild(title);
+    group.pages.forEach(page=>list.appendChild(pageLink(page,active,'mobile-more-link')));section.appendChild(list);groups.appendChild(section);
+  });
+  panel.appendChild(groups);dialog.appendChild(panel);
+  let desktopMedia=null;
+  const restoreMoreFocus=()=>{if(!desktopMedia||!desktopMedia.matches)more.focus();};
+  const dialogIsOpen=()=>Boolean(dialog.open||dialog.hasAttribute('open'));
+  const openDialog=()=>{if(dialogIsOpen())return;more.setAttribute('aria-expanded','true');document.documentElement.classList.add('mobile-menu-open');if(typeof dialog.showModal==='function')dialog.showModal();else{dialog.setAttribute('open','');close.focus();}};
+  const closeDialog=()=>{if(!dialogIsOpen())return;if(typeof dialog.close==='function')dialog.close();else{dialog.removeAttribute('open');more.setAttribute('aria-expanded','false');document.documentElement.classList.remove('mobile-menu-open');restoreMoreFocus();}};
+  more.addEventListener('click',openDialog);close.addEventListener('click',closeDialog);
+  dialog.addEventListener('close',()=>{more.setAttribute('aria-expanded','false');document.documentElement.classList.remove('mobile-menu-open');restoreMoreFocus();});
+  dialog.addEventListener('click',event=>{if(event.target===dialog)closeDialog();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dialogIsOpen()){event.preventDefault();closeDialog();}});
+  if(typeof matchMedia==='function'){
+    desktopMedia=matchMedia('(min-width: 901px)');if(typeof desktopMedia.addEventListener==='function')desktopMedia.addEventListener('change',event=>{if(event.matches)closeDialog();});
+  }
+  return {nav,dialog};
+}
 
 function mountChrome(active){
   // favicon (SVG logo), injected once
@@ -52,15 +122,13 @@ function mountChrome(active){
     s.setAttribute('data-goatcounter','https://'+GC_CODE+'.goatcounter.com/count');
     document.head.appendChild(s);
   }
-  const nav = el('nav','nav');
+  const nav = el('header','nav');
   const inner = el('div','nav-inner');
-  inner.appendChild(el('a','brand',
-    `<img class="crest-img" src="assets/logo.jpg" alt="Farmwood"><span><b>Farmhood Fantasy</b><span>The Official Record Book · Est. 2014</span></span>`)).href='index.html';
+  const brand=el('a','brand'+(active==='home'?' active':''),
+    `<img class="crest-img" src="assets/logo.jpg" alt=""><span><b>Farmhood Fantasy</b><span>The Official Record Book · Est. 2014</span></span>`);
+  brand.href='index.html';brand.setAttribute('aria-label','Farmhood Fantasy home');if(active==='home')brand.setAttribute('aria-current','page');inner.appendChild(brand);
   inner.appendChild(el('span','vol','Vol. XIII — The 2026 Season'));
-  const links = el('div','nav-links');
-  PAGES.forEach(([href,label,key])=>{
-    const a = el('a','link'+(key===active?' active':''),label); a.href=href; links.appendChild(a);
-  });
+  const links=desktopNavigation(active);
   inner.appendChild(links); nav.appendChild(inner);
   document.body.prepend(nav);
 
@@ -68,6 +136,7 @@ function mountChrome(active){
     `<div>Farmhood Fantasy · Founded 2014 · Data from the Sleeper API</div>
      <div>Built by <b style="color:var(--gold)">Akash Patel</b> · <span class="ok">✓ verified</span> · sanitized</div>`);
   document.body.appendChild(foot);
+  const mobile=mobileNavigation(active);document.body.append(mobile.dialog,mobile.nav);
   easterEgg();
   /* chat assistant removed — Almanac redesign */
 }
