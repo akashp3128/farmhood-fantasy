@@ -1,0 +1,137 @@
+/* Farmhood Clarity Pass — additive preview layer for codex/ui-clarity-pass. */
+:root{
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:24px;
+  --space-6:32px;
+  --space-7:48px;
+  --rail-width:300px;
+  --control-min:44px;
+  --clarity-control-border:rgba(23,59,39,.62);
+}
+
+.skip-link{position:fixed;left:16px;top:10px;z-index:500;transform:translateY(-160%);background:var(--text);color:var(--surface);
+  padding:10px 14px;font-weight:800;font-size:12px;border:2px solid var(--gold-hi);transition:transform .15s}
+.skip-link:focus{transform:translateY(0)}
+#app,#money-board{scroll-margin-top:78px}
+.page-intro{max-width:760px;margin-bottom:var(--space-5)}.page-intro .title{margin-bottom:10px}.page-intro .sub{max-width:66ch}
+
+.clarity-page-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:var(--space-5);margin-bottom:var(--space-5)}
+.clarity-page-header .sub{margin:0}.clarity-page-jump{font-size:11px;font-weight:800;color:var(--blue);border-bottom:1px solid var(--blue);white-space:nowrap}
+
+.clarity-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(270px,var(--rail-width));gap:var(--space-5);align-items:start}
+.clarity-main{min-width:0}.clarity-rail{min-width:0;display:flex;flex-direction:column;gap:var(--space-4)}
+.clarity-aside-card{background:var(--surface);border:2px solid var(--text);padding:var(--space-4);position:relative}
+.clarity-aside-card::before{content:'';position:absolute;inset:4px;border:1px solid rgba(23,59,39,.22);pointer-events:none}
+.clarity-aside-head{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3);padding-bottom:var(--space-3);border-bottom:1px solid var(--line)}
+.clarity-aside-head h2{font-family:var(--serif);font-size:18px;line-height:1.15}.clarity-aside-head small{font-size:9px;color:var(--muted-2);text-transform:uppercase;letter-spacing:1px}
+
+.clarity-summary-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);background:var(--surface)}
+.clarity-summary-item{display:flex;flex-direction:column;gap:2px;padding:var(--space-3) var(--space-4);border-right:1px dotted rgba(23,59,39,.3);min-width:0}
+.clarity-summary-item:last-child{border-right:0}.clarity-summary-item small{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.clarity-summary-item strong{font-family:var(--serif);font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.clarity-disclosure{margin-top:var(--space-4);border-top:3px double var(--blue)}
+.clarity-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--control-min);padding:9px 2px;
+  list-style:none;cursor:pointer;font-family:var(--serif);font-weight:700;font-size:15px}
+.clarity-disclosure>summary::-webkit-details-marker{display:none}.clarity-disclosure>summary::after{content:'+';font-size:20px;color:var(--gold)}
+.clarity-disclosure[open]>summary::after{content:'−'}.clarity-disclosure>summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.clarity-disclosure-copy{display:flex;flex-direction:column;gap:2px}.clarity-disclosure-copy strong{font-family:var(--serif);font-size:15px}.clarity-disclosure-copy span{font-family:'Public Sans',sans-serif;font-size:10px;font-weight:500;color:var(--muted-2)}
+.clarity-disclosure-body{padding-top:var(--space-3)}
+.clarity-disclosure-body>.section:first-child{margin-top:0}
+
+.clarity-tabs{display:flex;align-items:center;gap:4px;overflow-x:auto;padding:2px 0 var(--space-3);scrollbar-width:none}
+.clarity-tabs::-webkit-scrollbar{display:none}.clarity-tab{min-height:var(--control-min);padding:8px 13px;border:1px solid var(--clarity-control-border);background:var(--surface);color:var(--text);
+  font:inherit;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;cursor:pointer}
+.clarity-tab[aria-selected='true'],.clarity-tab.active{background:var(--blue);color:var(--surface);border-color:var(--blue)}
+.clarity-panel[hidden]{display:none!important}
+
+.clarity-compact-list{display:flex;flex-direction:column}.clarity-compact-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;
+  min-height:40px;padding:6px 2px;border-bottom:1px dotted rgba(23,59,39,.3)}
+.clarity-compact-row:last-child{border-bottom:0}.clarity-compact-rank{font-family:var(--serif);font-size:11px;color:var(--muted-2)}
+.clarity-compact-name{font-family:var(--serif);font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.clarity-compact-value{font-family:var(--serif);font-weight:700;font-size:12px;color:var(--blue)}
+
+.clarity-mobile-only{display:none!important}
+
+/* Managers — directory first, recorded money in a contextual rail. */
+.managers-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:var(--space-5);align-items:start;margin-top:var(--space-5)}
+.manager-directory{min-width:0}.manager-directory-head{display:flex;align-items:end;justify-content:space-between;gap:var(--space-3);border-bottom:2px solid var(--text);padding-bottom:8px;margin-bottom:0}
+.manager-directory-head .h{border:0;padding:0;margin:0}.manager-directory-intro{font-family:var(--serif);font-size:12px;font-style:italic;color:var(--muted);margin:9px 0 var(--space-4)}
+.manager-money-jump{display:none;color:var(--blue);font-size:10px;font-weight:800;border-bottom:1px solid var(--blue);white-space:nowrap}.manager-directory-note{margin-top:var(--space-4)}
+.manager-directory .mgr-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.manager-directory .mgr-card{padding:18px 10px 14px;gap:6px}.mgr-no-rings{color:var(--muted-2);font-size:11px}
+.money-board{background:var(--surface);border:2px solid var(--text);padding:16px;min-width:0}.money-board-head{padding-bottom:10px;border-bottom:3px double var(--text)}
+.money-board-title{font-family:var(--serif);font-size:19px;line-height:1.15}.money-board-kicker{display:block;margin-top:3px;color:var(--muted-2);font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.money-board-summary{display:flex;flex-direction:column;padding:13px 0 9px}.money-board-summary strong{font-family:var(--serif);font-size:27px;color:var(--gold-2);line-height:1}.money-board-summary span{font-size:9px;color:var(--muted-2);margin-top:4px}
+.money-board-list{list-style:none}.money-board-item{border-bottom:1px dotted rgba(23,59,39,.3)}.money-board-row{width:100%;min-height:44px;display:grid;grid-template-columns:28px 32px minmax(0,1fr) auto;align-items:center;gap:7px;border:0;background:transparent;color:var(--text);font:inherit;text-align:left;padding:6px 1px;cursor:pointer}
+.money-board-row:hover{background:var(--blue-dim)}.money-board-row:focus-visible{outline:2px solid var(--blue);outline-offset:1px}.money-board-rank{display:grid;place-items:center}.money-board-rank .rank{width:24px;height:24px}
+.money-board-manager{display:flex;flex-direction:column;min-width:0;line-height:1.1}.money-board-manager strong{font-family:var(--serif);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.money-board-manager small{font-size:8px;color:var(--muted-2)}
+.money-board-manager .rings{font-size:8px;letter-spacing:1px}.money-board-amount{font-family:var(--serif);font-size:12px;font-weight:700;color:var(--blue);white-space:nowrap}.money-board-podium .money-board-row{min-height:50px}
+.money-board-more{border-bottom:1px solid var(--line)}.money-board-more-toggle{min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;cursor:pointer;color:var(--blue);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+.money-board-more-toggle::-webkit-details-marker{display:none}.money-board-more-toggle::after{content:'+';font-family:var(--serif);font-size:18px;color:var(--gold)}.money-board-more[open] .money-board-more-toggle::after{content:'−'}
+.money-board-more-toggle strong{font-size:8px;color:var(--muted-2)}.money-board-footer{padding-top:12px}.money-board-footer p{font-family:var(--serif);font-style:italic;font-size:10px;color:var(--muted-2);line-height:1.45}
+.money-board-payout-link{display:inline-block;margin-top:9px;color:var(--blue);font-size:10px;font-weight:800;border-bottom:1px solid var(--blue)}
+.manager-profile-dialog{border:0;padding:0;background:transparent;max-width:none;max-height:none;width:100%;height:100%;color:var(--text)}
+.manager-profile-dialog[open]{position:fixed;inset:0;display:grid;place-items:center;padding:20px}.manager-profile-dialog::backdrop{background:rgba(23,59,39,.48);backdrop-filter:blur(3px)}
+.manager-profile-panel{width:min(440px,100%);max-height:min(88vh,760px);overflow-y:auto}.manager-profile-panel .modal-x{width:44px;height:44px;top:10px;right:10px}.manager-profile-open{overflow:hidden}
+
+/* Home — repeat visits start with this season; the museum stays one tap away. */
+.page-home .live-home{margin-top:var(--space-5)}.home-current-section{margin-top:var(--space-5)}
+.home-current-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
+.home-current-cards .champ-frame,.home-current-cards .ledger{height:100%}.home-almanac-disclosure{margin-top:var(--space-6)}
+.home-almanac{padding-top:2px}.home-almanac>.stats{margin-top:0;margin-bottom:var(--space-5)}.home-almanac>.tl-wrap{max-width:760px}.home-almanac .section{margin-top:var(--space-6)}
+
+/* Matchups — keep lineups full width, make week and standings controls quieter. */
+.matchup-week-toolbar{display:grid;grid-template-columns:auto minmax(150px,210px) auto auto;align-items:end;gap:8px;margin:0 0 var(--space-4)}
+.matchup-week-toolbar button,.matchup-week-select select{min-height:var(--control-min);border:1px solid var(--clarity-control-border);background:var(--surface);color:var(--text);font:inherit;font-size:10px;font-weight:800;cursor:pointer}
+.matchup-week-toolbar button{padding:8px 12px}.matchup-week-toolbar button:hover:not(:disabled),.matchup-week-select select:hover{border-color:var(--blue);background:var(--blue-dim)}
+.matchup-week-toolbar button:disabled{opacity:.42;cursor:not-allowed}.matchup-week-select{display:flex;flex-direction:column;gap:3px}.matchup-week-select span{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.matchup-week-select select{width:100%;padding:7px 30px 7px 10px}.matchup-week-current{color:var(--blue)!important}.matchup-standings-disclosure{margin-top:var(--space-6)}
+
+/* Payouts — one current answer, then weekly and manager views on demand. */
+.payout-view-switcher{margin-top:18px}.payout-view-panel{min-width:0}.payout-view-panel>.h{margin-top:var(--space-5)}
+.payout-section-copy{max-width:66ch;margin:-7px 0 var(--space-4);font-family:var(--serif);font-size:12px;font-style:italic;color:var(--muted)}
+.payout-money-now{margin-top:var(--space-5)}.payout-accounting-summary{margin-top:var(--space-4)}.payout-season-section{margin-top:var(--space-6)}
+.payout-structure-disclosure{margin-top:var(--space-6)}.payout-structure-body{padding-top:var(--space-4)}
+.payout-rules-heading{font-family:var(--serif);font-size:17px;margin:var(--space-5) 0 var(--space-2)}.payout-rules-list{padding-left:20px;color:var(--muted);font-size:12px}.payout-rules-list li{margin-bottom:8px}
+.payout-week-link,.payout-rivalry-open,.payout-week-matchup-link{color:var(--blue);font-weight:800;border-bottom:1px solid transparent}.payout-week-link:hover,.payout-rivalry-open:hover,.payout-week-matchup-link:hover{border-bottom-color:var(--blue)}
+.payout-week-cards,.payout-cash-cards{gap:10px}.payout-week-card,.payout-cash-card{background:var(--surface);border:1px solid var(--line)}
+.payout-week-card-summary,.payout-cash-card-summary{min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;list-style:none;cursor:pointer}
+.payout-week-card-summary::-webkit-details-marker,.payout-cash-card-summary::-webkit-details-marker{display:none}.payout-week-card-summary::after,.payout-cash-card-summary::after{content:'+';color:var(--gold);font-family:var(--serif);font-size:19px}
+.payout-week-card[open]>.payout-week-card-summary::after,.payout-cash-card[open]>.payout-cash-card-summary::after{content:'−'}
+.payout-week-card-title{display:flex;flex-direction:column;gap:2px;min-width:0}.payout-week-card-title strong{font-family:var(--serif);font-size:15px}.payout-week-card-title small{font-size:9px;color:var(--muted-2)}
+.payout-week-card-meta{display:flex;align-items:center;gap:8px;margin-left:auto}.payout-week-card-meta>strong{font-family:var(--serif);font-size:14px;color:var(--blue)}
+.payout-week-card-body{border-top:1px solid var(--line);padding:12px}.payout-week-card-award{padding:10px 0;border-bottom:1px dotted rgba(23,59,39,.28)}.payout-week-card-award h3{font-family:var(--serif);font-size:13px;margin-bottom:5px}
+.payout-week-card-rivalry{border-left:3px solid var(--gold-solid);padding-left:10px}.payout-week-matchup-link{display:inline-block;margin-top:12px;font-size:11px}
+.payout-cash-card-identity{display:flex;align-items:center;gap:9px;min-width:0}.payout-cash-card-rank{width:23px;font-family:var(--serif);font-size:11px;color:var(--muted-2)}.payout-cash-card-total{font-family:var(--serif);font-size:16px;color:var(--blue);margin-left:auto}
+.payout-cash-breakdown{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}.payout-cash-breakdown-item{display:flex;justify-content:space-between;gap:8px;background:var(--bg);padding:9px 11px;font-size:10px}.payout-cash-breakdown-item dt{color:var(--muted-2)}.payout-cash-breakdown-item dd{font-family:var(--serif);font-weight:700}
+
+/* Interactive controls share a comfortable target and visible boundary. */
+.live-refresh,.weeksel button{min-height:var(--control-min);border-color:var(--clarity-control-border)}
+.payout-refresh{display:inline-flex;align-items:center;justify-content:center;min-height:var(--control-min);padding:6px 12px;border:1px solid var(--clarity-control-border);background:var(--bg)}
+
+@media(max-width:900px){
+  .clarity-page-header{grid-template-columns:1fr;align-items:start;gap:var(--space-2)}
+  .clarity-layout{grid-template-columns:1fr}.clarity-rail{margin-top:var(--space-5)}
+  .clarity-summary-strip{grid-template-columns:1fr}.clarity-summary-item{border-right:0;border-bottom:1px dotted rgba(23,59,39,.3)}.clarity-summary-item:last-child{border-bottom:0}
+  .clarity-mobile-only{display:initial!important}.clarity-desktop-only{display:none!important}
+  .managers-layout{grid-template-columns:1fr}.manager-money-jump{display:inline-block}.manager-directory .mgr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .money-board{margin-top:var(--space-2)}
+  .home-current-cards{grid-template-columns:1fr}
+  .matchup-week-toolbar{grid-template-columns:1fr minmax(125px,1.15fr) 1fr}.matchup-week-current{grid-column:1/-1;grid-row:2;padding:6px!important;min-height:var(--control-min)!important}.matchup-week-toolbar .matchup-week-step:last-child{grid-column:3}
+  .payout-week-cards,.payout-cash-cards{display:flex!important;flex-direction:column}.payout-ledger-desktop,.payout-cash-desktop{display:none!important}
+}
+
+@media(max-width:560px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .page-matchups .page-intro .title{font-size:29px;word-spacing:.08em}
+  .payout-view-switcher .clarity-tab{flex:1 1 33.333%;min-width:0;padding:8px 5px;font-size:8px;letter-spacing:.7px}
+  .power-rank-summary{grid-template-columns:32px minmax(0,1fr) 52px 72px 16px;grid-template-areas:'rank manager manager score cue' '. record week week cue';gap:3px 5px;min-height:72px;padding:8px 3px}
+  .power-list-rank{grid-area:rank}.power-list-manager{grid-area:manager}.power-rank-summary>.power-list-metric:not(.hide-power-mobile):not(.hide-power-tablet):not(.power-week){grid-area:record;align-items:flex-start}.power-week{grid-area:week;align-items:flex-end}.power-list-score{grid-area:score}.power-list-cue{grid-area:cue;justify-self:end}
+  .sub{font-size:14px;line-height:1.6}
+  .note{font-size:12px;line-height:1.55}
+  .starter-name{font-size:11px}.starter-meta{font-size:9px}.duel-number small{font-size:7px}.power-list-metric small,.power-list-score small{font-size:7px}
+  .payout-week-strip small{font-size:8px}.payout-player-win-chip{font-size:7px}
+}
+@media(max-width:360px){.manager-directory .mgr-grid{grid-template-columns:1fr}.manager-directory .mgr-card{display:grid;grid-template-columns:58px minmax(0,1fr);text-align:left;justify-items:start}.manager-directory .mgr-card .av-wrap{grid-row:1/6}}
