@@ -2,6 +2,8 @@ import path from 'node:path';
 import { appendFile } from 'node:fs/promises';
 import { PRESS_CONFIG, PRESS_SCHEMA_VERSION, PROMPT_VERSION } from './config.mjs';
 import { buildWeeklyFacts } from './facts.mjs';
+import { gradePredictions } from './grading.mjs';
+import { assertPredictionLineage } from './lineage.mjs';
 import { articleCopySchema, validateArticleCopy } from './schema.mjs';
 import {
   assert,
@@ -270,24 +272,6 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
   }
 }
 
-function gradePredictions(matchups) {
-  const completed = matchups.filter((matchup) => matchup.winner);
-  if (!completed.length) return null;
-  const correct = completed.filter((matchup) => matchup.predictionCorrect).length;
-  const scoreError = completed.reduce((sum, matchup) => sum + Math.abs(matchup.finalScoreA - matchup.projectedScoreA) + Math.abs(matchup.finalScoreB - matchup.projectedScoreB), 0) / (completed.length * 2);
-  const marginError = completed.reduce((sum, matchup) => sum + Math.abs((matchup.finalScoreA - matchup.finalScoreB) - (matchup.projectedScoreA - matchup.projectedScoreB)), 0) / completed.length;
-  const winnerAccuracy = correct / completed.length;
-  const deskGrade = Math.round(winnerAccuracy * 70 + Math.max(0, 1 - scoreError / 30) * 15 + Math.max(0, 1 - marginError / 30) * 15);
-  return {
-    graded: completed.length,
-    correctWinners: `${correct}/${completed.length}`,
-    winnerAccuracy: `${Math.round(winnerAccuracy * 100)}%`,
-    scoreError: round(scoreError, 1),
-    marginError: round(marginError, 1),
-    deskGrade: `${deskGrade}/100`
-  };
-}
-
 function mergeArticle({ copy, snapshot, prediction, type, tone, model, responseId, usage }) {
   const matchupById = new Map(snapshot.matchups.map((matchup) => [matchup.matchupId, matchup]));
   const predictionById = new Map(prediction.predictions.map((item) => [Number(item.matchupId), item]));
@@ -428,9 +412,10 @@ async function main() {
   const predictionPath = path.join(root, 'content', 'predictions', `${season}-week-${String(week).padStart(2, '0')}.json`);
   const articleId = `${season}-${weekSlug(week)}-${type}`;
   const articlePath = path.join(root, 'content', 'articles', String(season), `${weekSlug(week)}-${type}.json`);
-  const [existingPrediction, existingArticle] = await Promise.all([
+  const [existingPrediction, existingArticle, originalSnapshot] = await Promise.all([
     readJsonIfExists(predictionPath),
-    readJsonIfExists(articlePath)
+    readJsonIfExists(articlePath),
+    readJsonIfExists(path.join(weekDirectory, 'pre.json'))
   ]);
   const originalLocked = Boolean(existingPrediction && ['locked', 'locked_original', 'graded'].includes(existingPrediction.state));
   const publishedOriginal = Boolean(existingPrediction && ['locked_original', 'graded'].includes(existingPrediction.state));
@@ -501,6 +486,13 @@ async function main() {
   assert(leagueCanon && managerCanon && editorial && corrections, 'League canon, editorial policy and corrections are required.');
   const sourcePrediction = preservePrediction ? existingPrediction : prediction;
   assert(sourcePrediction, 'The original prediction ledger is required before generating a recap.');
+  if (type === 'recap') assertPredictionLineage({
+    articleType: 'week_recap',
+    publishedSnapshot: snapshot,
+    originalSnapshot,
+    ledger: sourcePrediction,
+    label: `Week ${week} Recap`
+  });
   const usageEdition = {
     articleId,
     type: type === 'recap' ? 'week_recap' : 'week_preview',
