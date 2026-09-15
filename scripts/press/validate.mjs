@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PRESS_CONFIG } from './config.mjs';
+import { assertPredictionLineage } from './lineage.mjs';
 import { assert, readJsonIfExists, repoRoot } from './utils.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -85,7 +86,10 @@ async function main() {
     const ledger = await readJsonIfExists(predictionPath);
     assert(ledger?.predictions?.length === 6, `Prediction ledger missing for ${meta.articleId}.`);
     assert(article.source?.predictionId === ledger.predictionSetId, `Prediction source mismatch for ${meta.articleId}.`);
-    assert(ledger.sourceSnapshotId === snapshot.id, `Prediction snapshot mismatch for ${meta.articleId}.`);
+    const originalSnapshot = snapshotKind === 'final'
+      ? await readJsonIfExists(path.join(root, 'content', 'snapshots', String(article.season), `week-${String(article.week).padStart(2, '0')}`, 'pre.json'))
+      : snapshot;
+    assertPredictionLineage({ articleType: article.type, publishedSnapshot: snapshot, originalSnapshot, ledger, label: meta.articleId });
     const predictions = new Map(ledger.predictions.map((prediction) => [Number(prediction.matchupId), prediction]));
     const seenMatchups = new Set();
     article.matchups.forEach((matchup) => {

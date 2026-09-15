@@ -87,6 +87,9 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Test deterministic newsroom logic
+        run: node --test scripts/press/*.test.mjs
+
       - name: Test the credential without generating tokens
         if: inputs.operation == 'credential-test'
         run: node scripts/press/check-openai.mjs
@@ -181,7 +184,7 @@ jobs:
 
       - name: Preserve a paid attempt that did not finish
         if: failure() && steps.generate.outputs.paid_request == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: farmhood-press-usage-${{ github.run_id }}-${{ github.run_attempt }}
           path: content/usage/ledger.json
