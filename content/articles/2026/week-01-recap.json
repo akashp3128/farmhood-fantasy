@@ -16,7 +16,7 @@
   "lead": {
     "body": [
       "Blumbo posted Week 1’s loudest statement, flattening sidjunlee 163.7-115.66 after the original forecast favored sidjunlee. Kenneth Walker, Jaxson Dart and Zay Flowers led the way in a result that sent the preseason spreadsheet directly to voicemail.",
-      "Elsewhere, maco71 opened the year by beating reigning champion martinch94, while akaaashh and cuch each overturned the original call. vpitello34 and turi70 handled business as forecast."
+      "Elsewhere, maco71 opened the year by beating reigning champion martinch94, while akaaashh delivered the other forecast-flipping upset. vpitello34, cuch and turi70 handled business as forecast."
     ],
     "pullQuote": "Blumbo turned a 57.88% sidjunlee forecast into a 48.04-point rebuttal.",
     "keyStat": {
@@ -170,10 +170,10 @@
       "winProbability": 0.5472,
       "predictionCorrect": true,
       "headline": "cuch 124.92, jwislek_20 92.96",
-      "analysis": "cuch erased the original jwislek_20 forecast with 24.72 from Jalen Hurts, 22.2 from Jaxon Smith-Njigba and a wild 19 from Evan McPherson. jwislek_20 got 23.2 from Chris Olave, then watched Ja'Marr Chase supply 2.2 points—the kind of elite-brand customer service nobody requested.",
+      "analysis": "cuch confirmed the original forecast with 24.72 from Jalen Hurts, 22.2 from Jaxon Smith-Njigba and a wild 19 from Evan McPherson. jwislek_20 got 23.2 from Chris Olave, then watched Ja'Marr Chase supply 2.2 points—the kind of elite-brand customer service nobody requested.",
       "keyPlayer": "Jalen Hurts",
       "keyPlayerId": "6904",
-      "upsetPath": "cuch beat the original jwislek_20 pick by 31.96 points.",
+      "upsetPath": "",
       "historyNote": "jwislek_20 won the 2024 title and posted the best 2025 regular-season record. cuch is the current commissioner.",
       "injuryWatch": [
         "Jordan Mason — listed Questionable",
@@ -205,7 +205,7 @@
       "winProbability": 0.546,
       "predictionCorrect": true,
       "headline": "turi70 140.36, Siccboi 121.44",
-      "analysis": "turi70 was the original pick and backed it up with 31.9 from D'Andre Swift and 29.7 from Christian Watson. Siccboi got 23.6 from Jonathan Taylor and 22.2 from Chuba Hubbard, but the comeback tour began with a Week 1 win anyway.",
+      "analysis": "turi70 was the original pick and backed it up with 31.9 from D'Andre Swift and 29.7 from Christian Watson. Siccboi got 23.6 from Jonathan Taylor and 22.2 from Chuba Hubbard, but turi70’s comeback tour began with a Week 1 win anyway.",
       "keyPlayer": "D'Andre Swift",
       "keyPlayerId": "6790",
       "upsetPath": "",
@@ -223,8 +223,8 @@
   ],
   "storylines": [
     {
-      "title": "The forecast took three losses",
-      "body": "The permanent original forecast correctly picked maco71, vpitello34 and turi70, but Blumbo, akaaashh and cuch flipped their matchups. Blumbo’s reversal was the loudest: sidjunlee was originally favored before Blumbo won by 48.04.",
+      "title": "The forecast took two losses",
+      "body": "The permanent original forecast correctly picked maco71, vpitello34, cuch and turi70, while Blumbo and akaaashh flipped their matchups. Blumbo’s reversal was the loudest: sidjunlee was originally favored before Blumbo won by 48.04.",
       "subjects": [
         "Blumbo",
         "akaaashh",
@@ -232,12 +232,12 @@
         "sidjunlee"
       ],
       "factIds": [
-        "2026:w1:m2:projection:Blumbo",
-        "2026:w1:m2:projection:sidjunlee",
+        "2026:w1:m1:pick",
         "2026:w1:m2:pick",
-        "2026:w1:m3:projection:akaaashh",
-        "2026:w1:m3:projection:pgorny",
-        "2026:w1:m3:pick"
+        "2026:w1:m3:pick",
+        "2026:w1:m4:pick",
+        "2026:w1:m5:pick",
+        "2026:w1:m6:pick"
       ]
     },
     {
@@ -284,13 +284,12 @@
       ]
     },
     {
-      "title": "Projection Fraud Investigation",
-      "recipient": "jwislek_20",
-      "body": "The original forecast favored jwislek_20, but the final was a 31.96-point loss. Ja'Marr Chase’s 2.2 did not exactly provide counsel for the defense.",
+      "title": "Backfield Crown",
+      "recipient": "pgorny",
+      "body": "Derrick Henry supplied 34.8 points for pgorny, the biggest individual RB line in a Week 1 starting lineup.",
       "factIds": [
-        "2026:w1:m5:projection:jwislek_20",
-        "2026:w1:m5:projection:cuch",
-        "2026:w1:m5:pick"
+        "2026:w1:m3:projection:pgorny",
+        "2026:w1:m3:pick"
       ]
     },
     {
