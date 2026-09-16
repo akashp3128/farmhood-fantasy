@@ -1,10 +1,11 @@
 name: Farmhood Press draft
+run-name: Farmhood Press · ${{ inputs.operation }} · ${{ inputs.edition }} 2026 Week ${{ inputs.week }}
 
 on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Check the credential, test generation, or generate an edition
+        description: Check credentials, test generation, or create a review draft (merge required to publish)
         required: true
         default: generate
         type: choice
@@ -80,6 +81,7 @@ jobs:
       - name: Check out the publication
         uses: actions/checkout@v5
         with:
+          ref: refs/heads/main
           fetch-depth: 0
 
       - name: Use Node.js
@@ -100,26 +102,61 @@ jobs:
 
       - name: Check for an existing review draft
         id: existing_draft
-        if: inputs.operation == 'generate' && inputs.force_regeneration != true
+        if: inputs.operation == 'generate'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
+          FORCE_REGENERATION: ${{ inputs.force_regeneration }}
         run: |
-          existing_ref=$(git ls-remote --heads origin "refs/heads/press/${EDITION}-2026-week-${WEEK}-*" | sed -n '1p')
-          existing_review=$(gh pr list --state open --limit 100 --json headRefName,url --jq '.[] | select(.headRefName | startswith("press/")) | "\(.headRefName) \(.url)"' | sed -n '1p')
-          if [ -n "$existing_ref" ] || [ -n "$existing_review" ]; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-            echo "### Farmhood Press skipped safely" >> "$GITHUB_STEP_SUMMARY"
-            if [ -n "$existing_ref" ]; then
-              echo "- A review branch for ${EDITION} Week ${WEEK} already exists." >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "- Finish the open Farmhood Press review before buying another draft: ${existing_review}" >> "$GITHUB_STEP_SUMMARY"
+          set -o pipefail
+          git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
+          existing_ref=""
+          if [ "$FORCE_REGENERATION" != "true" ]; then
+            existing_ref=$(git ls-remote --heads origin "refs/heads/press/${EDITION}-2026-week-${WEEK}-*" | sed -n '1p')
+          fi
+          existing_review=$(gh pr list --state open --limit 100 --json headRefName,url --jq '.[] | select(.headRefName | startswith("press/")) | "\(.headRefName)|\(.url)"' | sed -n '1p')
+          orphan_branch=""
+          while IFS= read -r remote_ref; do
+            if ! git merge-base --is-ancestor "$remote_ref" origin/main; then
+              candidate_branch=${remote_ref#refs/remotes/origin/}
+              review_disposition=$(gh pr list --state all --head "$candidate_branch" --limit 1 --json state,mergedAt --jq 'if length == 0 then "" elif .[0].mergedAt != null then "MERGED" else .[0].state end')
+              if [ "$review_disposition" != "MERGED" ] && [ "$review_disposition" != "CLOSED" ]; then
+                orphan_branch=$candidate_branch
+                break
+              fi
             fi
+          done < <(git for-each-ref --format='%(refname)' refs/remotes/origin/press/)
+          if [ -n "$existing_ref" ] || [ -n "$existing_review" ] || [ -n "$orphan_branch" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            if [ -n "$existing_review" ]; then
+              review_branch=${existing_review%%|*}
+              review_url=${existing_review#*|}
+              reason="Finish the open Farmhood Press review (${review_branch}) before generating another edition: ${review_url}"
+            elif [ -n "$orphan_branch" ]; then
+              review_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${orphan_branch}?expand=1"
+              reason="An unpublished Farmhood Press branch still needs review (${orphan_branch}): ${review_url}"
+            else
+              existing_branch=$(printf '%s\n' "$existing_ref" | awk '{sub("refs/heads/", "", $2); print $2}')
+              review_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${existing_branch}?expand=1"
+              reason="A review branch for ${EDITION} Week ${WEEK} already exists: ${review_url}"
+            fi
+            echo "reason=${reason}" >> "$GITHUB_OUTPUT"
+            echo "### Farmhood Press did not generate a draft" >> "$GITHUB_STEP_SUMMARY"
+            echo "- ${reason}" >> "$GITHUB_STEP_SUMMARY"
             echo "- OpenAI requests: 0" >> "$GITHUB_STEP_SUMMARY"
             echo "- Estimated API cost: \$0.0000" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Merge or close the blocking review, then run this workflow again." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error title=Farmhood Press not generated::${reason} No OpenAI request was sent. Merge or close that review, then rerun this workflow."
+            exit 1
           else
             echo "found=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Refresh main before generation
+        if: inputs.operation == 'generate'
+        run: |
+          git fetch origin main
+          git merge --ff-only origin/main
 
       - name: Generate the edition
         id: generate
@@ -135,6 +172,18 @@ jobs:
             args+=(--force)
           fi
           node scripts/press/generate.mjs "${args[@]}"
+
+      - name: Require a generated review draft
+        if: inputs.operation == 'generate' && steps.generate.outcome == 'success' && steps.generate.outputs.changed != 'true'
+        env:
+          GENERATION_MESSAGE: ${{ steps.generate.outputs.message }}
+        run: |
+          message=${GENERATION_MESSAGE:-"The generator completed without creating a draft."}
+          echo "::error title=Farmhood Press not generated::${message}"
+          echo "### Farmhood Press did not generate a draft" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ${message}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- No review branch was created and nothing was published." >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - name: Create the review branch
         if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
@@ -164,22 +213,30 @@ jobs:
           git commit -m "Draft ${EDITION} edition for 2026 Week ${WEEK}"
           git push --set-upstream origin HEAD
 
-      - name: Open a draft pull request
+      - name: Open a draft pull request (merge to publish)
+        id: review_pr
         if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
         env:
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
           TONE: ${{ inputs.tone }}
         run: |
-          if gh pr create --draft --base main \
+          if pr_url=$(gh pr create --draft --base main \
               --title "Farmhood Press: ${EDITION} edition for Week ${WEEK}" \
-              --body "AI-generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, prediction ledger, frozen fact snapshot, lineage metadata, and factual validation are included in this pull request. Review the prose and merge to publish through GitHub Pages."; then
-            echo "A draft pull request was opened for review." >> "$GITHUB_STEP_SUMMARY"
+              --body "AI-generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, prediction ledger, frozen fact snapshot, lineage metadata, and factual validation are included in this pull request. Review the prose and merge to publish through GitHub Pages." 2>&1); then
+            echo "url=${pr_url}" >> "$GITHUB_OUTPUT"
+            echo "### Farmhood Press review required" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Draft pull request: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
+            echo "- This edition is **not live yet**. Review and merge the pull request to publish it." >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=Farmhood Press draft ready::Review ${pr_url} and merge it to publish."
           else
             branch=$(git branch --show-current)
             compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${branch}?expand=1"
+            echo "${pr_url}" >&2
             echo "The draft branch was pushed, but repository policy did not allow the workflow to open a pull request." >> "$GITHUB_STEP_SUMMARY"
             echo "Open this review link: ${compare_url}" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error title=Farmhood Press review PR was not created::The draft branch was pushed, but no pull request was opened. Open ${compare_url} or enable the repository setting that allows GitHub Actions to create pull requests."
+            exit 1
           fi
 
       - name: Preserve a paid attempt that did not finish
