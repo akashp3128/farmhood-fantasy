@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-01-preview",
-  "updatedAt": "2026-09-08T06:56:38Z",
+  "featuredArticleId": "2026-week-01-recap",
+  "updatedAt": "2026-09-15T16:11:59.615Z",
   "articles": [
+    {
+      "articleId": "2026-week-01-recap",
+      "path": "content/articles/2026/week-01-recap.json",
+      "type": "week_recap",
+      "edition": "Postgame Edition",
+      "season": 2026,
+      "week": 1,
+      "status": "published",
+      "title": "Week 1 Recap: Blumbo Breaks the Meter, Favorites Mostly Behave",
+      "dek": "The opening slate delivered one 163.7-point demolition, two forecast-flipping upsets, and a reminder that Ja'Marr Chase can make a lineup look like it filed its taxes wrong.",
+      "publishedAt": "2026-09-15T16:11:59.615Z",
+      "dataAsOf": "2026-09-15T16:11:59.615Z",
+      "storylines": [
+        "The forecast took two losses",
+        "The title defense opens with a warning label",
+        "turi70 starts somewhere new"
+      ],
+      "tags": [
+        "Recap",
+        "Week 1",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-01-preview",
       "path": "content/articles/2026/week-01-preview.json",
@@ -15,8 +38,16 @@
       "dek": "Week 1 brings a vulnerable reigning champion, six competitive projection lines, and enough Questionable tags to keep Lineup Watch employed through kickoff.",
       "publishedAt": "2026-09-08T06:56:38Z",
       "dataAsOf": "2026-09-08T06:56:38.000Z",
-      "storylines": ["The title defense starts as a test", "The points king gets the first move", "Lineup management enters the opening headline"],
-      "tags": ["Week 1", "Predictions", "Lineup Watch"]
+      "storylines": [
+        "The title defense starts as a test",
+        "The points king gets the first move",
+        "Lineup management enters the opening headline"
+      ],
+      "tags": [
+        "Week 1",
+        "Predictions",
+        "Lineup Watch"
+      ]
     }
   ]
 }

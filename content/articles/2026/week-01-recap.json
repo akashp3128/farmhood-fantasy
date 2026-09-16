@@ -1,0 +1,574 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-01-recap",
+  "type": "week_recap",
+  "season": 2026,
+  "week": 1,
+  "status": "published",
+  "edition": "Postgame Edition",
+  "title": "Week 1 Recap: Blumbo Breaks the Meter, Favorites Mostly Behave",
+  "dek": "The opening slate delivered one 163.7-point demolition, two forecast-flipping upsets, and a reminder that Ja'Marr Chase can make a lineup look like it filed its taxes wrong.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-09-15T16:11:59.615Z",
+  "updatedAt": "2026-09-15T16:11:59.615Z",
+  "dataAsOf": "2026-09-15T16:11:59.615Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "Blumbo posted Week 1’s loudest statement, flattening sidjunlee 163.7-115.66 after the original forecast favored sidjunlee. Kenneth Walker, Jaxson Dart and Zay Flowers led the way in a result that sent the preseason spreadsheet directly to voicemail.",
+      "Elsewhere, maco71 opened the year by beating reigning champion martinch94, while akaaashh delivered the other forecast-flipping upset. vpitello34, cuch and turi70 handled business as forecast."
+    ],
+    "pullQuote": "Blumbo turned a 57.88% sidjunlee forecast into a 48.04-point rebuttal.",
+    "keyStat": {
+      "label": "Week 1 high score",
+      "value": "163.7",
+      "note": "Blumbo’s winning total against sidjunlee."
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "martinch94",
+      "managerB": "maco71",
+      "projectedScoreA": 109.5,
+      "projectedScoreB": 117.4,
+      "currentScoreA": 108.86,
+      "currentScoreB": 124.4,
+      "finalScoreA": 108.86,
+      "finalScoreB": 124.4,
+      "winner": "maco71",
+      "predictedWinner": "maco71",
+      "winProbability": 0.608,
+      "predictionCorrect": true,
+      "headline": "maco71 124.4, martinch94 108.86",
+      "analysis": "The original forecast picked maco71, and the points king delivered. Bijan Robinson and DJ Moore helped overcome Matthew Stafford’s 4.1, while Caleb Williams and Ashton Jeanty made martin’s title defense look plenty alive despite the loss.",
+      "keyPlayer": "Caleb Williams",
+      "keyPlayerId": "11560",
+      "upsetPath": "",
+      "historyNote": "martinch94 entered as the reigning 2025 champion; maco71 set the 2025 single-season scoring record but remains without a title.",
+      "injuryWatch": [
+        "Brian Thomas — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w1:m1:projection:martinch94",
+        "2026:w1:m1:projection:maco71",
+        "2026:w1:m1:pick",
+        "champion:2025",
+        "points:2025:maco71",
+        "titles:maco71"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "Blumbo",
+      "managerB": "sidjunlee",
+      "projectedScoreA": 116.1,
+      "projectedScoreB": 121.82,
+      "currentScoreA": 163.7,
+      "currentScoreB": 115.66,
+      "finalScoreA": 163.7,
+      "finalScoreB": 115.66,
+      "winner": "Blumbo",
+      "predictedWinner": "sidjunlee",
+      "winProbability": 0.5788,
+      "predictionCorrect": false,
+      "headline": "Blumbo 163.7, sidjunlee 115.66",
+      "analysis": "The week’s proper wrecking ball. The original forecast gave sidjunlee the edge, but Blumbo got 32.6 from Kenneth Walker, 26.6 from Jaxson Dart and 23.5 from Zay Flowers to produce a 163.7-point opening-night manifesto.",
+      "keyPlayer": "Kenneth Walker",
+      "keyPlayerId": "8151",
+      "upsetPath": "Blumbo overturned the original sidjunlee pick with a 48.04-point final margin.",
+      "historyNote": "Blumbo won the inaugural Sleeper season in 2019; sidjunlee posted an 11-3 regular season in 2022.",
+      "injuryWatch": [
+        "Zay Flowers — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w1:m2:projection:Blumbo",
+        "2026:w1:m2:projection:sidjunlee",
+        "2026:w1:m2:pick",
+        "champion:2019",
+        "record:2022:sidjunlee"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "akaaashh",
+      "managerB": "pgorny",
+      "projectedScoreA": 116.04,
+      "projectedScoreB": 117.07,
+      "currentScoreA": 118.12,
+      "currentScoreB": 102.14,
+      "finalScoreA": 118.12,
+      "finalScoreB": 102.14,
+      "winner": "akaaashh",
+      "predictedWinner": "pgorny",
+      "winProbability": 0.5143,
+      "predictionCorrect": false,
+      "headline": "akaaashh 118.12, pgorny 102.14",
+      "analysis": "The original forecast narrowly leaned pgorny, but akaaashh got 29.8 from Jalen Coker and 23.8 from Isaiah Likely. Derrick Henry’s 34.8 for pgorny was enormous; the rest of the rescue crew apparently missed the group chat.",
+      "keyPlayer": "Derrick Henry",
+      "keyPlayerId": "3198",
+      "upsetPath": "akaaashh beat the original pgorny pick by 15.98 points.",
+      "historyNote": "akaaashh won the 2017 Founders Era title; pgorny won consecutive championships in 2022 and 2023.",
+      "injuryWatch": [
+        "Jalen Coker — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w1:m3:projection:akaaashh",
+        "2026:w1:m3:projection:pgorny",
+        "2026:w1:m3:pick",
+        "champion:2017",
+        "champion:2022",
+        "champion:2023"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "Archibaldo",
+      "managerB": "vpitello34",
+      "projectedScoreA": 113.49,
+      "projectedScoreB": 118.79,
+      "currentScoreA": 95.5,
+      "currentScoreB": 126.96,
+      "finalScoreA": 95.5,
+      "finalScoreB": 126.96,
+      "winner": "vpitello34",
+      "predictedWinner": "vpitello34",
+      "winProbability": 0.5731,
+      "predictionCorrect": true,
+      "headline": "vpitello34 126.96, Archibaldo 95.5",
+      "analysis": "vpitello34 was the original pick and made it look straightforward. Josh Allen scored 35.66 and Jahmyr Gibbs added 31.1, while Archibaldo got only 2.1 from Courtland Sutton in a lineup that needed more than Jacksonville’s defense to keep it polite.",
+      "keyPlayer": "Josh Allen",
+      "keyPlayerId": "4984",
+      "upsetPath": "",
+      "historyNote": "vpitello34 owns the best active-manager career win percentage and won the 2016 title. The all-time expected-wins ledger has treated Archibaldo especially harshly.",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w1:m4:projection:Archibaldo",
+        "2026:w1:m4:projection:vpitello34",
+        "2026:w1:m4:pick",
+        "alltime:winpct:vpitello34",
+        "champion:2016",
+        "alltime:luck:Archibaldo"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "jwislek_20",
+      "managerB": "cuch",
+      "projectedScoreA": 115.09,
+      "projectedScoreB": 118.5,
+      "currentScoreA": 92.96,
+      "currentScoreB": 124.92,
+      "finalScoreA": 92.96,
+      "finalScoreB": 124.92,
+      "winner": "cuch",
+      "predictedWinner": "cuch",
+      "winProbability": 0.5472,
+      "predictionCorrect": true,
+      "headline": "cuch 124.92, jwislek_20 92.96",
+      "analysis": "cuch confirmed the original forecast with 24.72 from Jalen Hurts, 22.2 from Jaxon Smith-Njigba and a wild 19 from Evan McPherson. jwislek_20 got 23.2 from Chris Olave, then watched Ja'Marr Chase supply 2.2 points—the kind of elite-brand customer service nobody requested.",
+      "keyPlayer": "Jalen Hurts",
+      "keyPlayerId": "6904",
+      "upsetPath": "",
+      "historyNote": "jwislek_20 won the 2024 title and posted the best 2025 regular-season record. cuch is the current commissioner.",
+      "injuryWatch": [
+        "Jordan Mason — listed Questionable",
+        "Ladd McConkey — listed Questionable",
+        "A.J. Brown — listed IR"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w1:m5:projection:jwislek_20",
+        "2026:w1:m5:projection:cuch",
+        "2026:w1:m5:pick",
+        "champion:2024",
+        "record:2025:jwislek_20",
+        "role:commissioner"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "turi70",
+      "managerB": "Siccboi",
+      "projectedScoreA": 117.59,
+      "projectedScoreB": 114.27,
+      "currentScoreA": 140.36,
+      "currentScoreB": 121.44,
+      "finalScoreA": 140.36,
+      "finalScoreB": 121.44,
+      "winner": "turi70",
+      "predictedWinner": "turi70",
+      "winProbability": 0.546,
+      "predictionCorrect": true,
+      "headline": "turi70 140.36, Siccboi 121.44",
+      "analysis": "turi70 was the original pick and backed it up with 31.9 from D'Andre Swift and 29.7 from Christian Watson. Siccboi got 23.6 from Jonathan Taylor and 22.2 from Chuba Hubbard, but turi70’s comeback tour began with a Week 1 win anyway.",
+      "keyPlayer": "D'Andre Swift",
+      "keyPlayerId": "6790",
+      "upsetPath": "",
+      "historyNote": "turi70 finished 2-12 in 2025; Siccboi won the 2015 Founders Era title.",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w1:m6:projection:turi70",
+        "2026:w1:m6:projection:Siccboi",
+        "2026:w1:m6:pick",
+        "record:2025:turi70",
+        "champion:2015"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "The forecast took two losses",
+      "body": "The permanent original forecast correctly picked maco71, vpitello34, cuch and turi70, while Blumbo and akaaashh flipped their matchups. Blumbo’s reversal was the loudest: sidjunlee was originally favored before Blumbo won by 48.04.",
+      "subjects": [
+        "Blumbo",
+        "akaaashh",
+        "cuch",
+        "sidjunlee"
+      ],
+      "factIds": [
+        "2026:w1:m1:pick",
+        "2026:w1:m2:pick",
+        "2026:w1:m3:pick",
+        "2026:w1:m4:pick",
+        "2026:w1:m5:pick",
+        "2026:w1:m6:pick"
+      ]
+    },
+    {
+      "title": "The title defense opens with a warning label",
+      "body": "martinch94 lost the opener despite 37.26 from Caleb Williams and 29.7 from Ashton Jeanty. maco71’s 124.4 gave the reigning champion an immediate reminder that a three-title résumé does not auto-start a win.",
+      "subjects": [
+        "martinch94",
+        "maco71"
+      ],
+      "factIds": [
+        "2026:w1:m1:projection:martinch94",
+        "2026:w1:m1:projection:maco71",
+        "2026:w1:m1:pick",
+        "champion:2020",
+        "champion:2021",
+        "champion:2025"
+      ]
+    },
+    {
+      "title": "turi70 starts somewhere new",
+      "body": "After a 2-12 season in 2025, turi70 opened 2026 with 140.36 points and a win over Siccboi. That is not a full redemption arc, but it is a much better first episode.",
+      "subjects": [
+        "turi70",
+        "Siccboi"
+      ],
+      "factIds": [
+        "2026:w1:m6:projection:turi70",
+        "2026:w1:m6:projection:Siccboi",
+        "2026:w1:m6:pick",
+        "record:2025:turi70"
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "title": "Week 1 Wrecking Ball",
+      "recipient": "Blumbo",
+      "body": "163.7 points, a 48.04-point win, and an upset of the original sidjunlee forecast. The inaugural Sleeper champ reopened the file cabinet with force.",
+      "factIds": [
+        "2026:w1:m2:projection:Blumbo",
+        "2026:w1:m2:projection:sidjunlee",
+        "2026:w1:m2:pick",
+        "champion:2019"
+      ]
+    },
+    {
+      "title": "Backfield Crown",
+      "recipient": "pgorny",
+      "body": "Derrick Henry supplied 34.8 points for pgorny, the biggest individual RB line in a Week 1 starting lineup.",
+      "factIds": [
+        "2026:w1:m3:projection:pgorny",
+        "2026:w1:m3:pick"
+      ]
+    },
+    {
+      "title": "Business as Forecasted",
+      "recipient": "vpitello34",
+      "body": "The original pick was vpitello34, and Josh Allen plus Jahmyr Gibbs made the case with 66.76 combined points in a 126.96-95.5 win.",
+      "factIds": [
+        "2026:w1:m4:projection:Archibaldo",
+        "2026:w1:m4:projection:vpitello34",
+        "2026:w1:m4:pick",
+        "alltime:winpct:vpitello34"
+      ]
+    }
+  ],
+  "receipts": {
+    "graded": 6,
+    "correctWinners": "4/6",
+    "winnerAccuracy": "67%",
+    "scoreError": 13.6,
+    "marginError": 24.8,
+    "deskGrade": "57/100"
+  },
+  "lineupSnapshot": {
+    "capturedAt": "2026-09-15T16:11:59.615Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "12508",
+          "9224",
+          "8151",
+          "8146",
+          "9997",
+          "5012",
+          "2133",
+          "9487",
+          "13545",
+          "SEA"
+        ],
+        "lineupHash": "12508.9224.8151.8146.9997.5012.2133.9487.13545.SEA",
+        "projection": 102.1
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "11564",
+          "4034",
+          "7611",
+          "11632",
+          "9754",
+          "8131",
+          "13279",
+          "11646",
+          "12185",
+          "NE"
+        ],
+        "lineupHash": "11564.4034.7611.11632.9754.8131.13279.11646.12185.NE",
+        "projection": 111.15
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12507",
+          "7543",
+          "6786",
+          "7525",
+          "7002",
+          "13286",
+          "5045",
+          "2747",
+          "JAX"
+        ],
+        "lineupHash": "3294.12507.7543.6786.7525.7002.13286.5045.2747.JAX",
+        "projection": 112.7
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "8408",
+          "7564",
+          "8144",
+          "9482",
+          "11635",
+          "4037",
+          "11533",
+          "LAC"
+        ],
+        "lineupHash": "6770.12490.8408.7564.8144.9482.11635.4037.11533.LAC",
+        "projection": 110.21
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "6904",
+          "7588",
+          "12481",
+          "9488",
+          "5859",
+          "4217",
+          "12519",
+          "5967",
+          "7839",
+          "BAL"
+        ],
+        "lineupHash": "6904.7588.12481.9488.5859.4217.12519.5967.7839.BAL",
+        "projection": 109.27
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "11560",
+          "8138",
+          "12527",
+          "8676",
+          "11631",
+          "12517",
+          "12526",
+          "10232",
+          "3451",
+          "LAR"
+        ],
+        "lineupHash": "11560.8138.12527.8676.11631.12517.12526.10232.3451.LAR",
+        "projection": 108.83
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "6797",
+          "4866",
+          "6790",
+          "6794",
+          "6801",
+          "12518",
+          "8167",
+          "6806",
+          "8259",
+          "MIN"
+        ],
+        "lineupHash": "6797.4866.6790.6794.6801.12518.8167.6806.8259.MIN",
+        "projection": 116.85
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "3163",
+          "6813",
+          "11584",
+          "8112",
+          "2216",
+          "12506",
+          "7594",
+          "10229",
+          "12711",
+          "HOU"
+        ],
+        "lineupHash": "3163.6813.11584.8112.2216.12506.7594.10229.12711.HOU",
+        "projection": 113.52
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "421",
+          "9509",
+          "8150",
+          "7569",
+          "4983",
+          "9484",
+          "12512",
+          "11628",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "421.9509.8150.7569.4983.9484.12512.11628.11792.PIT",
+        "projection": 112.78
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "4892",
+          "3198",
+          "11583",
+          "9493",
+          "12514",
+          "10859",
+          "8148",
+          "10222",
+          "11786",
+          "PHI"
+        ],
+        "lineupHash": "4892.3198.11583.9493.12514.10859.8148.10222.11786.PHI",
+        "projection": 117.2
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "4881",
+          "9226",
+          "8155",
+          "7547",
+          "5927",
+          "8130",
+          "8228",
+          "11586",
+          "12015",
+          "DEN"
+        ],
+        "lineupHash": "4881.9226.8155.7547.5927.8130.8228.11586.12015.DEN",
+        "projection": 119.44
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "5892",
+          "8137",
+          "11620",
+          "1466",
+          "11581",
+          "9756",
+          "11539",
+          "CHI"
+        ],
+        "lineupHash": "4984.9221.5892.8137.11620.1466.11581.9756.11539.CHI",
+        "projection": 113.67
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-01-final-8575437261345625",
+    "predictionId": "farmhood-2026-week-01-original",
+    "dataAsOf": "2026-09-15T16:11:59.615Z",
+    "promptVersion": "farmhood-press-v2-cost-guarded",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_03d8b2dc1379972a016aa96e50ffc887d289613f6f3c2fd2bf",
+    "usage": {
+      "inputTokens": 7259,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 2109,
+      "reasoningTokens": 0,
+      "totalTokens": 9368,
+      "estimatedCostUsd": 0.039826,
+      "pricingAsOf": "2026-09-08",
+      "preflight": {
+        "requestCharacters": 24370,
+        "localInputTokenEstimate": 7207,
+        "exactInputTokens": 7259,
+        "maxOutputTokens": 3500,
+        "maximumEstimatedCostUsd": 0.056518,
+        "configuredCostLimitUsd": 0.1
+      },
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-01-final-8575437261345625",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Recap",
+    "Week 1",
+    "Lineup Watch"
+  ]
+}

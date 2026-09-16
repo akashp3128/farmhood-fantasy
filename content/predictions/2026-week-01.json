@@ -3,7 +3,7 @@
   "predictionSetId": "farmhood-2026-week-01-original",
   "season": 2026,
   "week": 1,
-  "state": "locked_original",
+  "state": "graded",
   "generatedAt": "2026-09-08T06:56:38.000Z",
   "factsAsOf": "2026-09-08T06:56:38.000Z",
   "sourceSnapshotId": "farmhood-2026-week-01-pre-7c5960b62857e042",
@@ -109,5 +109,13 @@
       ]
     }
   ],
-  "grading": null
+  "grading": {
+    "graded": 6,
+    "correctWinners": "4/6",
+    "winnerAccuracy": "67%",
+    "scoreError": 13.6,
+    "marginError": 24.8,
+    "deskGrade": "57/100"
+  },
+  "gradedAt": "2026-09-15T16:11:59.615Z"
 }
