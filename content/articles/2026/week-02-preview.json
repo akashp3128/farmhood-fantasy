@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-02-preview",
+  "type": "week_preview",
+  "season": 2026,
+  "week": 2,
+  "status": "published",
+  "edition": "Pregame Edition",
+  "title": "Week 2 Preview: The Projections Have Opinions, and Cuch Has an Empty WR Slot",
+  "dek": "Six scheduled matchups, one open lineup seat, and enough projection confidence to ruin a group chat by Sunday afternoon.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-09-16T11:53:47.704Z",
+  "updatedAt": "2026-09-16T11:53:47.704Z",
+  "dataAsOf": "2026-09-16T11:53:47.704Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "Week 2 awaits kickoff, but the forecast is already throwing elbows: vpitello34 carries the week’s highest projection at 123.93, while sidjunlee sits at 119.63 against Archibaldo.",
+      "The commissioner has Jalen Hurts and Javonte Williams projected handsomely, but an empty WR slot makes cuch’s 106.07 total incomplete until the lineup is updated."
+    ],
+    "pullQuote": "The board has six opinions. Kickoff gets the final word.",
+    "keyStat": {
+      "label": "Highest Week 2 projection",
+      "value": "123.93",
+      "note": "vpitello34, versus Siccboi"
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "Blumbo",
+      "managerB": "maco71",
+      "projectedScoreA": 108.54,
+      "projectedScoreB": 118.96,
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "predictedWinner": "maco71",
+      "winProbability": 0.6408,
+      "predictionCorrect": null,
+      "headline": "Blumbo vs. maco71: Power-board leader meets the projection favorite",
+      "analysis": "Blumbo is No. 1 on the power board, yet maco71 is projected for 118.96 and carries a 64.08% forecast to win. Bijan Robinson’s 20.14 projection leads the stronger current number.",
+      "keyPlayer": "Bijan Robinson",
+      "keyPlayerId": "9509",
+      "upsetPath": "Blumbo can flip the script if Jaxson Dart, Kenneth Walker and the rest of the lineup beat projection—and if the suggested Zay Flowers-for-RJ Harvey FLEX move becomes more than a neglected notification.",
+      "historyNote": "maco71 set the league single-season scoring record in 2025 but remains without a championship.",
+      "injuryWatch": [],
+      "suggestedSwaps": [
+        {
+          "slot": "FLEX",
+          "starterId": "12489",
+          "starterName": "RJ Harvey",
+          "alternativeId": "9997",
+          "alternativeName": "Zay Flowers",
+          "projectionDelta": 3.87,
+          "reason": "Higher current projection"
+        }
+      ],
+      "factIds": [
+        "2026:w2:m1:projection:Blumbo",
+        "2026:w2:m1:projection:maco71",
+        "2026:w2:m1:pick",
+        "points:2025:maco71",
+        "titles:maco71"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "martinch94",
+      "managerB": "pgorny",
+      "projectedScoreA": 104.31,
+      "projectedScoreB": 110.6,
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "predictedWinner": "pgorny",
+      "winProbability": 0.5865,
+      "predictionCorrect": null,
+      "headline": "martinch94 vs. pgorny: The projections reset the hierarchy",
+      "analysis": "martinch94 opens as a 104.31 projection underdog to pgorny’s 110.60. Jayden Daniels and Puka Nacua pace pgorny’s projected attack; martinch94 needs enough production to erase the 6.29-point forecast gap.",
+      "keyPlayer": "Jayden Daniels",
+      "keyPlayerId": "11566",
+      "upsetPath": "martinch94 gets there by having Caleb Williams and James Cook clear their projections while Brian Thomas, currently listed Questionable, remains a productive pregame option.",
+      "historyNote": "martinch94 is a three-time champion and reigning 2025 winner.",
+      "injuryWatch": [
+        "Brian Thomas — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w2:m2:projection:martinch94",
+        "2026:w2:m2:projection:pgorny",
+        "2026:w2:m2:pick",
+        "champion:2020",
+        "champion:2021",
+        "champion:2025"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "Archibaldo",
+      "managerB": "sidjunlee",
+      "projectedScoreA": 111.27,
+      "projectedScoreB": 119.63,
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "predictedWinner": "sidjunlee",
+      "winProbability": 0.6141,
+      "predictionCorrect": null,
+      "headline": "Archibaldo vs. sidjunlee: Lamar’s projection arrives with bad intentions",
+      "analysis": "sidjunlee is projected for 119.63, with Lamar Jackson at 20.17, and gets a 61.41% forecast against Archibaldo’s 111.27. Dak Prescott and CeeDee Lamb give Archibaldo a real path, but the projected edge belongs to sidjunlee.",
+      "keyPlayer": "Lamar Jackson",
+      "keyPlayerId": "4881",
+      "upsetPath": "Archibaldo needs the Prescott-Lamb stack to clear projection, plus enough help elsewhere to outrun sidjunlee’s quarterback advantage.",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w2:m3:projection:Archibaldo",
+        "2026:w2:m3:projection:sidjunlee",
+        "2026:w2:m3:pick"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "akaaashh",
+      "managerB": "jwislek_20",
+      "projectedScoreA": 110.59,
+      "projectedScoreB": 99.49,
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "predictedWinner": "akaaashh",
+      "winProbability": 0.6495,
+      "predictionCorrect": null,
+      "headline": "akaaashh vs. jwislek_20: The current math favors akaaashh",
+      "analysis": "akaaashh is projected at 110.59 and favored at 64.95% over jwislek_20’s 99.49. Christian McCaffrey gives akaaashh a 17.25-projection centerpiece, while jwislek_20 has Jordan Mason and Ladd McConkey listed Questionable—and a suggested 8.10-point upgrade from Michael Mayer to Brock Bowers at TE.",
+      "keyPlayer": "Drake Maye",
+      "keyPlayerId": "11564",
+      "upsetPath": "jwislek_20 needs Joe Burrow and Ja’Marr Chase to pull the lineup upward, with the pregame TE decision looking especially consequential.",
+      "historyNote": "",
+      "injuryWatch": [
+        "Jalen Coker — listed Questionable",
+        "Jordan Mason — listed Questionable",
+        "Ladd McConkey — listed Questionable"
+      ],
+      "suggestedSwaps": [
+        {
+          "slot": "TE",
+          "starterId": "9482",
+          "starterName": "Michael Mayer",
+          "alternativeId": "11604",
+          "alternativeName": "Brock Bowers",
+          "projectionDelta": 8.1,
+          "reason": "Higher current projection"
+        }
+      ],
+      "factIds": [
+        "2026:w2:m4:projection:akaaashh",
+        "2026:w2:m4:projection:jwislek_20",
+        "2026:w2:m4:pick"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "Siccboi",
+      "managerB": "vpitello34",
+      "projectedScoreA": 111.88,
+      "projectedScoreB": 123.93,
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "predictedWinner": "vpitello34",
+      "winProbability": 0.6614,
+      "predictionCorrect": null,
+      "headline": "Siccboi vs. vpitello34: The weekly ceiling belongs to vpitello34",
+      "analysis": "vpitello34 leads all Week 2 projections at 123.93 and is favored at 66.14% over Siccboi’s 111.88. Josh Allen projects for 21.40 and Jahmyr Gibbs for 24.19, which is less a lineup core than a strongly worded forecast.",
+      "keyPlayer": "Jahmyr Gibbs",
+      "keyPlayerId": "9221",
+      "upsetPath": "Siccboi can make this uncomfortable if Jared Goff and Jonathan Taylor outperform their projections and the remaining spots create the kind of variance a favorite hates.",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w2:m5:projection:Siccboi",
+        "2026:w2:m5:projection:vpitello34",
+        "2026:w2:m5:pick"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "cuch",
+      "managerB": "turi70",
+      "projectedScoreA": 106.07,
+      "projectedScoreB": 111.26,
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "predictedWinner": "turi70",
+      "winProbability": 0.5716,
+      "predictionCorrect": null,
+      "headline": "cuch vs. turi70: The open WR slot shapes the line",
+      "analysis": "turi70 is projected for 111.26 and favored at 57.16%, while cuch’s 106.07 includes an empty WR slot. Michael Pittman is the suggested fill, worth a 9.39-projection increase, while Aaron Jones offers another suggested upgrade over Tony Pollard at FLEX.",
+      "keyPlayer": "Jalen Hurts",
+      "keyPlayerId": "6904",
+      "upsetPath": "Cuch has Jalen Hurts projected at 20.38 and Javonte Williams at 16.23; filling the WR slot and finding the suggested lineup value would strengthen the upset case.",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [
+        {
+          "slot": "WR",
+          "starterId": "0",
+          "starterName": "Empty slot",
+          "alternativeId": "6819",
+          "alternativeName": "Michael Pittman",
+          "projectionDelta": 9.39,
+          "reason": "Fill the empty starting slot"
+        },
+        {
+          "slot": "FLEX",
+          "starterId": "5967",
+          "starterName": "Tony Pollard",
+          "alternativeId": "4199",
+          "alternativeName": "Aaron Jones",
+          "projectionDelta": 2.71,
+          "reason": "Higher current projection"
+        }
+      ],
+      "factIds": [
+        "2026:w2:m6:projection:cuch",
+        "2026:w2:m6:projection:turi70",
+        "2026:w2:m6:pick"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "maco71 carries the edge against No. 1",
+      "body": "maco71’s 118.96 projection is enough to make the week’s top power-board team an underdog. Bijan Robinson’s 20.14 projection leads the current case for the favorite.",
+      "subjects": [
+        "maco71",
+        "Blumbo"
+      ],
+      "factIds": [
+        "2026:w2:m1:projection:Blumbo",
+        "2026:w2:m1:projection:maco71",
+        "2026:w2:m1:pick"
+      ]
+    },
+    {
+      "title": "Week 2’s biggest lineup swing is still open",
+      "body": "Cuch enters a projected 106.07-to-111.26 matchup with an empty WR slot. The suggested Michael Pittman insertion adds 9.39 in current projection, making that unresolved decision the largest identified lineup swing.",
+      "subjects": [
+        "cuch",
+        "turi70"
+      ],
+      "factIds": [
+        "2026:w2:m6:projection:cuch",
+        "2026:w2:m6:projection:turi70",
+        "2026:w2:m6:pick"
+      ]
+    },
+    {
+      "title": "vpitello34 brings the week’s biggest number",
+      "body": "The highest Week 2 projection, 123.93, is powered by Josh Allen at 21.40 and Jahmyr Gibbs at 24.19. Siccboi’s upset bid starts with overcoming that 12.05-point team projection gap.",
+      "subjects": [
+        "vpitello34",
+        "Siccboi"
+      ],
+      "factIds": [
+        "2026:w2:m5:projection:Siccboi",
+        "2026:w2:m5:projection:vpitello34",
+        "2026:w2:m5:pick"
+      ]
+    }
+  ],
+  "awards": [],
+  "receipts": null,
+  "lineupSnapshot": {
+    "capturedAt": "2026-09-16T11:53:47.704Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "12508",
+          "9224",
+          "8151",
+          "8146",
+          "9487",
+          "5012",
+          "2133",
+          "12489",
+          "13545",
+          "SEA"
+        ],
+        "lineupHash": "12508.9224.8151.8146.9487.5012.2133.12489.13545.SEA",
+        "projection": 108.54
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "11564",
+          "4034",
+          "13287",
+          "11632",
+          "7526",
+          "8131",
+          "7611",
+          "11646",
+          "2020",
+          "NE"
+        ],
+        "lineupHash": "11564.4034.13287.11632.7526.8131.7611.11646.2020.NE",
+        "projection": 110.59
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12507",
+          "7543",
+          "6786",
+          "7525",
+          "7002",
+          "13286",
+          "12533",
+          "2747",
+          "JAX"
+        ],
+        "lineupHash": "3294.12507.7543.6786.7525.7002.13286.12533.2747.JAX",
+        "projection": 111.27
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "8408",
+          "7564",
+          "8144",
+          "9482",
+          "11635",
+          "4037",
+          "11533",
+          "SF"
+        ],
+        "lineupHash": "6770.12490.8408.7564.8144.9482.11635.4037.11533.SF",
+        "projection": 99.49
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "6904",
+          "7588",
+          "12481",
+          "9488",
+          "0",
+          "4217",
+          "12519",
+          "5967",
+          "7839",
+          "BAL"
+        ],
+        "lineupHash": "6904.7588.12481.9488.0.4217.12519.5967.7839.BAL",
+        "projection": 106.07
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "11560",
+          "8138",
+          "12527",
+          "10232",
+          "11631",
+          "12517",
+          "12526",
+          "12534",
+          "3451",
+          "LAR"
+        ],
+        "lineupHash": "11560.8138.12527.10232.11631.12517.12526.12534.3451.LAR",
+        "projection": 104.31
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "6797",
+          "4866",
+          "6790",
+          "6794",
+          "6801",
+          "12518",
+          "8167",
+          "5022",
+          "8259",
+          "MIN"
+        ],
+        "lineupHash": "6797.4866.6790.6794.6801.12518.8167.5022.8259.MIN",
+        "projection": 111.26
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "3163",
+          "6813",
+          "11584",
+          "8112",
+          "2216",
+          "12506",
+          "7594",
+          "10229",
+          "12711",
+          "HOU"
+        ],
+        "lineupHash": "3163.6813.11584.8112.2216.12506.7594.10229.12711.HOU",
+        "projection": 111.88
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "421",
+          "9509",
+          "8150",
+          "7569",
+          "4983",
+          "9484",
+          "12512",
+          "11628",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "421.9509.8150.7569.4983.9484.12512.11628.11792.PIT",
+        "projection": 118.96
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "11566",
+          "3198",
+          "11583",
+          "9493",
+          "12514",
+          "10859",
+          "8148",
+          "10222",
+          "11786",
+          "PHI"
+        ],
+        "lineupHash": "11566.3198.11583.9493.12514.10859.8148.10222.11786.PHI",
+        "projection": 110.6
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "4881",
+          "9226",
+          "8155",
+          "7547",
+          "5927",
+          "8130",
+          "8228",
+          "11586",
+          "12015",
+          "DEN"
+        ],
+        "lineupHash": "4881.9226.8155.7547.5927.8130.8228.11586.12015.DEN",
+        "projection": 119.63
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "5892",
+          "8137",
+          "11620",
+          "1466",
+          "11581",
+          "9756",
+          "11539",
+          "CHI"
+        ],
+        "lineupHash": "4984.9221.5892.8137.11620.1466.11581.9756.11539.CHI",
+        "projection": 123.93
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-02-pre-724380a399a674b4",
+    "predictionId": "farmhood-2026-week-02-original",
+    "dataAsOf": "2026-09-16T11:53:47.704Z",
+    "promptVersion": "farmhood-press-v2-cost-guarded",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_0df9b55652ea2f3d016aaa834d2ffc87d0a429cc65f143b319",
+    "usage": {
+      "inputTokens": 6431,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1874,
+      "reasoningTokens": 0,
+      "totalTokens": 8305,
+      "estimatedCostUsd": 0.03535,
+      "pricingAsOf": "2026-09-08",
+      "preflight": {
+        "requestCharacters": 22343,
+        "localInputTokenEstimate": 6624,
+        "exactInputTokens": 6431,
+        "maxOutputTokens": 3500,
+        "maximumEstimatedCostUsd": 0.054862,
+        "configuredCostLimitUsd": 0.1
+      },
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-02-pre-724380a399a674b4",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Predictions",
+    "Week 2",
+    "Lineup Watch"
+  ]
+}
