@@ -69,6 +69,11 @@ async function main() {
     assert(articlePath.startsWith(path.resolve(root, 'content', 'articles') + path.sep), `Article escaped the content directory: ${meta.path}`);
     const article = JSON.parse(await readFile(articlePath, 'utf8'));
     assert(article.articleId === meta.articleId, `Article/index ID mismatch for ${meta.articleId}.`);
+    assert(article.title === meta.title && article.dek === meta.dek, `Article/index headline mismatch for ${meta.articleId}.`);
+    assert(article.type === meta.type && article.edition === meta.edition, `Article/index edition mismatch for ${meta.articleId}.`);
+    assert(article.publishedAt === meta.publishedAt && article.dataAsOf === meta.dataAsOf, `Article/index timestamp mismatch for ${meta.articleId}.`);
+    assert(JSON.stringify((article.storylines || []).map((item) => item.title)) === JSON.stringify(meta.storylines || []), `Article/index storyline mismatch for ${meta.articleId}.`);
+    assert(JSON.stringify(article.tags || []) === JSON.stringify(meta.tags || []), `Article/index tag mismatch for ${meta.articleId}.`);
     assert(article.status === 'published', `${meta.articleId} is not published.`);
     assert(article.season === meta.season && article.week === meta.week, `${meta.articleId} season/week mismatch.`);
     assert(Array.isArray(article.matchups) && article.matchups.length === 6, `${meta.articleId} must contain six matchup capsules.`);
