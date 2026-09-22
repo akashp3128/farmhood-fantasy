@@ -4,8 +4,8 @@
   "leagueId": "1377086848295260160",
   "currency": "USD",
   "status": {
-    "currentWeek": 1,
-    "completedThroughWeek": 1,
+    "currentWeek": 2,
+    "completedThroughWeek": 2,
     "season": "pending",
     "nextRun": "Tuesday at 9:00 AM America/Chicago"
   },
@@ -15,8 +15,8 @@
     "weeklyHighPoolCents": 42000,
     "positionPoolCents": 14000,
     "rivalryPoolCents": 30000,
-    "awardedCents": 9000,
-    "reservedCents": 291000
+    "awardedCents": 18000,
+    "reservedCents": 282000
   },
   "rules": {
     "weeklyPositionEligibility": "Starting players only. QB, RB, WR, TE, K and DEF awards follow the player's listed position. FLEX awards follow the occupied starting FLEX slot.",
@@ -282,27 +282,70 @@
     },
     {
       "week": 2,
-      "status": "pending",
+      "status": "final",
       "position": "WR",
       "highScore": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 3000,
-        "leaders": [],
-        "allocations": []
+        "leaders": [
+          {
+            "ownerId": "450705025862201344",
+            "rosterId": 3,
+            "manager": "Archibaldo",
+            "firstName": "Sasha",
+            "score": 134.76
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "450705025862201344",
+            "rosterId": 3,
+            "manager": "Archibaldo",
+            "firstName": "Sasha",
+            "shareCents": 3000
+          }
+        ]
       },
       "positionPrize": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 1000,
-        "leaders": [],
-        "allocations": [],
         "position": "WR",
-        "players": []
+        "players": [
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom",
+            "playerId": "9488",
+            "playerName": "Jaxon Smith-Njigba",
+            "position": "WR",
+            "slot": "WR",
+            "score": 38
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom"
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom",
+            "shareCents": 1000
+          }
+        ]
       },
       "rivalry": {
         "id": "sasha-sid",
         "week": 2,
         "matchupId": 3,
-        "status": "pending",
+        "status": "final",
         "awardCents": 5000,
         "participants": [
           {
@@ -318,13 +361,142 @@
             "firstName": "Sid"
           }
         ],
-        "scores": [],
-        "leaders": [],
-        "allocations": []
+        "scores": [
+          {
+            "ownerId": "450705025862201344",
+            "rosterId": 3,
+            "manager": "Archibaldo",
+            "firstName": "Sasha",
+            "score": 134.76
+          },
+          {
+            "ownerId": "463423832728793088",
+            "rosterId": 11,
+            "manager": "sidjunlee",
+            "firstName": "Sid",
+            "score": 127.8
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "450705025862201344",
+            "rosterId": 3,
+            "manager": "Archibaldo",
+            "firstName": "Sasha",
+            "score": 134.76
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "450705025862201344",
+            "rosterId": 3,
+            "manager": "Archibaldo",
+            "firstName": "Sasha",
+            "shareCents": 5000
+          }
+        ]
       },
-      "finalizedAt": null,
+      "finalizedAt": "2026-09-22T17:56:52.195Z",
       "correctedAt": null,
-      "sourceDigest": null
+      "sourceDigest": "ef47b70b5ebc1f9f3764ea7b14af4ee88d0f4898f25d50b50eeb4337ffe89edd",
+      "teamScores": [
+        {
+          "ownerId": "79220990290575360",
+          "rosterId": 1,
+          "manager": "Blumbo",
+          "firstName": "Albert",
+          "scoreUnits": 12340,
+          "score": 123.4
+        },
+        {
+          "ownerId": "89787120084205568",
+          "rosterId": 2,
+          "manager": "akaaashh",
+          "firstName": "Akash",
+          "scoreUnits": 9852,
+          "score": 98.52
+        },
+        {
+          "ownerId": "450705025862201344",
+          "rosterId": 3,
+          "manager": "Archibaldo",
+          "firstName": "Sasha",
+          "scoreUnits": 13476,
+          "score": 134.76
+        },
+        {
+          "ownerId": "450707444838952960",
+          "rosterId": 4,
+          "manager": "jwislek_20",
+          "firstName": "Jimmy",
+          "scoreUnits": 12458,
+          "score": 124.58
+        },
+        {
+          "ownerId": "92288423205158912",
+          "rosterId": 5,
+          "manager": "cuch",
+          "firstName": "Dom",
+          "scoreUnits": 12216,
+          "score": 122.16
+        },
+        {
+          "ownerId": "92391164216754176",
+          "rosterId": 6,
+          "manager": "martinch94",
+          "firstName": "Martin",
+          "scoreUnits": 8292,
+          "score": 82.92
+        },
+        {
+          "ownerId": "87253894098731008",
+          "rosterId": 7,
+          "manager": "turi70",
+          "firstName": "Sal",
+          "scoreUnits": 6818,
+          "score": 68.18
+        },
+        {
+          "ownerId": "450755017129848832",
+          "rosterId": 8,
+          "manager": "Siccboi",
+          "firstName": "Ian",
+          "scoreUnits": 12538,
+          "score": 125.38
+        },
+        {
+          "ownerId": "450905805542125568",
+          "rosterId": 9,
+          "manager": "maco71",
+          "firstName": "Marco",
+          "scoreUnits": 8818,
+          "score": 88.18
+        },
+        {
+          "ownerId": "450908261617496064",
+          "rosterId": 10,
+          "manager": "pgorny",
+          "firstName": "Pat",
+          "scoreUnits": 8274,
+          "score": 82.74
+        },
+        {
+          "ownerId": "463423832728793088",
+          "rosterId": 11,
+          "manager": "sidjunlee",
+          "firstName": "Sid",
+          "scoreUnits": 12780,
+          "score": 127.8
+        },
+        {
+          "ownerId": "464552386170449920",
+          "rosterId": 12,
+          "manager": "vpitello34",
+          "firstName": "Vince",
+          "scoreUnits": 11402,
+          "score": 114.02
+        }
+      ]
     },
     {
       "week": 3,
@@ -697,6 +869,17 @@
   ],
   "managerTotals": [
     {
+      "ownerId": "450705025862201344",
+      "rosterId": 3,
+      "manager": "Archibaldo",
+      "firstName": "Sasha",
+      "weeklyHighCents": 3000,
+      "positionCents": 0,
+      "rivalryCents": 5000,
+      "seasonCents": 0,
+      "totalCents": 8000
+    },
+    {
       "ownerId": "87253894098731008",
       "rosterId": 7,
       "manager": "turi70",
@@ -719,6 +902,17 @@
       "totalCents": 3000
     },
     {
+      "ownerId": "92288423205158912",
+      "rosterId": 5,
+      "manager": "cuch",
+      "firstName": "Dom",
+      "weeklyHighCents": 0,
+      "positionCents": 1000,
+      "rivalryCents": 0,
+      "seasonCents": 0,
+      "totalCents": 1000
+    },
+    {
       "ownerId": "450908261617496064",
       "rosterId": 10,
       "manager": "pgorny",
@@ -734,28 +928,6 @@
       "rosterId": 2,
       "manager": "akaaashh",
       "firstName": "Akash",
-      "weeklyHighCents": 0,
-      "positionCents": 0,
-      "rivalryCents": 0,
-      "seasonCents": 0,
-      "totalCents": 0
-    },
-    {
-      "ownerId": "450705025862201344",
-      "rosterId": 3,
-      "manager": "Archibaldo",
-      "firstName": "Sasha",
-      "weeklyHighCents": 0,
-      "positionCents": 0,
-      "rivalryCents": 0,
-      "seasonCents": 0,
-      "totalCents": 0
-    },
-    {
-      "ownerId": "92288423205158912",
-      "rosterId": 5,
-      "manager": "cuch",
-      "firstName": "Dom",
       "weeklyHighCents": 0,
       "positionCents": 0,
       "rivalryCents": 0,
@@ -836,10 +1008,10 @@
   "source": {
     "provider": "Sleeper",
     "leagueId": "1377086848295260160",
-    "completedThroughWeek": 1,
+    "completedThroughWeek": 2,
     "teamScorePolicy": "custom_points when present, otherwise points",
     "playerScorePolicy": "players_points cross-checked against starters_points"
   },
-  "revision": "0080fe5158b663e086a6f93299f235c362c1ce8755562dd7e09bf854997948a1",
-  "updatedAt": "2026-09-15T15:52:18.586Z"
+  "revision": "a9d118dcfbb4b517f606efa00a8257e06eb155154e2c9fdbae03b65c6e50e989",
+  "updatedAt": "2026-09-22T17:56:52.195Z"
 }
