@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-02-recap",
-  "updatedAt": "2026-09-26T04:38:13.356Z",
+  "featuredArticleId": "2026-week-03-late-preview",
+  "updatedAt": "2026-09-26T06:58:34.366Z",
   "articles": [
+    {
+      "articleId": "2026-week-03-late-preview",
+      "path": "content/articles/2026/week-03-late-preview.json",
+      "type": "week_late_preview",
+      "edition": "Weekend Outlook",
+      "season": 2026,
+      "week": 3,
+      "status": "published",
+      "title": "Week 3 Weekend Outlook: Thursday Already Started Talking",
+      "dek": "Known points are on the board, projections cover the unstarted starters, and nobody gets to call this a receipt-eligible prediction.",
+      "publishedAt": "2026-09-26T06:58:34.366Z",
+      "dataAsOf": "2026-09-26T06:58:34.366Z",
+      "storylines": [
+        "The known-score disclaimer, loudly delivered",
+        "Availability watch remains a factor",
+        "The title defense starts as an underdog"
+      ],
+      "tags": [
+        "Weekend Outlook",
+        "Week 3",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-02-recap",
       "path": "content/articles/2026/week-02-recap.json",

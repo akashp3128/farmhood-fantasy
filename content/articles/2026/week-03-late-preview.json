@@ -1,0 +1,757 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-03-late-preview",
+  "type": "week_late_preview",
+  "season": 2026,
+  "week": 3,
+  "status": "published",
+  "edition": "Weekend Outlook",
+  "title": "Week 3 Weekend Outlook: Thursday Already Started Talking",
+  "dek": "Known points are on the board, projections cover the unstarted starters, and nobody gets to call this a receipt-eligible prediction.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-09-26T06:58:34.366Z",
+  "updatedAt": "2026-09-26T06:58:34.366Z",
+  "dataAsOf": "2026-09-26T06:58:34.366Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "Week 3 is live, so this is a current-state Weekend Outlook: Thursday scoring is known, and only unstarted starters remain in the projection picture.",
+      "maco71 has the early loudest number at 38.9, while Siccboi, turi70 and cuch also got Thursday help. The rest of the league is staring at a long weekend and, in one case, an empty DEF slot."
+    ],
+    "pullQuote": "Bijan Robinson put up 34.3 before most lineups had time to develop bad ideas.",
+    "keyStat": {
+      "label": "Early high score",
+      "value": "38.9",
+      "note": "maco71 leads the live board after two locked starters."
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "maco71",
+      "managerB": "pgorny",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 38.9,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 76.58,
+      "remainingProjectionB": null,
+      "forecastScoreA": 115.48,
+      "forecastScoreB": null,
+      "forecastWinner": null,
+      "forecastProbability": null,
+      "startedAtCapture": true,
+      "lockedStarterCount": 2,
+      "forecastStatus": "incomplete",
+      "missingProjectionPlayers": [
+        {
+          "id": "9493",
+          "name": "Puka Nacua",
+          "slot": "FLEX",
+          "position": "WR",
+          "injuryStatus": "Doubtful",
+          "manager": "pgorny",
+          "side": "B"
+        }
+      ],
+      "currentScoreA": 38.9,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "headline": "maco71 38.9, pgorny 0: Bijan opens a tab",
+      "analysis": "maco71 already has 38.9 through two locked starters, including 34.3 from Bijan Robinson. pgorny is at zero and has no complete remaining projection because Puka Nacua, listed Doubtful in the FLEX spot, has no projection. The matchup lean is intentionally withheld until that data is available.",
+      "keyPlayer": "Derrick Henry",
+      "keyPlayerId": "3198",
+      "upsetPath": "",
+      "historyNote": "maco71 set the league’s single-season scoring record in 2025.",
+      "injuryWatch": [
+        "DJ Moore — listed Questionable",
+        "Tank Bigsby — listed Questionable",
+        "Puka Nacua — listed Doubtful"
+      ],
+      "suggestedSwaps": [
+        {
+          "slot": "QB",
+          "starterId": "421",
+          "starterName": "Matthew Stafford",
+          "alternativeId": "12545",
+          "alternativeName": "Tyler Shough",
+          "projectionDelta": 2.25,
+          "reason": "Higher current projection"
+        }
+      ],
+      "factIds": [
+        "2026:w3:m1:live-score:maco71",
+        "2026:w3:m1:live-score:pgorny",
+        "2026:w3:m1:remaining:maco71",
+        "2026:w3:m1:remaining:pgorny",
+        "2026:w3:m1:late-forecast",
+        "points:2025:maco71"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "Blumbo",
+      "managerB": "Archibaldo",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 2,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 119.5,
+      "remainingProjectionB": 110.7,
+      "forecastScoreA": 121.5,
+      "forecastScoreB": 110.7,
+      "forecastWinner": "Blumbo",
+      "forecastProbability": 0.6457,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 2,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "headline": "Blumbo 2.0, Archibaldo 0: Small start, meaningful lean",
+      "analysis": "Blumbo’s 2.0 Thursday points are already banked, and the current outlook lands at 121.5 to 110.7 with Blumbo carrying a 64.57% win probability. Archibaldo has not started anyone, so the margin remains perfectly available for group-chat chaos.",
+      "keyPlayer": "Kenneth Walker",
+      "keyPlayerId": "8151",
+      "upsetPath": "Archibaldo’s unstarted lineup needs enough production to close Blumbo’s 10.8-point estimated-final edge.",
+      "historyNote": "",
+      "injuryWatch": [
+        "Zay Flowers — listed Questionable",
+        "DeVonta Smith — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m2:live-score:Blumbo",
+        "2026:w3:m2:live-score:Archibaldo",
+        "2026:w3:m2:remaining:Blumbo",
+        "2026:w3:m2:remaining:Archibaldo",
+        "2026:w3:m2:late-forecast"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "jwislek_20",
+      "managerB": "martinch94",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 108.69,
+      "remainingProjectionB": 103.67,
+      "forecastScoreA": 108.69,
+      "forecastScoreB": 103.67,
+      "forecastWinner": "jwislek_20",
+      "forecastProbability": 0.5693,
+      "startedAtCapture": false,
+      "lockedStarterCount": 0,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 0,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "headline": "jwislek_20 vs. martinch94: No Thursday starters, narrow Friday lean",
+      "analysis": "Neither side has started a player. jwislek_20 holds the current 108.69-to-103.67 outlook and a 56.93% win probability against martinch94.",
+      "keyPlayer": "Joe Burrow",
+      "keyPlayerId": "6770",
+      "upsetPath": "martinch94 needs the unstarted roster to beat a narrow 5.02-point projected gap.",
+      "historyNote": "",
+      "injuryWatch": [
+        "Brock Bowers — listed Questionable"
+      ],
+      "suggestedSwaps": [
+        {
+          "slot": "FLEX",
+          "starterId": "12534",
+          "starterName": "Kyle Monangai",
+          "alternativeId": "7571",
+          "alternativeName": "Rashod Bateman",
+          "projectionDelta": 1.62,
+          "reason": "Higher current projection"
+        }
+      ],
+      "factIds": [
+        "2026:w3:m3:live-score:jwislek_20",
+        "2026:w3:m3:live-score:martinch94",
+        "2026:w3:m3:remaining:jwislek_20",
+        "2026:w3:m3:remaining:martinch94",
+        "2026:w3:m3:late-forecast"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "Siccboi",
+      "managerB": "sidjunlee",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 23.9,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 109.43,
+      "remainingProjectionB": 123.37,
+      "forecastScoreA": 133.33,
+      "forecastScoreB": 123.37,
+      "forecastWinner": "Siccboi",
+      "forecastProbability": 0.6349,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 23.9,
+      "currentScoreB": 0,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "headline": "Siccboi 23.9, sidjunlee 0: Drake London delivered the opening shove",
+      "analysis": "Siccboi has 23.9 locked from Drake London and sits in front of a 133.33-to-123.37 outlook, good for a 63.49% edge. sidjunlee still has the larger remaining projection, but also an empty DEF slot at capture. That is a bold way to ask Lamar Jackson to bring office supplies.",
+      "keyPlayer": "Lamar Jackson",
+      "keyPlayerId": "4881",
+      "upsetPath": "sidjunlee can close the projected gap by filling the empty DEF slot and getting the rest of the unstarted lineup rolling.",
+      "historyNote": "",
+      "injuryWatch": [
+        "Mike Evans — listed Questionable",
+        "Jaylen Warren — listed Questionable"
+      ],
+      "suggestedSwaps": [
+        {
+          "slot": "DEF",
+          "starterId": "0",
+          "starterName": "Empty slot",
+          "alternativeId": "CAR",
+          "alternativeName": "Carolina Panthers",
+          "projectionDelta": 7.53,
+          "reason": "Fill the empty starting slot"
+        }
+      ],
+      "factIds": [
+        "2026:w3:m4:live-score:Siccboi",
+        "2026:w3:m4:live-score:sidjunlee",
+        "2026:w3:m4:remaining:Siccboi",
+        "2026:w3:m4:remaining:sidjunlee",
+        "2026:w3:m4:late-forecast"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "akaaashh",
+      "managerB": "turi70",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 19.1,
+      "remainingProjectionA": 114.76,
+      "remainingProjectionB": 100.32,
+      "forecastScoreA": 114.76,
+      "forecastScoreB": 119.42,
+      "forecastWinner": "turi70",
+      "forecastProbability": 0.5644,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 0,
+      "currentScoreB": 19.1,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "headline": "turi70 19.1, akaaashh 0: Watson supplied the head start",
+      "analysis": "turi70 has 19.1 locked from Christian Watson and owns a 119.42-to-114.76 current outlook, a 56.44% lean. akaaashh has the full lineup ahead, including Christian McCaffrey, so this remains a short spread with plenty of Sunday volatility.",
+      "keyPlayer": "Christian McCaffrey",
+      "keyPlayerId": "4034",
+      "upsetPath": "akaaashh needs the unstarted roster to make up 4.66 projected points and can consider the higher-projected Rhamondre Stevenson over Dontayvion Wicks in FLEX.",
+      "historyNote": "",
+      "injuryWatch": [
+        "Jalen Coker — listed Questionable"
+      ],
+      "suggestedSwaps": [
+        {
+          "slot": "FLEX",
+          "starterId": "9486",
+          "starterName": "Dontayvion Wicks",
+          "alternativeId": "7611",
+          "alternativeName": "Rhamondre Stevenson",
+          "projectionDelta": 1.78,
+          "reason": "Higher current projection"
+        },
+        {
+          "slot": "FLEX",
+          "starterId": "8121",
+          "starterName": "Romeo Doubs",
+          "alternativeId": "6806",
+          "alternativeName": "J.K. Dobbins",
+          "projectionDelta": 2.56,
+          "reason": "Higher current projection"
+        }
+      ],
+      "factIds": [
+        "2026:w3:m5:live-score:akaaashh",
+        "2026:w3:m5:live-score:turi70",
+        "2026:w3:m5:remaining:akaaashh",
+        "2026:w3:m5:remaining:turi70",
+        "2026:w3:m5:late-forecast"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "cuch",
+      "managerB": "vpitello34",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 18.5,
+      "outlookCurrentScoreB": 2.8,
+      "remainingProjectionA": 105.83,
+      "remainingProjectionB": 111.81,
+      "forecastScoreA": 124.33,
+      "forecastScoreB": 114.61,
+      "forecastWinner": "cuch",
+      "forecastProbability": 0.6318,
+      "startedAtCapture": true,
+      "lockedStarterCount": 2,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 18.5,
+      "currentScoreB": 2.8,
+      "finalScoreA": null,
+      "finalScoreB": null,
+      "winner": null,
+      "headline": "cuch 18.5, vpitello34 2.8: The commissioner gets a Thursday edge",
+      "analysis": "cuch’s 18.5 from Matthew Golden has created a 124.33-to-114.61 outlook and a 63.18% win probability over vpitello34. The commissioner has an early edge; the league constitution does not require anyone to enjoy it.",
+      "keyPlayer": "Josh Allen",
+      "keyPlayerId": "4984",
+      "upsetPath": "vpitello34 has 111.81 in remaining projection and can still turn the matchup with the unstarted lineup led by Josh Allen.",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m6:live-score:cuch",
+        "2026:w3:m6:live-score:vpitello34",
+        "2026:w3:m6:remaining:cuch",
+        "2026:w3:m6:remaining:vpitello34",
+        "2026:w3:m6:late-forecast",
+        "role:commissioner"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "The known-score disclaimer, loudly delivered",
+      "body": "This edition begins after Thursday scoring: the live totals are official current state, while the outlook uses projections only for unstarted starters. It is not receipt-eligible, so please direct all retroactive victory laps to the nearest unavailable inbox.",
+      "subjects": [
+        "maco71",
+        "Siccboi",
+        "turi70",
+        "cuch"
+      ],
+      "factIds": [
+        "2026:w3:m1:live-score:maco71",
+        "2026:w3:m4:live-score:Siccboi",
+        "2026:w3:m5:live-score:turi70",
+        "2026:w3:m6:live-score:cuch"
+      ]
+    },
+    {
+      "title": "Availability watch remains a factor",
+      "body": "Puka Nacua is listed Doubtful and leaves pgorny without a complete remaining projection. Zay Flowers, DeVonta Smith, Brock Bowers, Mike Evans, DJ Moore, Jalen Coker, Tank Bigsby and Jaylen Warren are listed Questionable as of this snapshot.",
+      "subjects": [
+        "pgorny",
+        "Blumbo",
+        "Archibaldo",
+        "jwislek_20"
+      ],
+      "factIds": [
+        "2026:w3:m1:remaining:pgorny",
+        "2026:w3:m2:remaining:Blumbo",
+        "2026:w3:m2:remaining:Archibaldo",
+        "2026:w3:m3:remaining:jwislek_20",
+        "2026:w3:m4:late-forecast",
+        "2026:w3:m5:late-forecast"
+      ]
+    },
+    {
+      "title": "The title defense starts as an underdog",
+      "body": "martinch94 enters the weekend without a Thursday score and trails jwislek_20 in the current outlook, 108.69 to 103.67. A three-time champion still has work to do; banner ceremonies remain notoriously low-scoring.",
+      "subjects": [
+        "martinch94",
+        "jwislek_20"
+      ],
+      "factIds": [
+        "2026:w3:m3:live-score:jwislek_20",
+        "2026:w3:m3:live-score:martinch94",
+        "2026:w3:m3:late-forecast",
+        "champion:2025",
+        "titles:martinch94"
+      ]
+    }
+  ],
+  "awards": [],
+  "receipts": null,
+  "forecastContext": {
+    "mode": "late_outlook",
+    "capturedAt": "2026-09-26T06:58:34.366Z",
+    "sourceSnapshotId": "farmhood-2026-week-03-live-4be8a872d62beea8",
+    "knownScoringIncluded": true,
+    "receiptEligible": false
+  },
+  "lineupSnapshot": {
+    "capturedAt": "2026-09-26T06:58:34.366Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "5849",
+          "9224",
+          "8151",
+          "8146",
+          "9487",
+          "5012",
+          "2133",
+          "9997",
+          "13545",
+          "SEA"
+        ],
+        "lineupHash": "5849.9224.8151.8146.9487.5012.2133.9997.13545.SEA",
+        "projection": 121.5,
+        "currentScore": 2,
+        "remainingProjection": 119.5,
+        "forecastScore": 121.5,
+        "startedAtCapture": true,
+        "lockedStarterCount": 1,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "11564",
+          "4034",
+          "13287",
+          "11632",
+          "7526",
+          "5001",
+          "11646",
+          "9486",
+          "12185",
+          "NE"
+        ],
+        "lineupHash": "11564.4034.13287.11632.7526.5001.11646.9486.12185.NE",
+        "projection": 114.76,
+        "currentScore": 0,
+        "remainingProjection": 114.76,
+        "forecastScore": 114.76,
+        "startedAtCapture": false,
+        "lockedStarterCount": 0,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12507",
+          "7543",
+          "6786",
+          "7525",
+          "7002",
+          "13286",
+          "12533",
+          "2747",
+          "JAX"
+        ],
+        "lineupHash": "3294.12507.7543.6786.7525.7002.13286.12533.2747.JAX",
+        "projection": 110.7,
+        "currentScore": 0,
+        "remainingProjection": 110.7,
+        "forecastScore": 110.7,
+        "startedAtCapture": false,
+        "lockedStarterCount": 0,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "12474",
+          "7564",
+          "8144",
+          "11604",
+          "11635",
+          "4037",
+          "11533",
+          "CIN"
+        ],
+        "lineupHash": "6770.12490.12474.7564.8144.11604.11635.4037.11533.CIN",
+        "projection": 108.69,
+        "currentScore": 0,
+        "remainingProjection": 108.69,
+        "forecastScore": 108.69,
+        "startedAtCapture": false,
+        "lockedStarterCount": 0,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "6904",
+          "7588",
+          "12481",
+          "9488",
+          "12519",
+          "4217",
+          "12501",
+          "4199",
+          "7839",
+          "BAL"
+        ],
+        "lineupHash": "6904.7588.12481.9488.12519.4217.12501.4199.7839.BAL",
+        "projection": 124.33,
+        "currentScore": 18.5,
+        "remainingProjection": 105.83,
+        "forecastScore": 124.33,
+        "startedAtCapture": true,
+        "lockedStarterCount": 1,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "9228",
+          "8138",
+          "12527",
+          "10232",
+          "12526",
+          "2505",
+          "11631",
+          "12534",
+          "3451",
+          "LAR"
+        ],
+        "lineupHash": "9228.8138.12527.10232.12526.2505.11631.12534.3451.LAR",
+        "projection": 103.67,
+        "currentScore": 0,
+        "remainingProjection": 103.67,
+        "forecastScore": 103.67,
+        "startedAtCapture": false,
+        "lockedStarterCount": 0,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "6797",
+          "4866",
+          "6790",
+          "6794",
+          "6801",
+          "12518",
+          "8167",
+          "8121",
+          "8259",
+          "MIN"
+        ],
+        "lineupHash": "6797.4866.6790.6794.6801.12518.8167.8121.8259.MIN",
+        "projection": 119.42,
+        "currentScore": 19.1,
+        "remainingProjection": 100.32,
+        "forecastScore": 119.42,
+        "startedAtCapture": true,
+        "lockedStarterCount": 1,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "4046",
+          "6813",
+          "11584",
+          "8112",
+          "2216",
+          "12506",
+          "7594",
+          "10229",
+          "12711",
+          "HOU"
+        ],
+        "lineupHash": "4046.6813.11584.8112.2216.12506.7594.10229.12711.HOU",
+        "projection": 133.33,
+        "currentScore": 23.9,
+        "remainingProjection": 109.43,
+        "forecastScore": 133.33,
+        "startedAtCapture": true,
+        "lockedStarterCount": 1,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "421",
+          "9509",
+          "8150",
+          "11610",
+          "4983",
+          "9484",
+          "12512",
+          "13414",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "421.9509.8150.11610.4983.9484.12512.13414.11792.PIT",
+        "projection": 115.48,
+        "currentScore": 38.9,
+        "remainingProjection": 76.58,
+        "forecastScore": 115.48,
+        "startedAtCapture": true,
+        "lockedStarterCount": 2,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "4892",
+          "3198",
+          "9225",
+          "11624",
+          "12514",
+          "10859",
+          "8148",
+          "9493",
+          "11786",
+          "PHI"
+        ],
+        "lineupHash": "4892.3198.9225.11624.12514.10859.8148.9493.11786.PHI",
+        "projection": null,
+        "currentScore": 0,
+        "remainingProjection": null,
+        "forecastScore": null,
+        "startedAtCapture": false,
+        "lockedStarterCount": 0,
+        "forecastStatus": "incomplete",
+        "missingProjectionPlayers": [
+          {
+            "id": "9493",
+            "name": "Puka Nacua",
+            "slot": "FLEX",
+            "position": "WR",
+            "injuryStatus": "Doubtful"
+          }
+        ],
+        "receiptEligible": false
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "4881",
+          "9226",
+          "8155",
+          "7547",
+          "5927",
+          "8130",
+          "8228",
+          "10236",
+          "12015",
+          "0"
+        ],
+        "lineupHash": "4881.9226.8155.7547.5927.8130.8228.10236.12015.0",
+        "projection": 123.37,
+        "currentScore": 0,
+        "remainingProjection": 123.37,
+        "forecastScore": 123.37,
+        "startedAtCapture": false,
+        "lockedStarterCount": 0,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "5892",
+          "8137",
+          "11620",
+          "1466",
+          "11581",
+          "5872",
+          "11539",
+          "KC"
+        ],
+        "lineupHash": "4984.9221.5892.8137.11620.1466.11581.5872.11539.KC",
+        "projection": 114.61,
+        "currentScore": 2.8,
+        "remainingProjection": 111.81,
+        "forecastScore": 114.61,
+        "startedAtCapture": true,
+        "lockedStarterCount": 1,
+        "forecastStatus": "complete",
+        "missingProjectionPlayers": [],
+        "receiptEligible": false
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-03-live-4be8a872d62beea8",
+    "predictionId": "farmhood-2026-week-03-late",
+    "predictionKind": "late_forecast",
+    "dataAsOf": "2026-09-26T06:58:34.366Z",
+    "promptVersion": "farmhood-press-v3-late-outlook",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_0e1082f9dde63bf1016ab76d1b89ac87d1b303080107541269",
+    "usage": {
+      "inputTokens": 7249,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1935,
+      "reasoningTokens": 0,
+      "totalTokens": 9184,
+      "estimatedCostUsd": 0.037718,
+      "pricingAsOf": "2026-09-08",
+      "preflight": {
+        "requestCharacters": 26117,
+        "localInputTokenEstimate": 7709,
+        "exactInputTokens": 7249,
+        "maxOutputTokens": 3500,
+        "maximumEstimatedCostUsd": 0.056498,
+        "configuredCostLimitUsd": 0.1
+      },
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-03-live-4be8a872d62beea8",
+    "projectionCoverage": 0.9916,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Weekend Outlook",
+    "Week 3",
+    "Lineup Watch"
+  ]
+}
