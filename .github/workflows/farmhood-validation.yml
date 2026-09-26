@@ -1,0 +1,53 @@
+name: Farmhood validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: farmhood-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Run deterministic Press and Live tests
+        run: node --test scripts/press/*.test.mjs assets/live.test.cjs
+
+      - name: Validate published Press and payout data
+        run: |
+          node scripts/press/validate.mjs
+          node scripts/payouts/test.mjs
+          node scripts/payouts/validate.mjs
+
+      - name: Check JavaScript syntax
+        run: |
+          for file in assets/app.js assets/live.js assets/payouts.js assets/press.js scripts/press/*.mjs; do
+            node --check "$file"
+          done
+
+      - name: Check JSON and changed-line formatting
+        run: |
+          find content -name '*.json' -print0 | xargs -0 -n1 jq empty
+          if [ -n "$GITHUB_BASE_REF" ]; then
+            git diff --check "origin/${GITHUB_BASE_REF}...HEAD"
+          else
+            git diff --check HEAD^
+          fi
