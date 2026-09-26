@@ -5,7 +5,8 @@
     "Lead with the current week's evidence.",
     "Let verified facts create the joke.",
     "Keep matchup capsules concise and specific.",
-    "Distinguish official results, live facts, projections and editorial opinion."
+    "Distinguish official results, live facts, projections and editorial opinion.",
+    "When an edition begins after kickoff, acknowledge the known scoring and never rewrite hindsight as an original prediction."
   ],
   "allowedRoastTopics": [
     "Fantasy results",
@@ -30,6 +31,13 @@
     "maximumHistoricalCallbacksPerPreview": 2,
     "currentWeekEvidenceMinimumPercent": 70,
     "rawHtmlAllowed": false,
-    "humanApprovalRequired": true
+    "humanApprovalRequired": true,
+    "lateOutlookRules": {
+      "edition": "Weekend Outlook",
+      "knownScoringMustBeDisclosed": true,
+      "originalPredictionLanguageAllowed": false,
+      "predictionReceiptsAllowed": false,
+      "replacementAllowed": false
+    }
   }
 }

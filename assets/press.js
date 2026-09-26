@@ -162,7 +162,18 @@
     return rows.filter(row=>row&&typeof row==='object'&&clean(row.status,'published').toLowerCase()!=='draft');
   }
 
+  function isLateOutlook(article){
+    const mode=first(article&&article.forecastContext&&article.forecastContext.mode).toLowerCase().replace(/[-\s]+/g,'_');
+    const type=first(article&&article.type,article&&article.edition).toLowerCase().replace(/[-\s]+/g,'_');
+    return mode==='late_outlook'||type==='week_late_preview';
+  }
+
+  function editionLabel(article,fallback){
+    return isLateOutlook(article)?'Weekend Outlook':fallback;
+  }
+
   function kindOf(article){
+    if(isLateOutlook(article))return 'preview';
     const value=first(article&&article.type,article&&article.edition,article&&article.label).toLowerCase();
     if(value.includes('recap')||value.includes('postgame'))return 'recap';
     if(value.includes('live'))return 'live';
@@ -285,11 +296,17 @@
     const leadObject=lead&&typeof lead==='object'&&!Array.isArray(lead)?lead:{};
     const meta=indexArticles().find(item=>articleId(item)===articleId(article))||{};
     const leadParagraphs=Array.isArray(lead)?lead:list(leadObject.body||article.body||article.paragraphs);
+    const late=isLateOutlook(article)||isLateOutlook(meta);
+    const context=article&&article.forecastContext&&typeof article.forecastContext==='object'?article.forecastContext:{};
+    const noOriginalReceipt=context.receiptEligible===false||first(context.mode).toLowerCase()==='late_outlook_baseline';
     return {
       raw:article,
       title:first(article.title,leadObject.headline,meta.title,'Untitled edition'),
       dek:first(article.dek,article.deck,leadObject.deck,meta.dek,meta.deck),
-      edition:first(article.edition,article.label,meta.edition,kindOf(article)==='recap'?'Postgame Edition':'Pregame Edition'),
+      edition:late?'Weekend Outlook':first(article.edition,article.label,meta.edition,kindOf(article)==='recap'?'Postgame Edition':'Pregame Edition'),
+      lateOutlook:late,
+      noOriginalReceipt,
+      forecastContext:context,
       status:first(article.status,meta.status,'Published'),
       season:number(article.season,number(meta.season,2026)),
       week:number(article.week,number(meta.week,null)),
@@ -343,6 +360,8 @@
     }
     grid.appendChild(aside);pressState.panel.appendChild(grid);
 
+    if(data.lateOutlook)renderLateOutlookNotice(data,pressState.panel);
+
     const baseline=article.lineupSnapshot||(article.source&&article.source.lineupSnapshot)||null;
     if(baseline&&pressState.watchSnapshot&&pressState.watchPlayers&&window.FarmhoodLive&&typeof window.FarmhoodLive.lineupWatch==='function'){
       pressState.watch=window.FarmhoodLive.lineupWatch(pressState.watchSnapshot,pressState.watchPlayers,baseline);
@@ -353,19 +372,46 @@
     renderSource(data,pressState.panel);
   }
 
+  function renderLateOutlookNotice(data,parent){
+    const notice=make('aside','press-late-notice');
+    notice.setAttribute('role','note');
+    notice.setAttribute('aria-labelledby','press-late-outlook-title');
+    const copy=make('div','');
+    const title=make('h2','','Weekend Outlook — published after kickoff');title.id='press-late-outlook-title';
+    copy.append(make('span','press-late-kicker','Published after kickoff'),title);
+    copy.appendChild(make('p','',first(data.forecastContext&&data.forecastContext.disclosure,data.forecastContext&&data.forecastContext.description,'Published after Thursday Night Football. Thursday points are known; Sunday and Monday outcomes remain projections.')));
+    const badge=make('span','press-late-badge','No original receipt');
+    notice.append(copy,badge);parent.appendChild(notice);
+  }
+
   function normalizedMatchup(row,index){
     const teams=list(row&&row.teams);
     const a=teams[0]||{},b=teams[1]||{},pick=row&&row.pick||{};
     const projectedA=number(row&&row.projectedScoreA,number(a.projection,null));
     const projectedB=number(row&&row.projectedScoreB,number(b.projection,null));
-    const finalA=number(row&&row.finalScoreA,number(row&&row.currentScoreA,null));
-    const finalB=number(row&&row.finalScoreB,number(row&&row.currentScoreB,null));
+    const currentA=number(row&&row.outlookCurrentScoreA,number(row&&row.currentScoreA,number(a.currentScore,null)));
+    const currentB=number(row&&row.outlookCurrentScoreB,number(row&&row.currentScoreB,number(b.currentScore,null)));
+    const finalA=number(row&&row.finalScoreA,currentA);
+    const finalB=number(row&&row.finalScoreB,currentB);
     const managerA=first(row&&row.managerA,a.manager,a.name,'Team A');
     const managerB=first(row&&row.managerB,b.manager,b.name,'Team B');
     const picked=first(row&&row.predictedWinner,pick.manager,pick.winner);
     const winProbability=row&&row.winProbability!==undefined?row.winProbability:pick.winProbability;
     return {
       id:first(row&&row.matchupId,row&&row.id,index+1),managerA,managerB,projectedA,projectedB,finalA,finalB,picked,winProbability,
+      currentA,currentB,
+      forecastA:number(row&&row.forecastScoreA,number(a.forecastScore,null)),
+      forecastB:number(row&&row.forecastScoreB,number(b.forecastScore,null)),
+      remainingA:number(row&&row.remainingProjectionA,number(a.remainingProjection,null)),
+      remainingB:number(row&&row.remainingProjectionB,number(b.remainingProjection,null)),
+      forecastWinner:first(row&&row.forecastWinner),
+      forecastProbability:row&&row.forecastProbability,
+      forecastStatus:first(row&&row.forecastStatus,'complete').toLowerCase(),
+      startedAtCapture:Boolean(row&&row.startedAtCapture),
+      lockedStarterCountA:number(row&&row.lockedStarterCountA,0),
+      lockedStarterCountB:number(row&&row.lockedStarterCountB,0),
+      lockedStarterCount:number(row&&row.lockedStarterCount,number(row&&row.lockedStarterCountA,0)+number(row&&row.lockedStarterCountB,0)),
+      missingProjectionPlayers:list(row&&row.missingProjectionPlayers),
       winner:first(row&&row.winner),predictionCorrect:row&&row.predictionCorrect,
       headline:first(row&&row.headline,managerA+' and '+managerB+' meet at the line'),
       body:first(row&&row.analysis,row&&row.body,row&&row.summary),
@@ -378,10 +424,13 @@
 
   function renderMatchupDesk(data,parent){
     const recap=kindOf(data.raw)==='recap';
+    const late=data.lateOutlook;
+    const receiptlessRecap=recap&&data.noOriginalReceipt;
     const section=make('section','press-section');
     const head=make('div','press-section-head');
-    head.append(make('h2','',recap?'The Matchup Reports':'The Prediction Desk'),make('p','',recap
+    head.append(make('h2','',recap?'The Matchup Reports':late?'The Weekend Matchup Desk':'The Prediction Desk'),make('p','',recap
       ?'Final scores, turning points and the decisions that shaped the week.'
+      :late?'Current scores include Thursday action. Estimated finals are a live outlook and may be unavailable when projection coverage is incomplete.'
       :'Published picks remain frozen; Live Desk forecasts may move before each player locks.'));
     section.appendChild(head);
     if(!data.matchups.length){
@@ -391,14 +440,52 @@
     const board=make('div','press-matchups');
     data.matchups.slice(0,6).forEach((raw,index)=>{
       const row=normalizedMatchup(raw,index),card=make('article','press-matchup');
+      if(late)card.classList.add('press-matchup-late');
       const top=make('div','press-matchup-top');
-      top.append(make('span','','Matchup '+row.id),make('span','pick',row.picked?'Pick: '+row.picked:'Pick pending'));
+      if(late){
+        const captureState=row.startedAtCapture?'Started before outlook':'No Thursday action';
+        top.append(make('span','','Matchup '+row.id+' · '+captureState),make('span','pick',row.forecastWinner?'Friday lean: '+row.forecastWinner:'Live outlook incomplete'));
+      }else if(receiptlessRecap){
+        top.append(make('span','','Matchup '+row.id),make('span','pick','No pre-kickoff pick'));
+      }else top.append(make('span','','Matchup '+row.id),make('span','pick',row.picked?'Pick: '+row.picked:'Pick pending'));
       card.append(top,make('h3','',row.headline));
-      const score=make('div','press-scoreline'),sideA=make('div','press-team'),sideB=make('div','press-team');
-      sideA.append(make('span','press-team-name',row.managerA),make('strong','press-team-score',points(recap?row.finalA:row.projectedA)));
-      sideB.append(make('span','press-team-name',row.managerB),make('strong','press-team-score',points(recap?row.finalB:row.projectedB)));
-      score.append(sideA,make('span','press-score-vs',recap?'FINAL':'PROJ'),sideB);card.appendChild(score);
-      const odds=make('div','press-odds');odds.append(make('span','',recap?'Original pick':'Win probability'),make('strong','',recap?(row.picked+(row.predictionCorrect?' ✓':' ✕')):probability(row.winProbability)));card.appendChild(odds);
+      if(late){
+        const stack=make('div','press-score-stack');
+        [['CURRENT',row.currentA,row.currentB],['EST. FINAL',row.forecastA,row.forecastB]].forEach(([label,valueA,valueB])=>{
+          const score=make('div','press-scoreline press-scoreline-late'),sideA=make('div','press-team'),sideB=make('div','press-team');
+          sideA.append(make('span','press-team-name',row.managerA),make('strong','press-team-score',points(valueA)));
+          sideB.append(make('span','press-team-name',row.managerB),make('strong','press-team-score',points(valueB)));
+          score.append(sideA,make('span','press-score-vs',label),sideB);stack.appendChild(score);
+        });
+        card.appendChild(stack);
+      }else{
+        const score=make('div','press-scoreline'),sideA=make('div','press-team'),sideB=make('div','press-team');
+        sideA.append(make('span','press-team-name',row.managerA),make('strong','press-team-score',points(recap?row.finalA:row.projectedA)));
+        sideB.append(make('span','press-team-name',row.managerB),make('strong','press-team-score',points(recap?row.finalB:row.projectedB)));
+        score.append(sideA,make('span','press-score-vs',recap?'FINAL':'PROJ'),sideB);card.appendChild(score);
+      }
+      const forecastComplete=late&&row.forecastStatus==='complete'&&row.forecastA!==null&&row.forecastB!==null&&row.forecastWinner&&finite(row.forecastProbability)!==null;
+      const baselineComplete=receiptlessRecap&&row.forecastStatus==='complete'&&row.forecastWinner&&finite(row.forecastProbability)!==null;
+      const odds=make('div','press-odds');
+      if(late){
+        odds.append(make('span','','Live outlook'),make('strong','',forecastComplete?row.forecastWinner+' · '+probability(row.forecastProbability):'Incomplete'));
+      }else if(receiptlessRecap){
+        odds.append(make('span','','Frozen Weekend Outlook'),make('strong','',baselineComplete?row.forecastWinner+' · '+probability(row.forecastProbability):'No complete late forecast'));
+      }else odds.append(make('span','',recap?'Original pick':'Win probability'),make('strong','',recap?(row.picked+(row.predictionCorrect?' ✓':' ✕')):probability(row.winProbability)));
+      card.appendChild(odds);
+      if(late&&!forecastComplete){
+        const missing=row.missingProjectionPlayers.map(sentence).filter(Boolean);
+        card.appendChild(make('p','press-forecast-incomplete',missing.length
+          ?'Incomplete forecast: missing remaining projections for '+missing.join(', ')+'.'
+          :'Incomplete forecast: an estimated final and lean are not available for this matchup.'));
+      }
+      if(receiptlessRecap&&!baselineComplete){
+        card.appendChild(make('p','press-forecast-incomplete','No original pick was published, and the frozen Weekend Outlook did not have a complete forecast for this matchup.'));
+      }
+      if(late&&row.lockedStarterCount){
+        const total=row.lockedStarterCount;
+        card.appendChild(make('p','press-capture-context',total+' '+(total===1?'starter was':'starters were')+' already locked when this snapshot was captured.'));
+      }
       if(row.body)card.appendChild(make('p','press-matchup-body',row.body));
       const notes=make('div','press-matchup-notes');
       [
@@ -442,14 +529,27 @@
     }else storyList.appendChild(make('div','press-story',"Season storylines will accumulate here as the year's evidence arrives."));
     stories.appendChild(storyList);section.appendChild(stories);
 
-    const receipts=make('aside','press-receipts');receipts.append(make('div','press-receipts-kicker','Accountability desk'),make('h3','','The Receipts'));
-    const pairs=receiptPairs(data.receipts);
-    if(pairs.length){
-      pairs.forEach(([label,value])=>{const stat=make('div','receipt-stat');stat.append(make('span','',label),make('strong','',value));receipts.appendChild(stat);});
-      receipts.appendChild(make('p','','Original picks are immutable. Grades compare those picks with final results.'));
+    const receipts=make('aside','press-receipts');
+    if(data.noOriginalReceipt){
+      receipts.classList.add('press-no-receipt');
+      receipts.append(make('div','press-receipts-kicker','Transparency note'),make('h3','','No original receipt'));
+      if(data.lateOutlook){
+        receipts.appendChild(make('p','press-no-receipt-lead','This outlook was published after Thursday’s game began. It is excluded from prediction accuracy and the weekly desk grade.'));
+        receipts.appendChild(make('p','receipt-placeholder','The Weekend Outlook snapshot is frozen for transparency, but it is not an original pre-kickoff pick.'));
+      }else{
+        receipts.appendChild(make('p','press-no-receipt-lead','No pre-kickoff Preview was published for this week, so this recap has no original prediction grade.'));
+        receipts.appendChild(make('p','receipt-placeholder','The frozen Weekend Outlook remains available for transparency, but its late forecasts are not counted as original picks.'));
+      }
     }else{
-      receipts.appendChild(make('p','','The original prediction is frozen at first kickoff. The latest forecast can move with injuries and lineup swaps, but it never rewrites the pick.'));
-      receipts.appendChild(make('p','receipt-placeholder','Accuracy, projected-score error and the weekly desk grade appear here after matchups are final.'));
+      receipts.append(make('div','press-receipts-kicker','Accountability desk'),make('h3','','The Receipts'));
+      const pairs=receiptPairs(data.receipts);
+      if(pairs.length){
+        pairs.forEach(([label,value])=>{const stat=make('div','receipt-stat');stat.append(make('span','',label),make('strong','',value));receipts.appendChild(stat);});
+        receipts.appendChild(make('p','','Original picks are immutable. Grades compare those picks with final results.'));
+      }else{
+        receipts.appendChild(make('p','','The original prediction is frozen at first kickoff. The latest forecast can move with injuries and lineup swaps, but it never rewrites the pick.'));
+        receipts.appendChild(make('p','receipt-placeholder','Accuracy, projected-score error and the weekly desk grade appear here after matchups are final.'));
+      }
     }
     if(data.awards.length){
       const label=make('div','press-receipts-kicker','Weekly honors');label.style.marginTop='18px';receipts.appendChild(label);
@@ -465,7 +565,11 @@
     if(data.dataAsOf)details.push('Facts verified '+dateLabel(data.dataAsOf,true));
     if(data.sourceId)details.push('Snapshot '+data.sourceId);
     details.push('Scores and lineups: Sleeper API');
-    source.append(make('span','',details.join(' · ')),make('span','','Narrative generated from frozen league facts; calculations remain deterministic.'));
+    source.append(make('span','',details.join(' · ')),make('span','',data.lateOutlook
+      ?'Late outlook frozen at publication; it is not graded as an original pick.'
+      :data.noOriginalReceipt
+        ?'Final recap reconciled against a frozen late outlook; no pre-kickoff grade is assigned.'
+        :'Narrative generated from frozen league facts; calculations remain deterministic.'));
     parent.appendChild(source);
   }
 
@@ -487,7 +591,7 @@
 
   function teamName(team){return first(team&&team.name,team&&team.manager,'Roster '+first(team&&team.rosterId,'?'));}
   function teamProjection(team){return number(team&&team.projection,number(team&&team.projectedPoints,null));}
-  function teamChanged(team){const delta=finite(team&&team.projectionDelta);return Boolean(team&&(team.changed||team.lineupChanged||(delta!==null&&Math.abs(delta)>=1)));}
+  function teamChanged(team){return Boolean(team&&(team.changed||team.lineupChanged));}
   function teamInjuries(team){return list(team&&team.injuries||team&&team.injuryAlerts);}
   function teamPivots(team){return list(team&&team.pivots||team&&team.benchPivots);}
 
@@ -640,7 +744,7 @@
     const card=make('article','watch-card'+(injuries.length?' alert':changed?' changed':''));
     const top=make('div','watch-card-top');top.append(make('h3','',teamName(team)),make('span','watch-badge '+(injuries.length?'alert':changed?'changed':''),injuries.length?'Injury alert':changed?'Lineup changed':'No new swaps'));card.appendChild(top);
     const numbers=make('div','watch-numbers'),projection=make('div','watch-number');projection.append(make('small','','Current projection'),make('strong','',points(teamProjection(team))));numbers.append(projection,make('span','watch-vs',''));
-    const delta=make('div','watch-number');delta.append(make('small','','Since last check'),make('strong','',finite(team&&team.projectionDelta)===null?'—':(Number(team.projectionDelta)>=0?'+':'')+Number(team.projectionDelta).toFixed(1)));numbers.appendChild(delta);card.appendChild(numbers);
+    const delta=make('div','watch-number');delta.append(make('small','','Since published'),make('strong','',finite(team&&team.projectionDelta)===null?'—':(Number(team.projectionDelta)>=0?'+':'')+Number(team.projectionDelta).toFixed(1)));numbers.appendChild(delta);card.appendChild(numbers);
     appendWatchDetails(card,injuries,pivots,team,null,expanded);return card;
   }
 
@@ -698,14 +802,14 @@
   function renderArchive(){
     pressState.watchMount=null;pressState.panel.replaceChildren();
     const heading=make('div','press-live-hero'),copy=make('div','');
-    copy.append(make('span','press-overline','Permanent record'),make('h1','','Edition Archive'),make('p','','Original previews, final recaps, prediction receipts and the season stories that survived the week.'));
+    copy.append(make('span','press-overline','Permanent record'),make('h1','','Edition Archive'),make('p','','Pregame previews, late Weekend Outlooks, final recaps and the season stories that survived the week.'));
     heading.appendChild(copy);pressState.panel.appendChild(heading);
     const rows=indexArticles();
     if(!rows.length){pressState.panel.appendChild(make('div','press-empty','No published editions are in the archive yet.'));return;}
     const grid=make('div','press-archive');grid.style.marginTop='24px';
     rows.slice().sort((a,b)=>new Date(b.publishedAt||0)-new Date(a.publishedAt||0)).forEach(meta=>{
       const card=make('button','press-archive-card');card.type='button';
-      const top=make('div','press-archive-meta');top.append(make('span','',[first(meta.edition,meta.type,'Feature'),meta.week!==undefined?'Week '+meta.week:''].filter(Boolean).join(' · ')),make('span','',dateLabel(meta.publishedAt,false)));
+      const top=make('div','press-archive-meta');top.append(make('span','',[editionLabel(meta,first(meta.edition,meta.type,'Feature')),meta.week!==undefined?'Week '+meta.week:''].filter(Boolean).join(' · ')),make('span','',dateLabel(meta.publishedAt,false)));
       card.append(top,make('h3','',first(meta.title,'Untitled edition')),make('p','',first(meta.dek,meta.deck,'Open this edition from the permanent Farmhood record.')),make('span','press-archive-open','Read edition →'));
       card.addEventListener('click',()=>{const kind=kindOf(meta);pressState.activeTab=kind==='recap'?'recap':'preview';updateTabState();loadArticle(meta);window.scrollTo({top:0,behavior:'smooth'});});
       grid.appendChild(card);

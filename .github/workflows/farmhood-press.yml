@@ -14,12 +14,13 @@ on:
           - credential-test
           - connection-test
       edition:
-        description: Edition to generate
+        description: Preview before kickoff, late-preview while live, or recap after final
         required: true
         default: preview
         type: choice
         options:
           - preview
+          - late-preview
           - recap
       week:
         description: 2026 fantasy week
@@ -55,7 +56,7 @@ on:
           - spicy
           - chaos
       force_regeneration:
-        description: Replace an existing unlocked draft (never replaces a locked original Preview)
+        description: Replace an existing unlocked draft (never replaces a locked Preview or Weekend Outlook)
         required: true
         default: false
         type: boolean
@@ -90,7 +91,7 @@ jobs:
           node-version: "24"
 
       - name: Test deterministic newsroom logic
-        run: node --test scripts/press/*.test.mjs
+        run: node --test scripts/press/*.test.mjs assets/live.test.cjs
 
       - name: Test the credential without generating tokens
         if: inputs.operation == 'credential-test'
@@ -223,7 +224,7 @@ jobs:
         run: |
           if pr_url=$(gh pr create --draft --base main \
               --title "Farmhood Press: ${EDITION} edition for Week ${WEEK}" \
-              --body "AI-generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, prediction ledger, frozen fact snapshot, lineage metadata, and factual validation are included in this pull request. Review the prose and merge to publish through GitHub Pages." 2>&1); then
+              --body "AI-generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, forecast ledger, frozen fact snapshot, lineage metadata, and factual validation are included in this pull request. A late-preview is explicitly a post-kickoff Weekend Outlook and is never eligible for original-prediction receipts. Review the prose and merge to publish through GitHub Pages." 2>&1); then
             echo "url=${pr_url}" >> "$GITHUB_OUTPUT"
             echo "### Farmhood Press review required" >> "$GITHUB_STEP_SUMMARY"
             echo "- Draft pull request: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"

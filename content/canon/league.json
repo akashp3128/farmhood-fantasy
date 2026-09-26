@@ -12,8 +12,9 @@
   "defaultTone": "spicy",
   "predictionPolicy": {
     "originalForecast": "Published before the first NFL kickoff and preserved permanently.",
+    "lateOutlook": "When no original forecast was published and scoring has already begun, one immutable Weekend Outlook may combine official points already scored with projections only for unstarted starters. It is never graded as an original prediction and earns no prediction receipts.",
     "latestForecast": "May update for starter swaps, injury designations and projection changes until the affected player locks.",
-    "recap": "Grades the original forecast and separately records the final pre-lock forecast."
+    "recap": "Grades the original forecast when one exists. If the week began with only a late Weekend Outlook, the recap may reference it as a non-receipt-eligible outlook but never grade it as an original forecast."
   },
   "sourcePriority": [
     "Official finalized Sleeper data",

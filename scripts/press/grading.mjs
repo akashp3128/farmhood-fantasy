@@ -1,7 +1,7 @@
 import { round } from './utils.mjs';
 
 export function gradePredictions(matchups) {
-  const completed = matchups.filter((matchup) => matchup.winner);
+  const completed = matchups.filter((matchup) => matchup.winner && matchup.receiptEligible !== false);
   if (!completed.length) return null;
   const correct = completed.filter((matchup) => matchup.predictionCorrect).length;
   const scoreError = completed.reduce((sum, matchup) => sum + Math.abs(matchup.finalScoreA - matchup.projectedScoreA) + Math.abs(matchup.finalScoreB - matchup.projectedScoreB), 0) / (completed.length * 2);

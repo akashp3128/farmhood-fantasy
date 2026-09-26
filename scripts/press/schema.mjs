@@ -63,7 +63,7 @@ export function articleCopySchema(snapshot, type) {
   };
 }
 
-export function validateArticleCopy(copy, snapshot) {
+export function validateArticleCopy(copy, snapshot, type = 'preview', options = {}) {
   assert(copy && typeof copy === 'object', 'The model did not return an article object.');
   const expectedIds = snapshot.matchups.map((matchup) => matchup.matchupId).sort((a, b) => a - b);
   const actualIds = (copy.matchups || []).map((matchup) => matchup.matchupId).sort((a, b) => a - b);
@@ -81,5 +81,10 @@ export function validateArticleCopy(copy, snapshot) {
   assert(!/<\/?[a-z][^>]*>/i.test(text), 'Generated copy contains raw HTML.');
   assert(!/\b(?:nigger|faggot|retard)\b/i.test(text), 'Generated copy failed the editorial language gate.');
   assert(safeText(copy.title, 140).length >= 12, 'Generated headline is too short.');
+  if (type === 'late-preview' || options.lateForecast === true) {
+    const hindsightClaims=text.replace(/\b(?:no|not\s+(?:an?\s+)?|without\s+(?:an?\s+)?)\s*(?:original\s+)?(?:pregame\s+)?(?:pick|prediction|forecast|preview)s?\b/gi,'');
+    assert(!/\boriginal\s+(?:pregame\s+)?(?:pick|prediction|forecast|preview)s?\b/i.test(hindsightClaims), 'Late-outlook copy must not describe an original pick or prediction.');
+    assert(!/\bpregame\s+(?:pick|prediction|forecast|preview)s?\b/i.test(hindsightClaims), 'Late-outlook copy must not imply it was published before kickoff.');
+  }
   return copy;
 }

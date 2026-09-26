@@ -23,3 +23,15 @@ test('grades a completed recap without relying on generator globals', () => {
 test('returns no grade before a matchup is complete', () => {
   assert.equal(gradePredictions([{ winner: null }]), null);
 });
+
+test('never grades a late outlook as an original prediction receipt', () => {
+  assert.equal(gradePredictions([{
+    winner: 'Blumbo',
+    predictionCorrect: true,
+    finalScoreA: 110,
+    finalScoreB: 100,
+    projectedScoreA: 105,
+    projectedScoreB: 95,
+    receiptEligible: false
+  }]), null);
+});
