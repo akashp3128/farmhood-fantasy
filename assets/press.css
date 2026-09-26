@@ -101,6 +101,26 @@
 .press-no-receipt h3{font-size:24px}
 .press-no-receipt .press-no-receipt-lead{color:var(--text);font-size:14px;font-weight:700}
 
+.waiver-summary-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:24px;border:1px solid var(--text);background:var(--text)}
+.waiver-summary-stat{display:flex;flex-direction:column;gap:4px;padding:14px 16px;background:var(--surface)}
+.waiver-summary-stat span{font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.waiver-summary-stat strong{font-family:var(--serif);font-size:24px;color:var(--blue)}
+.waiver-transaction-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.waiver-transaction{min-width:0;border:1px solid var(--line);background:var(--surface);padding:17px}
+.waiver-transaction-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.waiver-transaction-top h3{font-family:var(--serif);font-size:18px;margin-top:4px}.waiver-transaction-top time{color:var(--muted-2);font-family:var(--serif);font-size:10px;text-align:right}
+.waiver-type{display:inline-flex;padding:2px 5px;border:1px solid var(--line);font-size:8px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--blue)}
+.waiver-type.claim{border-color:rgba(184,145,46,.5);background:var(--gold-dim);color:var(--gold-2)}
+.waiver-moves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding-top:12px}.waiver-move-group h4{font-size:8px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted-2);margin-bottom:6px}
+.waiver-player-list{list-style:none}.waiver-player{display:grid;grid-template-columns:14px minmax(0,1fr);gap:1px 5px;padding:5px 0;border-bottom:1px dotted rgba(23,59,39,.25);font-size:11px}.waiver-player:last-child{border-bottom:0}
+.waiver-player-mark{grid-row:1/3;font-weight:900}.waiver-move-group.add .waiver-player-mark{color:var(--win)}.waiver-move-group.drop .waiver-player-mark{color:var(--loss)}
+.waiver-player strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.waiver-player>span:last-child:not(.waiver-player-mark){color:var(--muted-2);font-size:9px}
+.waiver-none{font-family:var(--serif);font-size:10px;font-style:italic;color:var(--muted-2)}
+.waiver-transaction-details{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;padding-top:10px;border-top:1px dotted rgba(23,59,39,.3)}
+.waiver-detail-chip{padding:3px 5px;border:1px solid var(--line);color:var(--muted-2);font-size:8px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}.waiver-detail-chip.bid{border-color:rgba(184,145,46,.5);color:var(--gold-2)}
+.waiver-manager-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.waiver-manager-card{border:1px solid var(--line);background:var(--surface);padding:13px}.waiver-manager-card h3{font-family:var(--serif);font-size:15px;margin-bottom:8px}
+.waiver-manager-card dl{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.waiver-manager-card dl div{display:flex;flex-direction:column}.waiver-manager-card dt{font-size:7px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted-2)}.waiver-manager-card dd{font-family:var(--serif);font-size:13px;font-weight:700}
+
 .press-watch{border-top:4px double var(--text);border-bottom:2px solid var(--text);padding:18px 0 22px;margin-top:35px}
 .press-watch-compact{margin-top:24px;padding:0;border:1px solid var(--line);border-left:4px solid var(--win);background:var(--surface)}
 .watch-compact-shell{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:28px;padding:18px 20px}
@@ -161,10 +181,11 @@
   .press-lead{border-right:0;padding-right:0}.press-lead-aside{padding:24px 0 28px;border-top:1px solid var(--text);display:grid;grid-template-columns:1fr 1fr}
   .press-pullquote{margin:0}.press-archive{grid-template-columns:repeat(2,minmax(0,1fr))}
   .watch-compact-shell{gap:20px}
+  .waiver-manager-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:650px){
   .press-wrap{padding-left:15px;padding-right:15px}.press-kicker-row{grid-template-columns:1fr 1fr}.press-kicker-row span:nth-child(2){display:none}
-  .press-name{font-size:clamp(38px,14vw,58px);letter-spacing:-1.5px}.press-tabs{justify-content:flex-start}.press-tab{flex:1 1 25%;min-width:0;padding:11px 6px;font-size:8px;letter-spacing:.9px}
+  .press-name{font-size:clamp(38px,14vw,58px);letter-spacing:-1.5px}.press-tabs{justify-content:flex-start}.press-tab{flex:1 1 20%;min-width:0;padding:11px 4px;font-size:7px;letter-spacing:.6px}
   .press-edition-bar{align-items:flex-start;flex-direction:column;gap:3px}.press-edition-bar .edition-date{text-align:left}
   .press-panel{padding-top:18px}.press-headline{font-size:clamp(32px,10.5vw,46px);max-width:none;letter-spacing:-1px}.press-dek{font-size:16px}.press-lead{padding-top:24px}.press-lead-aside{grid-template-columns:1fr}.press-matchups,.watch-grid,.press-archive{grid-template-columns:1fr}
   .press-section{margin-top:30px}.press-matchup{padding:19px}.press-matchup h3{font-size:20px}.press-team-name{font-size:12px}.press-team-score{font-size:22px}
@@ -176,5 +197,6 @@
   .watch-card-top{align-items:flex-start;flex-direction:column}.watch-badge{white-space:normal}.watch-card{padding:14px}
   .press-archive-card{min-height:0}.press-live-hero{padding:22px 0}
   .press-source{grid-template-columns:1fr;gap:5px}.press-source span:last-child{text-align:left}
+  .waiver-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.waiver-transaction-list,.waiver-manager-grid{grid-template-columns:1fr}.waiver-transaction{padding:15px}.waiver-moves{gap:10px}.waiver-manager-card dl{grid-template-columns:repeat(5,minmax(42px,1fr));overflow-x:auto}
 }
 @media(prefers-reduced-motion:reduce){.watch-dot{animation:none}.press-archive-card{transition:none}}

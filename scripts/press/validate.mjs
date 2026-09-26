@@ -3,6 +3,7 @@ import path from 'node:path';
 import { PRESS_CONFIG } from './config.mjs';
 import { assertPredictionLineage, isLateForecastLedger } from './lineage.mjs';
 import { buildLateMatchupOutlook, buildLateTeamOutlook } from './outlook.mjs';
+import { validateWaiverArticle, WAIVER_ARTICLE_TYPE } from './waivers.mjs';
 import { assert, readJsonIfExists, repoRoot } from './utils.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -112,6 +113,15 @@ async function main() {
     assert(JSON.stringify(article.tags || []) === JSON.stringify(meta.tags || []), `Article/index tag mismatch for ${meta.articleId}.`);
     assert(article.status === 'published', `${meta.articleId} is not published.`);
     assert(article.season === meta.season && article.week === meta.week, `${meta.articleId} season/week mismatch.`);
+    if (article.type === WAIVER_ARTICLE_TYPE) {
+      const transactionPath = path.join(root, 'content', 'transactions', String(article.season), `week-${String(article.week).padStart(2, '0')}.json`);
+      const transactionSnapshot = await readJsonIfExists(transactionPath);
+      assert(transactionSnapshot?.kind === 'transactions' && transactionSnapshot.immutable === true, `${meta.articleId} is missing its immutable transaction snapshot.`);
+      validateWaiverArticle(article, transactionSnapshot);
+      article.managerSummaries.forEach((row) => assert(managers.has(row.manager), `Unknown waiver manager: ${row.manager}`));
+      walkText(article, meta.articleId);
+      continue;
+    }
     assert(Array.isArray(article.matchups) && article.matchups.length === 6, `${meta.articleId} must contain six matchup capsules.`);
     assert(article.lineupSnapshot?.teams?.length === 12, `${meta.articleId} must contain a 12-team lineup baseline.`);
     assert(new Set(article.lineupSnapshot.teams.map((team) => team.name)).size === 12, `${meta.articleId} lineup baseline has duplicate managers.`);

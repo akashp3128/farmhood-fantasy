@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mergeArticle, promptInstructions } from './generate.mjs';
+import { editionBudget, mergeArticle, promptInstructions } from './generate.mjs';
 
 const copy = {
   title: 'Weekend Outlook after Thursday',
@@ -119,4 +119,14 @@ test('late-outlook prompt acknowledges known Thursday facts and bans hindsight f
   assert.match(instructions, /Thursday scoring is already known/);
   assert.match(instructions, /not an original pregame preview/);
   assert.match(instructions, /never imply the edition existed before kickoff/);
+});
+
+test('per-edition cost policy can be lowered but never raised by a repository variable', () => {
+  assert.deepEqual(editionBudget('late-preview', '0.05'), {
+    maxOutputTokens: 2300,
+    maxEstimatedCostUsd: 0.05,
+    policyMaximumCostUsd: 0.065
+  });
+  assert.equal(editionBudget('recap', '0.50').maxEstimatedCostUsd, 0.07);
+  assert.equal(editionBudget('preview').maxOutputTokens, 2600);
 });

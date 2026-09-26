@@ -32,6 +32,28 @@
     "currentWeekEvidenceMinimumPercent": 70,
     "rawHtmlAllowed": false,
     "humanApprovalRequired": true,
+    "scheduledAutomation": {
+      "enabled": true,
+      "timezone": "America/Chicago",
+      "humanApprovalRequired": false,
+      "allowedEditions": [
+        "recap",
+        "waiver",
+        "late-preview"
+      ],
+      "manualAndForcedRunsRequireReview": true,
+      "deterministicValidationRequired": true,
+      "directMainPublicationAllowed": true
+    },
+    "waiverWireRules": {
+      "edition": "Waiver Wire",
+      "deterministic": true,
+      "completedTransactionsOnly": true,
+      "includedTypes": ["waiver", "free_agent"],
+      "tradesExcluded": true,
+      "valueJudgmentsAllowed": false,
+      "replacementAllowed": false
+    },
     "lateOutlookRules": {
       "edition": "Weekend Outlook",
       "knownScoringMustBeDisclosed": true,

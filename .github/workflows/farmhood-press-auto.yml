@@ -1,0 +1,259 @@
+name: Farmhood Press automatic editions
+run-name: Farmhood Press auto · ${{ github.event.schedule || 'scheduled' }}
+
+on:
+  schedule:
+    - cron: "7,37 9 * 1,9-12 2"
+      timezone: "America/Chicago"
+    - cron: "7 10 * 1,9-12 2"
+      timezone: "America/Chicago"
+    - cron: "7,37 14 * 1,9-12 3"
+      timezone: "America/Chicago"
+    - cron: "7 15 * 1,9-12 3"
+      timezone: "America/Chicago"
+    - cron: "7,37 9 * 1,9-12 5"
+      timezone: "America/Chicago"
+    - cron: "7 10 * 1,9-12 5"
+      timezone: "America/Chicago"
+permissions: {}
+
+concurrency:
+  group: farmhood-main-content-writer
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pages: write
+      pull-requests: write
+    steps:
+      - name: Check out the publication
+        uses: actions/checkout@v5
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Resolve the scheduled edition
+        id: intent
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          week=""
+          tone="spicy"
+          case "$SCHEDULE" in
+            "7,37 9 * 1,9-12 2"|"7 10 * 1,9-12 2") edition="recap" ;;
+            "7,37 14 * 1,9-12 3"|"7 15 * 1,9-12 3") edition="waiver" ;;
+            "7,37 9 * 1,9-12 5"|"7 10 * 1,9-12 5") edition="late-preview" ;;
+            *) echo "Unknown Farmhood Press schedule: $SCHEDULE" >&2; exit 1 ;;
+          esac
+          echo "edition=$edition" >> "$GITHUB_OUTPUT"
+          echo "week=$week" >> "$GITHUB_OUTPUT"
+          echo "tone=$tone" >> "$GITHUB_OUTPUT"
+
+      - name: Plan from the official Sleeper week
+        id: plan
+        env:
+          EDITION: ${{ steps.intent.outputs.edition }}
+          REQUESTED_WEEK: ${{ steps.intent.outputs.week }}
+        run: |
+          args=(--edition "$EDITION")
+          if [ -n "$REQUESTED_WEEK" ]; then
+            args+=(--week "$REQUESTED_WEEK")
+          fi
+          node scripts/press/plan.mjs "${args[@]}"
+
+      - name: Check for a conflicting Press review
+        id: review_guard
+        if: steps.plan.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          git fetch --prune origin '+refs/heads/press/*:refs/remotes/origin/press/*'
+          blocking_review=$(gh pr list --state open --limit 100 --json headRefName,url --jq '.[] | select(.headRefName | startswith("press/")) | "\(.headRefName)|\(.url)"' | sed -n '1p')
+          orphan_branch=""
+          while IFS= read -r remote_ref; do
+            if ! git merge-base --is-ancestor "$remote_ref" origin/main; then
+              candidate_branch=${remote_ref#refs/remotes/origin/}
+              disposition=$(gh pr list --state all --head "$candidate_branch" --limit 1 --json state,mergedAt --jq 'if length == 0 then "ORPHAN" elif .[0].mergedAt != null then "MERGED" else .[0].state end')
+              if [ "$disposition" = "ORPHAN" ] || [ "$disposition" = "OPEN" ]; then
+                orphan_branch=$candidate_branch
+                break
+              fi
+            fi
+          done < <(git for-each-ref --format='%(refname)' refs/remotes/origin/press/)
+          if [ -n "$blocking_review" ] || [ -n "$orphan_branch" ]; then
+            echo "blocked=true" >> "$GITHUB_OUTPUT"
+            reason="An existing Farmhood Press review must finish before automatic publication."
+            echo "### Automatic edition deferred safely" >> "$GITHUB_STEP_SUMMARY"
+            echo "- $reason" >> "$GITHUB_STEP_SUMMARY"
+            echo "- OpenAI requests: 0" >> "$GITHUB_STEP_SUMMARY"
+            echo "- The next scheduled retry will check again." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Farmhood Press deferred::$reason"
+          else
+            echo "blocked=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Test deterministic newsroom logic
+        if: steps.plan.outputs.should_run == 'true' && steps.review_guard.outputs.blocked != 'true'
+        run: |
+          node --test scripts/press/*.test.mjs assets/live.test.cjs
+          node scripts/press/validate.mjs
+          node scripts/payouts/test.mjs
+          node scripts/payouts/validate.mjs
+          for file in assets/app.js assets/live.js assets/payouts.js assets/press.js scripts/press/*.mjs; do
+            node --check "$file"
+          done
+          find content -name '*.json' -print0 | xargs -0 -n1 jq empty
+
+      - name: Generate the deterministic Waiver Wire
+        id: generate_waiver
+        if: steps.plan.outputs.should_run == 'true' && steps.review_guard.outputs.blocked != 'true' && steps.intent.outputs.edition == 'waiver'
+        env:
+          WEEK: ${{ steps.plan.outputs.week }}
+        run: node scripts/press/generate-waivers.mjs --season 2026 --week "$WEEK"
+
+      - name: Reserve this AI edition before spending tokens
+        id: ai_reservation
+        if: steps.plan.outputs.should_run == 'true' && steps.review_guard.outputs.blocked != 'true' && steps.intent.outputs.edition != 'waiver'
+        env:
+          EDITION: ${{ steps.intent.outputs.edition }}
+          WEEK: ${{ steps.plan.outputs.week }}
+        run: |
+          marker_branch="press/attempt-${EDITION}-2026-week-${WEEK}"
+          git config user.name "farmhood-press[bot]"
+          git config user.email "farmhood-press[bot]@users.noreply.github.com"
+          git switch -c "$marker_branch"
+          git commit --allow-empty -m "Reserve automatic ${EDITION} attempt for 2026 Week ${WEEK}"
+          git push --set-upstream origin "$marker_branch"
+          echo "branch=$marker_branch" >> "$GITHUB_OUTPUT"
+
+      - name: Generate the AI edition
+        id: generate_ai
+        if: steps.plan.outputs.should_run == 'true' && steps.review_guard.outputs.blocked != 'true' && steps.intent.outputs.edition != 'waiver'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          PRESS_MAX_ESTIMATED_COST_USD: ${{ vars.PRESS_MAX_ESTIMATED_COST_USD }}
+          EDITION: ${{ steps.intent.outputs.edition }}
+          WEEK: ${{ steps.plan.outputs.week }}
+          TONE: ${{ steps.intent.outputs.tone }}
+        run: node scripts/press/generate.mjs --type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE"
+
+      - name: Validate the complete publication
+        if: steps.generate_waiver.outputs.changed == 'true' || steps.generate_ai.outputs.changed == 'true'
+        run: |
+          node scripts/press/validate.mjs
+          node scripts/payouts/validate.mjs
+          git diff --check
+
+      - name: Publish the verified edition to main
+        id: publish
+        if: steps.generate_waiver.outputs.changed == 'true' || steps.generate_ai.outputs.changed == 'true'
+        env:
+          EDITION: ${{ steps.intent.outputs.edition }}
+          WEEK: ${{ steps.plan.outputs.week }}
+        run: |
+          git config user.name "farmhood-press[bot]"
+          git config user.email "farmhood-press[bot]@users.noreply.github.com"
+          git add content/
+          git diff --cached --check
+          git commit -m "Publish automatic ${EDITION} edition for 2026 Week ${WEEK}"
+          git fetch origin main
+          git rebase origin/main
+          node scripts/press/validate.mjs
+          git push origin HEAD:main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "### Farmhood Press published automatically" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Edition: ${EDITION}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Week: ${WEEK}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: $(git rev-parse --short HEAD)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Release the published AI reservation
+        if: steps.ai_reservation.outputs.branch != '' && steps.publish.outputs.sha != ''
+        env:
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: git push origin --delete "$MARKER_BRANCH"
+
+      - name: Ensure the automatic edition is live on GitHub Pages
+        if: steps.publish.outputs.sha != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUIRED_SHA: ${{ steps.publish.outputs.sha }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" >/dev/null
+          echo "- Pages build: requested for ${REQUIRED_SHA:0:7}" >> "$GITHUB_STEP_SUMMARY"
+          for attempt in {1..30}; do
+            latest=$(gh api "repos/${GITHUB_REPOSITORY}/pages/builds/latest")
+            latest_sha=$(jq -r '.commit // ""' <<< "$latest")
+            latest_status=$(jq -r '.status // "missing"' <<< "$latest")
+            git fetch --quiet origin main
+            if git cat-file -e "${latest_sha}^{commit}" 2>/dev/null && git merge-base --is-ancestor "$REQUIRED_SHA" "$latest_sha" && [ "$latest_status" = "built" ]; then
+              echo "- Pages build: verified live at ${latest_sha:0:7}" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [ "$latest_sha" = "$REQUIRED_SHA" ] && [ "$latest_status" = "errored" ]; then
+              echo "The Pages build failed for $REQUIRED_SHA." >&2
+              exit 1
+            fi
+            sleep 4
+          done
+          echo "Timed out waiting for Pages to publish $REQUIRED_SHA." >&2
+          exit 1
+
+      - name: Release an unused AI reservation
+        if: steps.ai_reservation.outputs.branch != '' && steps.generate_ai.outcome == 'success' && steps.generate_ai.outputs.changed != 'true'
+        env:
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: git push origin --delete "$MARKER_BRANCH"
+
+      - name: Preserve a paid attempt that did not publish
+        if: failure() && steps.generate_ai.outputs.paid_request == 'true'
+        id: preserve_paid
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EDITION: ${{ steps.intent.outputs.edition }}
+          WEEK: ${{ steps.plan.outputs.week }}
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: |
+          git config user.name "farmhood-press[bot]"
+          git config user.email "farmhood-press[bot]@users.noreply.github.com"
+          git rebase --abort 2>/dev/null || true
+          if [ "$(git branch --show-current)" != "$MARKER_BRANCH" ]; then
+            echo "The paid attempt is no longer on its reservation branch; refusing to lose its recovery lineage." >&2
+            exit 1
+          fi
+          git add content/
+          if ! git diff --cached --quiet; then
+            git commit -m "Preserve paid ${EDITION} attempt for 2026 Week ${WEEK}"
+          elif git diff --quiet origin/main...HEAD -- content/; then
+            echo "A paid response was reported but no recovery files were available." >&2
+            exit 1
+          fi
+          git push origin "HEAD:${MARKER_BRANCH}"
+          compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${MARKER_BRANCH}?expand=1"
+          if pr_url=$(gh pr create --draft --base main --head "$MARKER_BRANCH" --title "Farmhood Press recovery: ${EDITION} Week ${WEEK}" --body "A paid automatic generation attempt did not reach production. This reserved branch preserves the generated publication files and usage record so the response can be repaired without buying the same draft again." 2>/dev/null); then
+            echo "- Recovery review: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Recovery branch: ${compare_url}" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload paid recovery files
+        if: failure() && steps.generate_ai.outputs.paid_request == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: farmhood-press-auto-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            content/articles/
+            content/predictions/
+            content/snapshots/
+            content/usage/ledger.json
+          retention-days: 30

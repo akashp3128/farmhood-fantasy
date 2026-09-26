@@ -14,13 +14,14 @@ on:
           - credential-test
           - connection-test
       edition:
-        description: Preview before kickoff, late-preview while live, or recap after final
+        description: Preview, post-Thursday outlook, waiver report, or final recap
         required: true
         default: preview
         type: choice
         options:
           - preview
           - late-preview
+          - waiver
           - recap
       week:
         description: 2026 fantasy week
@@ -66,18 +67,13 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: farmhood-press-${{ inputs.operation }}
+  group: farmhood-main-content-writer
   cancel-in-progress: false
 
 jobs:
   generate-draft:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
-      PRESS_MAX_ESTIMATED_COST_USD: ${{ vars.PRESS_MAX_ESTIMATED_COST_USD }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out the publication
         uses: actions/checkout@v5
@@ -95,16 +91,23 @@ jobs:
 
       - name: Test the credential without generating tokens
         if: inputs.operation == 'credential-test'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: node scripts/press/check-openai.mjs
 
       - name: Test generation readiness
         if: inputs.operation == 'connection-test'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: node scripts/press/check-openai.mjs --generation
 
       - name: Check for an existing review draft
         id: existing_draft
         if: inputs.operation == 'generate'
         env:
+          GH_TOKEN: ${{ github.token }}
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
           FORCE_REGENERATION: ${{ inputs.force_regeneration }}
@@ -163,16 +166,23 @@ jobs:
         id: generate
         if: inputs.operation == 'generate' && (inputs.force_regeneration == true || steps.existing_draft.outputs.found != 'true')
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          PRESS_MAX_ESTIMATED_COST_USD: ${{ vars.PRESS_MAX_ESTIMATED_COST_USD }}
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
           TONE: ${{ inputs.tone }}
           FORCE_REGENERATION: ${{ inputs.force_regeneration }}
         run: |
-          args=(--type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE")
-          if [ "$FORCE_REGENERATION" = "true" ]; then
-            args+=(--force)
+          if [ "$EDITION" = "waiver" ]; then
+            node scripts/press/generate-waivers.mjs --season 2026 --week "$WEEK"
+          else
+            args=(--type "$EDITION" --season 2026 --week "$WEEK" --tone "$TONE")
+            if [ "$FORCE_REGENERATION" = "true" ]; then
+              args+=(--force)
+            fi
+            node scripts/press/generate.mjs "${args[@]}"
           fi
-          node scripts/press/generate.mjs "${args[@]}"
 
       - name: Require a generated review draft
         if: inputs.operation == 'generate' && steps.generate.outcome == 'success' && steps.generate.outputs.changed != 'true'
@@ -189,6 +199,7 @@ jobs:
       - name: Create the review branch
         if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
         env:
+          GH_TOKEN: ${{ github.token }}
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
         run: git checkout -b "press/${EDITION}-2026-week-${WEEK}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -218,13 +229,14 @@ jobs:
         id: review_pr
         if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
         env:
+          GH_TOKEN: ${{ github.token }}
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
           TONE: ${{ inputs.tone }}
         run: |
           if pr_url=$(gh pr create --draft --base main \
               --title "Farmhood Press: ${EDITION} edition for Week ${WEEK}" \
-              --body "AI-generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, forecast ledger, frozen fact snapshot, lineage metadata, and factual validation are included in this pull request. A late-preview is explicitly a post-kickoff Weekend Outlook and is never eligible for original-prediction receipts. Review the prose and merge to publish through GitHub Pages." 2>&1); then
+              --body "Generated ${EDITION} draft for 2026 Week ${WEEK}. Tone: ${TONE}. The article, frozen source facts, lineage metadata, and factual validation are included in this pull request. Waiver reports are deterministic and use zero AI tokens. A late-preview is explicitly a post-kickoff Weekend Outlook and is never eligible for original-prediction receipts. Review and merge to publish through GitHub Pages." 2>&1); then
             echo "url=${pr_url}" >> "$GITHUB_OUTPUT"
             echo "### Farmhood Press review required" >> "$GITHUB_STEP_SUMMARY"
             echo "- Draft pull request: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"

@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
   "featuredArticleId": "2026-week-03-late-preview",
-  "updatedAt": "2026-09-26T06:58:34.366Z",
+  "updatedAt": "2026-09-26T07:40:05.264Z",
   "articles": [
+    {
+      "articleId": "2026-week-03-waiver-recap",
+      "path": "content/articles/2026/week-03-waiver-recap.json",
+      "type": "week_waiver_recap",
+      "edition": "Waiver Wire",
+      "season": 2026,
+      "week": 3,
+      "status": "published",
+      "title": "Week 3 Waiver Wire: 10 Free-Agent Moves",
+      "dek": "Sleeper recorded 10 completed transactions: 0 waiver claims and 10 free-agent moves, covering 9 adds and 7 drops.",
+      "publishedAt": "2026-09-26T07:40:05.264Z",
+      "dataAsOf": "2026-09-26T07:40:05.264Z",
+      "storylines": [
+        "The activity lead was shared",
+        "No successful waiver claims",
+        "RB led the add board"
+      ],
+      "tags": [
+        "Waiver Wire",
+        "Week 3",
+        "Transactions"
+      ]
+    },
     {
       "articleId": "2026-week-03-late-preview",
       "path": "content/articles/2026/week-03-late-preview.json",

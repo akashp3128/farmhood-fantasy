@@ -70,6 +70,14 @@
     }catch(_error){return clean(value,'');}
   }
 
+  function transactionDateLabel(value,timezone){
+    const parsed=new Date(value);
+    if(Number.isNaN(parsed.getTime()))return clean(value,'');
+    try{
+      return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:timezone||'America/Chicago',timeZoneName:'short'}).format(parsed);
+    }catch(_error){return dateLabel(value,true);}
+  }
+
   function sentence(value){
     if(typeof value==='string'||typeof value==='number')return clean(value,'');
     if(!value||typeof value!=='object')return '';
@@ -110,7 +118,7 @@
       make('span','','Est. 2026'),
       make('span','',new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric'}).format(new Date()))
     );
-    masthead.append(strip,make('div','press-name','The Farmhood Press'),make('p','press-tagline','Predictions, receipts and the stories shaping the season.'));
+    masthead.append(strip,make('div','press-name','The Farmhood Press'),make('p','press-tagline','Predictions, transactions, receipts and the stories shaping the season.'));
     app.appendChild(masthead);
 
     const tabs=make('div','press-tabs');
@@ -118,6 +126,7 @@
     tabs.setAttribute('aria-label','Farmhood Press editions');
     [
       ['preview','Preview'],
+      ['waivers','Waivers'],
       ['live','Live Desk'],
       ['recap','Recap'],
       ['archive','Archive']
@@ -175,6 +184,7 @@
   function kindOf(article){
     if(isLateOutlook(article))return 'preview';
     const value=first(article&&article.type,article&&article.edition,article&&article.label).toLowerCase();
+    if(value.includes('waiver'))return 'waivers';
     if(value.includes('recap')||value.includes('postgame'))return 'recap';
     if(value.includes('live'))return 'live';
     if(value.includes('preview')||value.includes('pregame'))return 'preview';
@@ -222,7 +232,7 @@
       const featured=featuredMeta();
       if(!featured){renderEmptyEdition('The first edition is on the press','Published stories will appear here as soon as the newsroom releases them.');return;}
       const featuredKind=kindOf(featured);
-      pressState.activeTab=featuredKind==='recap'?'recap':'preview';
+      pressState.activeTab=['preview','recap','waivers'].includes(featuredKind)?featuredKind:'preview';
       updateTabState();
       await loadArticle(featured);
     }catch(error){
@@ -273,10 +283,11 @@
       const meta=matchingMeta(key);
       if(meta)await loadArticle(meta);
       else{
-        renderEmptyEdition(key==='recap'?'Recap pending':'Preview pending',key==='recap'
+        renderEmptyEdition(key==='recap'?'Recap pending':key==='waivers'?'Waiver Wire pending':'Preview pending',key==='recap'
           ?'The recap desk opens after the week is final. Until then, the original prediction stays frozen in the archive.'
+          :key==='waivers'?'The verified weekly transaction report has not been published yet.'
           :'A published preview has not landed yet. Lineup Watch is still tracking the live league feed.');
-        appendStandaloneWatch();
+        if(key!=='waivers')appendStandaloneWatch();
       }
     }
     if(focusPanel){
@@ -299,6 +310,7 @@
     const late=isLateOutlook(article)||isLateOutlook(meta);
     const context=article&&article.forecastContext&&typeof article.forecastContext==='object'?article.forecastContext:{};
     const noOriginalReceipt=context.receiptEligible===false||first(context.mode).toLowerCase()==='late_outlook_baseline';
+    const waiverRecap=kindOf(article)==='waivers';
     return {
       raw:article,
       title:first(article.title,leadObject.headline,meta.title,'Untitled edition'),
@@ -306,6 +318,7 @@
       edition:late?'Weekend Outlook':first(article.edition,article.label,meta.edition,kindOf(article)==='recap'?'Postgame Edition':'Pregame Edition'),
       lateOutlook:late,
       noOriginalReceipt,
+      waiverRecap,
       forecastContext:context,
       status:first(article.status,meta.status,'Published'),
       season:number(article.season,number(meta.season,2026)),
@@ -322,6 +335,10 @@
       keyStatNote:first(leadObject.keyStat&&leadObject.keyStat.note,article.keyStat&&article.keyStat.note),
       matchups:list(article.matchups),
       storylines:list(article.storylines),
+      transactions:list(article.transactions),
+      managerSummaries:list(article.managerSummaries),
+      transactionSummary:article.transactionSummary&&typeof article.transactionSummary==='object'?article.transactionSummary:{},
+      transactionContext:article.transactionContext&&typeof article.transactionContext==='object'?article.transactionContext:{},
       receipts:article.receipts||article.accuracy||null,
       awards:list(article.awards),
       factCheck:article.factCheck||null
@@ -341,7 +358,7 @@
     if(data.dek)lead.appendChild(make('p','press-dek',data.dek));
     const byline=make('div','press-byline');
     byline.append(make('span','','By'),make('b','',data.byline));
-    if(data.updatedAt||data.publishedAt)byline.append(make('span','',dateLabel(data.updatedAt||data.publishedAt,true)));
+    if(data.updatedAt||data.publishedAt)byline.append(make('span','',data.waiverRecap?transactionDateLabel(data.updatedAt||data.publishedAt,first(data.transactionContext&&data.transactionContext.timezone,'America/Chicago')):dateLabel(data.updatedAt||data.publishedAt,true)));
     lead.appendChild(byline);
     const copy=make('div','press-copy');
     if(data.leadParagraphs.length)data.leadParagraphs.forEach(paragraph=>copy.appendChild(make('p','',paragraph)));
@@ -359,6 +376,13 @@
       aside.appendChild(make('blockquote','press-pullquote',data.dek||'Every prediction stays on the record. Every lineup change gets a timestamp.'));
     }
     grid.appendChild(aside);pressState.panel.appendChild(grid);
+
+    if(data.waiverRecap){
+      renderWaiverDesk(data,pressState.panel);
+      renderWaiverStorylines(data,pressState.panel);
+      renderSource(data,pressState.panel);
+      return;
+    }
 
     if(data.lateOutlook)renderLateOutlookNotice(data,pressState.panel);
 
@@ -382,6 +406,81 @@
     copy.appendChild(make('p','',first(data.forecastContext&&data.forecastContext.disclosure,data.forecastContext&&data.forecastContext.description,'Published after Thursday Night Football. Thursday points are known; Sunday and Monday outcomes remain projections.')));
     const badge=make('span','press-late-badge','No original receipt');
     notice.append(copy,badge);parent.appendChild(notice);
+  }
+
+  function waiverPlayer(row){
+    return {
+      name:first(row&&row.name,'Unknown player'),
+      position:first(row&&row.position),
+      team:first(row&&row.team)
+    };
+  }
+
+  function waiverMoveList(label,rows,tone){
+    const group=make('div','waiver-move-group '+tone),heading=make('h4','',label);group.appendChild(heading);
+    if(!rows.length){group.appendChild(make('p','waiver-none','None recorded'));return group;}
+    const listNode=make('ul','waiver-player-list');
+    rows.forEach(raw=>{
+      const player=waiverPlayer(raw),item=make('li','waiver-player');
+      item.append(make('span','waiver-player-mark',tone==='add'?'+':'−'),make('strong','',player.name));
+      const meta=[player.position,player.team].filter(Boolean).join(' · ');if(meta)item.appendChild(make('span','',meta));
+      listNode.appendChild(item);
+    });
+    group.appendChild(listNode);return group;
+  }
+
+  function renderWaiverDesk(data,parent){
+    const summary=data.transactionSummary||{},stats=make('div','waiver-summary-strip');
+    [
+      ['Completed',number(summary.completedTransactions,0)],
+      ['Waiver claims',number(summary.waiverClaims,0)],
+      ['Free agents',number(summary.freeAgentMoves,0)],
+      ['Adds / Drops',number(summary.adds,0)+' / '+number(summary.drops,0)]
+    ].forEach(([label,value])=>{const item=make('div','waiver-summary-stat');item.append(make('span','',label),make('strong','',value));stats.appendChild(item);});
+    parent.appendChild(stats);
+
+    const section=make('section','press-section'),head=make('div','press-section-head');
+    head.append(make('h2','','Verified Transaction Wire'),make('p','','Completed Sleeper records only. Trades, failed claims and pending claims are excluded. Times shown in Central time.'));section.appendChild(head);
+    if(!data.transactions.length){
+      section.appendChild(make('div','watch-empty','Sleeper recorded no completed waiver or free-agent transactions for this week.'));
+      parent.appendChild(section);return;
+    }
+    const board=make('div','waiver-transaction-list'),timezone=first(data.transactionContext&&data.transactionContext.timezone,'America/Chicago');
+    data.transactions.forEach(raw=>{
+      const adds=list(raw&&raw.adds),drops=list(raw&&raw.drops),card=make('article','waiver-transaction');
+      const top=make('div','waiver-transaction-top'),identity=make('div','');
+      identity.append(make('span','waiver-type '+(raw.transactionType==='waiver'?'claim':'free-agent'),raw.transactionType==='waiver'?'Waiver claim':'Free agent'),make('h3','',first(raw.manager,'Unknown manager')));
+      top.append(identity,make('time','',transactionDateLabel(raw.completedAt,timezone)));card.appendChild(top);
+      const moves=make('div','waiver-moves');moves.append(waiverMoveList('Added',adds,'add'),waiverMoveList('Dropped',drops,'drop'));card.appendChild(moves);
+      const details=make('div','waiver-transaction-details');
+      if(raw.waiverBid!==null&&raw.waiverBid!==undefined)details.appendChild(make('span','waiver-detail-chip bid','$'+number(raw.waiverBid,0)+' bid'));
+      if(raw.waiverPriority!==null&&raw.waiverPriority!==undefined)details.appendChild(make('span','waiver-detail-chip','Priority '+number(raw.waiverPriority,0)));
+      if(raw.claimSequence!==null&&raw.claimSequence!==undefined)details.appendChild(make('span','waiver-detail-chip','Claim sequence '+number(raw.claimSequence,0)));
+      if(details.childNodes.length)card.appendChild(details);
+      const action=[adds.length?adds.length+' added':'',drops.length?drops.length+' dropped':''].filter(Boolean).join(', ');
+      card.setAttribute('aria-label',[first(raw.manager,'Unknown manager'),raw.transactionType==='waiver'?'waiver claim':'free-agent move',action,transactionDateLabel(raw.completedAt,timezone)].filter(Boolean).join(' · '));
+      board.appendChild(card);
+    });
+    section.appendChild(board);parent.appendChild(section);
+
+    const managers=make('section','press-section waiver-manager-section'),managerHead=make('div','press-section-head');
+    managerHead.append(make('h2','','Manager Activity'),make('p','','Counts describe verified activity only; they do not grade the moves.'));managers.appendChild(managerHead);
+    const managerGrid=make('div','waiver-manager-grid');
+    data.managerSummaries.forEach(row=>{
+      const card=make('article','waiver-manager-card');card.append(make('h3','',row.manager));
+      const values=make('dl','');
+      [['Moves',row.transactionCount],['Claims',row.waiverClaims],['Adds',row.adds],['Drops',row.drops],['FAAB',row.faabSpent===null||row.faabSpent===undefined?'—':'$'+number(row.faabSpent,0)]].forEach(([label,value])=>{const item=make('div','');item.append(make('dt','',label),make('dd','',value));values.appendChild(item);});
+      card.appendChild(values);managerGrid.appendChild(card);
+    });
+    managers.appendChild(managerGrid);parent.appendChild(managers);
+  }
+
+  function renderWaiverStorylines(data,parent){
+    if(!data.storylines.length)return;
+    const section=make('section','press-section'),head=make('div','press-section-head');head.append(make('h2','','Verified Wire Notes'),make('p','','Deterministic summaries of the transaction counts above.'));section.appendChild(head);
+    const stories=make('div','press-story-list');
+    data.storylines.forEach((raw,index)=>{const row=normalizedStory(raw,index),story=make('article','press-story');story.append(make('h3','',row.title),make('p','',row.body));stories.appendChild(story);});
+    section.appendChild(stories);parent.appendChild(section);
   }
 
   function normalizedMatchup(row,index){
@@ -562,10 +661,12 @@
     const source=make('div','press-source');
     source.appendChild(make('strong','','Transparent data desk'));
     const details=[];
-    if(data.dataAsOf)details.push('Facts verified '+dateLabel(data.dataAsOf,true));
+    if(data.dataAsOf)details.push('Facts verified '+(data.waiverRecap?transactionDateLabel(data.dataAsOf,first(data.transactionContext&&data.transactionContext.timezone,'America/Chicago')):dateLabel(data.dataAsOf,true)));
     if(data.sourceId)details.push('Snapshot '+data.sourceId);
-    details.push('Scores and lineups: Sleeper API');
-    source.append(make('span','',details.join(' · ')),make('span','',data.lateOutlook
+    details.push(data.waiverRecap?'Transactions: Sleeper API':'Scores and lineups: Sleeper API');
+    source.append(make('span','',details.join(' · ')),make('span','',data.waiverRecap
+      ?'Completed waiver and free-agent records are rendered deterministically; no AI request or transaction judgment is used.'
+      :data.lateOutlook
       ?'Late outlook frozen at publication; it is not graded as an original pick.'
       :data.noOriginalReceipt
         ?'Final recap reconciled against a frozen late outlook; no pre-kickoff grade is assigned.'
@@ -802,7 +903,7 @@
   function renderArchive(){
     pressState.watchMount=null;pressState.panel.replaceChildren();
     const heading=make('div','press-live-hero'),copy=make('div','');
-    copy.append(make('span','press-overline','Permanent record'),make('h1','','Edition Archive'),make('p','','Pregame previews, late Weekend Outlooks, final recaps and the season stories that survived the week.'));
+    copy.append(make('span','press-overline','Permanent record'),make('h1','','Edition Archive'),make('p','','Pregame previews, Waiver Wire reports, late Weekend Outlooks, final recaps and the season stories that survived the week.'));
     heading.appendChild(copy);pressState.panel.appendChild(heading);
     const rows=indexArticles();
     if(!rows.length){pressState.panel.appendChild(make('div','press-empty','No published editions are in the archive yet.'));return;}
@@ -811,7 +912,7 @@
       const card=make('button','press-archive-card');card.type='button';
       const top=make('div','press-archive-meta');top.append(make('span','',[editionLabel(meta,first(meta.edition,meta.type,'Feature')),meta.week!==undefined?'Week '+meta.week:''].filter(Boolean).join(' · ')),make('span','',dateLabel(meta.publishedAt,false)));
       card.append(top,make('h3','',first(meta.title,'Untitled edition')),make('p','',first(meta.dek,meta.deck,'Open this edition from the permanent Farmhood record.')),make('span','press-archive-open','Read edition →'));
-      card.addEventListener('click',()=>{const kind=kindOf(meta);pressState.activeTab=kind==='recap'?'recap':'preview';updateTabState();loadArticle(meta);window.scrollTo({top:0,behavior:'smooth'});});
+      card.addEventListener('click',()=>{const kind=kindOf(meta);pressState.activeTab=['preview','recap','waivers'].includes(kind)?kind:'preview';updateTabState();loadArticle(meta);window.scrollTo({top:0,behavior:'smooth'});});
       grid.appendChild(card);
     });
     pressState.panel.appendChild(grid);
