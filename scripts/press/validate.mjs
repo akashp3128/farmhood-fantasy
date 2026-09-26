@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PRESS_CONFIG } from './config.mjs';
-import { assertPredictionLineage } from './lineage.mjs';
+import { assertPredictionLineage, isLateForecastLedger } from './lineage.mjs';
+import { buildLateMatchupOutlook, buildLateTeamOutlook } from './outlook.mjs';
 import { assert, readJsonIfExists, repoRoot } from './utils.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -9,6 +10,41 @@ const indexPath = path.join(root, 'content', 'articles', 'index.json');
 
 function closeEnough(a, b) {
   return Number.isFinite(Number(a)) && Number.isFinite(Number(b)) && Math.abs(Number(a) - Number(b)) <= 0.02;
+}
+
+function sameNullableNumber(a, b) {
+  return (a == null && b == null) || closeEnough(a, b);
+}
+
+function assertFiniteNumber(value, label) {
+  assert(typeof value === 'number' && Number.isFinite(value), `${label} must be a finite number.`);
+}
+
+function assertLateForecastShape(row, label) {
+  assert(row?.receiptEligible === false, `${label} must be ineligible for prediction receipts.`);
+  assert(typeof row.startedAtCapture === 'boolean', `${label} startedAtCapture must be boolean.`);
+  assert(Number.isInteger(row.lockedStarterCount) && row.lockedStarterCount >= 0, `${label} lockedStarterCount must be a nonnegative integer.`);
+  assert(['complete', 'incomplete'].includes(row.forecastStatus), `${label} has an invalid forecastStatus.`);
+  assert(Array.isArray(row.missingProjectionPlayers), `${label} must list missing projection players.`);
+  ['currentScoreA', 'currentScoreB'].forEach((field) => assertFiniteNumber(row[field], `${label} ${field}`));
+  if (row.forecastStatus === 'complete') {
+    ['remainingProjectionA', 'remainingProjectionB', 'forecastScoreA', 'forecastScoreB'].forEach((field) => assertFiniteNumber(row[field], `${label} ${field}`));
+    assert(closeEnough(row.forecastScoreA, row.currentScoreA + row.remainingProjectionA), `${label} forecastScoreA formula mismatch.`);
+    assert(closeEnough(row.forecastScoreB, row.currentScoreB + row.remainingProjectionB), `${label} forecastScoreB formula mismatch.`);
+    assert([row.managerA, row.managerB].includes(row.forecastWinner), `${label} forecast winner is invalid.`);
+    assert(Number.isFinite(row.forecastProbability) && row.forecastProbability >= 0.5 && row.forecastProbability <= 0.85, `${label} forecast probability is invalid.`);
+  } else {
+    assert(row.forecastScoreA == null || row.forecastScoreB == null, `${label} incomplete status requires a missing forecast score.`);
+    assert(row.forecastWinner == null && row.forecastProbability == null, `${label} incomplete outlook must withhold winner and probability.`);
+  }
+}
+
+function assertLateForecastMatches(actual, expected, label) {
+  ['currentScoreA', 'currentScoreB', 'remainingProjectionA', 'remainingProjectionB', 'forecastScoreA', 'forecastScoreB', 'forecastProbability']
+    .forEach((field) => assert(sameNullableNumber(actual[field], expected[field]), `${label} ${field} mismatch.`));
+  ['managerA', 'managerB', 'forecastWinner', 'startedAtCapture', 'lockedStarterCount', 'forecastStatus', 'receiptEligible']
+    .forEach((field) => assert(actual[field] === expected[field], `${label} ${field} mismatch.`));
+  assert(JSON.stringify(actual.missingProjectionPlayers) === JSON.stringify(expected.missingProjectionPlayers), `${label} missing projection players mismatch.`);
 }
 
 function assertNonnegativeNumber(value, label) {
@@ -81,7 +117,9 @@ async function main() {
     assert(new Set(article.lineupSnapshot.teams.map((team) => team.name)).size === 12, `${meta.articleId} lineup baseline has duplicate managers.`);
     article.lineupSnapshot.teams.forEach((team) => assert(managers.has(team.name), `Unknown lineup manager: ${team.name}`));
 
-    const snapshotKind = String(article.type).includes('recap') ? 'final' : 'pre';
+    const isRecap = article.type === 'week_recap';
+    const isLatePreview = article.type === 'week_late_preview';
+    const snapshotKind = isRecap ? 'final' : isLatePreview ? 'live' : 'pre';
     const snapshotPath = path.join(root, 'content', 'snapshots', String(article.season), `week-${String(article.week).padStart(2, '0')}`, `${snapshotKind}.json`);
     const snapshot = await readJsonIfExists(snapshotPath);
     assert(snapshot?.id === article.source?.snapshotId, `Source snapshot mismatch for ${meta.articleId}.`);
@@ -91,19 +129,67 @@ async function main() {
     const ledger = await readJsonIfExists(predictionPath);
     assert(ledger?.predictions?.length === 6, `Prediction ledger missing for ${meta.articleId}.`);
     assert(article.source?.predictionId === ledger.predictionSetId, `Prediction source mismatch for ${meta.articleId}.`);
-    const originalSnapshot = snapshotKind === 'final'
+    const originalSnapshot = isRecap || isLatePreview
       ? await readJsonIfExists(path.join(root, 'content', 'snapshots', String(article.season), `week-${String(article.week).padStart(2, '0')}`, 'pre.json'))
       : snapshot;
-    assertPredictionLineage({ articleType: article.type, publishedSnapshot: snapshot, originalSnapshot, ledger, label: meta.articleId });
+    const lateSnapshot = isLatePreview
+      ? snapshot
+      : isRecap && !originalSnapshot
+        ? await readJsonIfExists(path.join(root, 'content', 'snapshots', String(article.season), `week-${String(article.week).padStart(2, '0')}`, 'live.json'))
+        : null;
+    assertPredictionLineage({ articleType: article.type, publishedSnapshot: snapshot, originalSnapshot, lateSnapshot, ledger, label: meta.articleId });
+    const lateForecast = isLateForecastLedger(ledger);
+    if (isLatePreview || lateForecast) {
+      assert(lateForecast, `${meta.articleId} must use a late-forecast ledger.`);
+      assert(ledger.state === 'locked_late', `${meta.articleId} late-forecast ledger must remain locked_late.`);
+      assert(ledger.predictionKind === 'late_forecast' && ledger.receiptEligible === false, `${meta.articleId} late-forecast ledger metadata is invalid.`);
+      const expectedForecastMode = isLatePreview ? 'late_outlook' : 'late_outlook_baseline';
+      assert(article.forecastContext?.mode === expectedForecastMode && article.forecastContext?.receiptEligible === false, `${meta.articleId} late-outlook context is invalid.`);
+      assert(article.receipts === null, `${meta.articleId} late outlook cannot publish prediction receipts.`);
+      assert(!originalSnapshot, `${meta.articleId} cannot combine a late outlook with an original pregame snapshot.`);
+      const lineageSnapshot = isLatePreview ? snapshot : lateSnapshot;
+      assert(lineageSnapshot?.kind === 'live' && lineageSnapshot.phase?.key === 'live' && lineageSnapshot.immutable === true, `${meta.articleId} must inherit an immutable live-phase snapshot.`);
+      assert(lineageSnapshot.forecastContext?.mode === 'late_outlook' && lineageSnapshot.forecastContext?.receiptEligible === false, `${meta.articleId} live snapshot is missing late-outlook context.`);
+      assert(lineageSnapshot.validation?.gameStatusCoverage === 1 && lineageSnapshot.validation?.gameStatusOccupiedStarters === lineageSnapshot.validation?.occupiedStarterSlots, `${meta.articleId} must have game-status coverage for every occupied starter.`);
+      assert(Array.isArray(lineageSnapshot.validation?.missingGameStatusStarters) && lineageSnapshot.validation.missingGameStatusStarters.length === 0, `${meta.articleId} has occupied starters without a known NFL game status.`);
+      lineageSnapshot.teams.flatMap((team) => team.starters || []).filter((player) => player.id !== '0')
+        .forEach((player) => assert(Boolean(player.gameStatus), `${meta.articleId} starter ${player.name || player.id} is missing gameStatus.`));
+      const originalArticle = await readJsonIfExists(path.join(root, 'content', 'articles', String(article.season), `week-${String(article.week).padStart(2, '0')}-preview.json`));
+      assert(!originalArticle, `${meta.articleId} cannot coexist with an original pregame Preview.`);
+      const teams = new Map(lineageSnapshot.teams.map((team) => [team.rosterId, team]));
+      lineageSnapshot.matchups.forEach((matchup) => {
+        assertLateForecastShape(matchup, `${meta.articleId} snapshot matchup ${matchup.matchupId}`);
+        const expected = buildLateMatchupOutlook({
+          matchupId: matchup.matchupId,
+          managerA: matchup.managerA,
+          managerB: matchup.managerB,
+          teamA: buildLateTeamOutlook({ currentScore: teams.get(matchup.rosterIdA)?.currentScore, starters: teams.get(matchup.rosterIdA)?.starters }),
+          teamB: buildLateTeamOutlook({ currentScore: teams.get(matchup.rosterIdB)?.currentScore, starters: teams.get(matchup.rosterIdB)?.starters })
+        });
+        assertLateForecastMatches(matchup, expected, `${meta.articleId} snapshot matchup ${matchup.matchupId}`);
+      });
+      if (isLatePreview) {
+        assert(article.edition === 'Weekend Outlook', `${meta.articleId} must use the Weekend Outlook edition.`);
+      }
+    }
     const predictions = new Map(ledger.predictions.map((prediction) => [Number(prediction.matchupId), prediction]));
     const seenMatchups = new Set();
     article.matchups.forEach((matchup) => {
       const id = Number(matchup.matchupId);assert(!seenMatchups.has(id), `Duplicate matchup ${id} in ${meta.articleId}.`);seenMatchups.add(id);
       const prediction = predictions.get(id);assert(prediction, `Missing prediction for matchup ${id}.`);
       assert(matchup.managerA === prediction.managerA && matchup.managerB === prediction.managerB, `Manager mismatch in matchup ${id}.`);
-      assert(matchup.predictedWinner === prediction.predictedWinner, `Prediction winner mismatch in matchup ${id}.`);
-      assert(closeEnough(matchup.projectedScoreA, prediction.projectedScoreA) && closeEnough(matchup.projectedScoreB, prediction.projectedScoreB), `Projection mismatch in matchup ${id}.`);
-      assert(closeEnough(matchup.winProbability, prediction.winProbability), `Probability mismatch in matchup ${id}.`);
+      if (lateForecast) {
+        assertLateForecastShape(prediction, `${meta.articleId} ledger matchup ${id}`);
+        assert(matchup.receiptEligible === false, `${meta.articleId} matchup ${id} must be ineligible for receipts.`);
+        assert(!Object.hasOwn(matchup, 'predictionCorrect'), `${meta.articleId} matchup ${id} must not grade a late forecast.`);
+        assert(!Object.hasOwn(matchup, 'predictedWinner'), `${meta.articleId} matchup ${id} must not relabel a late outlook as an original prediction.`);
+        const articleOutlook = { ...matchup, currentScoreA: matchup.outlookCurrentScoreA, currentScoreB: matchup.outlookCurrentScoreB };
+        assertLateForecastMatches(articleOutlook, prediction, `${meta.articleId} article matchup ${id}`);
+      } else {
+        assert(matchup.predictedWinner === prediction.predictedWinner, `Prediction winner mismatch in matchup ${id}.`);
+        assert(closeEnough(matchup.projectedScoreA, prediction.projectedScoreA) && closeEnough(matchup.projectedScoreB, prediction.projectedScoreB), `Projection mismatch in matchup ${id}.`);
+        assert(closeEnough(matchup.winProbability, prediction.winProbability), `Probability mismatch in matchup ${id}.`);
+      }
       assert(managers.has(matchup.managerA) && managers.has(matchup.managerB), `Unknown manager in matchup ${id}.`);
       (matchup.factIds || []).forEach((factId) => assert(allowedFactIds.has(factId), `Unknown fact ID ${factId} in matchup ${id}.`));
     });

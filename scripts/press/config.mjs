@@ -1,6 +1,7 @@
 export const PRESS_SCHEMA_VERSION = 1;
-export const PROMPT_VERSION = 'farmhood-press-v2-cost-guarded';
+export const PROMPT_VERSION = 'farmhood-press-v3-late-outlook';
 export const PREDICTION_MODEL = 'farmhood-deterministic-v1';
+export const LATE_OUTLOOK_MODEL = 'farmhood-live-outlook-v1';
 
 export const PRESS_CONFIG = Object.freeze({
   season: 2026,

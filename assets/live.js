@@ -424,15 +424,40 @@
     return pos===target;
   }
 
+  function isHardOut(player){
+    return /^(out|ir|pup|suspended|inactive)$/i.test(String(player&&player.injury||'').trim());
+  }
+
+  function effectiveProjection(player){
+    if(!player||player.id==='0'||isHardOut(player))return 0;
+    return player.projection;
+  }
+
+  function missingProjectionPlayer(player){
+    return {
+      id:String(player&&player.id||''),
+      name:String(player&&player.name||('Player '+(player&&player.id||'unknown'))),
+      slot:String(player&&player.slot||''),
+      position:String(player&&player.position||''),
+      injuryStatus:player&&player.injury||null
+    };
+  }
+
   function lineupWatch(snapshot,playerFeed,baseline){
     const players=playerFeed&&playerFeed.players||{},games=playerFeed&&playerFeed.games||{},baselineTeams=new Map();
     const stored=(baseline&&Array.isArray(baseline.teams)?baseline.teams:baseline&&Array.isArray(baseline.lineups)?baseline.lineups:[]);
     stored.forEach(team=>{if(team&&team.name)baselineTeams.set(team.name,team);});
+    const reportedPhase=phase(snapshot);
+    const gameStarted=Object.values(games).some(game=>game&&game.status&&!['pre_game','scheduled'].includes(game.status));
+    const watchPhase=reportedPhase.key==='scheduled'&&gameStarted
+      ?{key:'live',label:`Week ${snapshot.currentWeek} · Live`}
+      :reportedPhase;
+    const usesOfficialScore=['live','final'].includes(watchPhase.key);
     let projectedStarters=0,populatedStarters=0;
     const teams=snapshot.matchups.map(row=>{
       const roster=snapshot.rosters.find(item=>item.rosterId===row.rosterId),name=roster?roster.name:`Roster ${row.rosterId}`;
       const starters=lineupFor(row,snapshot.rosterPositions,playerFeed),starterIds=new Set(starters.map(player=>player.id));
-      starters.forEach(player=>{if(player.id!=='0'){populatedStarters+=1;if(player.projection!=null)projectedStarters+=1;}});
+      starters.forEach(player=>{if(player.id!=='0'){populatedStarters+=1;if(player.projection!=null||isHardOut(player))projectedStarters+=1;}});
       const bench=(row.players||[]).filter(id=>id!=='0'&&!starterIds.has(id)).map(id=>{
         const info=players[id]||{},position=info.position||'',game=games[info.team]||{};
         return {id,name:info.name||`Player ${id}`,position,team:info.team||'',opponent:info.opponent||'',
@@ -440,19 +465,25 @@
           gameStatus:game.status||'',gameDate:game.date||info.date||'',gameStartTime:game.startTime||null,
           locked:!!game.status&&!['pre_game','scheduled'].includes(game.status)};
       });
-      const hardOut=player=>/^(out|ir|pup|suspended|inactive)$/i.test(String(player.injury||'').trim());
-      const effective=player=>player.id==='0'||hardOut(player)?0:player.projection;
-      const projectionValues=starters.map(effective),projection=projectionValues.every(value=>value!=null)?projectionValues.reduce((sum,value)=>sum+value,0):null;
+      const occupiedStarters=starters.filter(player=>player.id!=='0');
+      const lockedStarters=occupiedStarters.filter(player=>player.locked);
+      const forecastStarters=usesOfficialScore?occupiedStarters.filter(player=>!player.locked):occupiedStarters;
+      const missingProjectionPlayers=forecastStarters.filter(player=>effectiveProjection(player)==null).map(missingProjectionPlayer);
+      const pregameMissing=occupiedStarters.some(player=>effectiveProjection(player)==null);
+      const remainingProjection=missingProjectionPlayers.length?null:forecastStarters.reduce((sum,player)=>sum+effectiveProjection(player),0);
+      const pregameProjection=pregameMissing?null:occupiedStarters.reduce((sum,player)=>sum+effectiveProjection(player),0);
+      const currentScore=row.points!=null?finite(row.points,0):0;
+      const projection=remainingProjection==null?null:usesOfficialScore?currentScore+remainingProjection:remainingProjection;
       const injuries=starters.filter(player=>player.injury).map(player=>({playerId:player.id,name:player.name,status:player.injury,slot:player.slot,team:player.team}));
       const candidates=[];
       starters.forEach((starter,index)=>{
-        const current=effective(starter);if(current==null)return;
+        const current=effectiveProjection(starter);if(current==null)return;
         bench.forEach(replacement=>{
-          if(starter.locked||replacement.locked||replacement.projection==null||hardOut(replacement)||!eligibleForSlot(replacement.position,starter.slot))return;
+          if(starter.locked||replacement.locked||replacement.projection==null||isHardOut(replacement)||!eligibleForSlot(replacement.position,starter.slot))return;
           const delta=replacement.projection-current;
           if(delta>=1.5)candidates.push({slot:starter.slot,starterIndex:index,starter:starter.name,starterId:starter.id,
             replacement:replacement.name,replacementId:replacement.id,delta,projectedFrom:current,projectedTo:replacement.projection,
-            reason:starter.id==='0'?'Fill the empty starting slot':hardOut(starter)?`${starter.name} is listed ${starter.injury}`:'Higher current projection'});
+            reason:starter.id==='0'?'Fill the empty starting slot':isHardOut(starter)?`${starter.name} is listed ${starter.injury}`:'Higher current projection'});
         });
       });
       candidates.sort((a,b)=>b.delta-a.delta||a.slot.localeCompare(b.slot));
@@ -462,7 +493,10 @@
       });
       const starterList=starters.map(player=>player.id),lineupHash=starterList.join('.'),prior=baselineTeams.get(name);
       const priorHash=prior&&(prior.lineupHash||(Array.isArray(prior.starterIds)?prior.starterIds.join('.'):''));
-      return {rosterId:row.rosterId,name,projection,lineupHash,starterIds:starterList,starters,bench,injuries,
+      return {rosterId:row.rosterId,name,projection,currentScore,remainingProjection,pregameProjection,
+        forecastStatus:projection==null?'incomplete':'complete',missingProjectionPlayers,
+        startedAtCapture:lockedStarters.length>0,lockedStarterCount:lockedStarters.length,
+        lineupHash,starterIds:starterList,starters,bench,injuries,
         emptySlots:starters.filter(player=>player.id==='0').map(player=>player.slot),lockedSlots:starters.filter(player=>player.locked).map(player=>player.slot),pivots,
         changed:!!(priorHash&&priorHash!==lineupHash),
         projectionDelta:prior&&prior.projection!=null&&projection!=null?projection-finite(prior.projection,0):null};
@@ -471,12 +505,23 @@
     const matchups=groupMatchups(snapshot.matchups,snapshot.rosters).filter(group=>group.sides.length===2).map(group=>{
       const a=teamByRoster.get(group.sides[0].rosterId),b=teamByRoster.get(group.sides[1].rosterId);
       const ready=a&&b&&a.projection!=null&&b.projection!=null;
-      const probabilityA=ready?clamp(1/(1+Math.exp(-(a.projection-b.projection)/18)),.15,.85):.5;
+      const probabilityA=ready?clamp(1/(1+Math.exp(-(a.projection-b.projection)/18)),.15,.85):null;
+      const missingProjectionPlayers=[
+        ...a.missingProjectionPlayers.map(player=>Object.assign({manager:a.name,side:'A'},player)),
+        ...b.missingProjectionPlayers.map(player=>Object.assign({manager:b.name,side:'B'},player))
+      ];
       return {matchupId:group.id,managerA:a.name,managerB:b.name,projectionA:a.projection,projectionB:b.projection,
-        predictedWinner:probabilityA>=.5?a.name:b.name,winProbability:Math.max(probabilityA,1-probabilityA),
+        currentScoreA:a.currentScore,currentScoreB:b.currentScore,
+        remainingProjectionA:a.remainingProjection,remainingProjectionB:b.remainingProjection,
+        pregameProjectionA:a.pregameProjection,pregameProjectionB:b.pregameProjection,
+        forecastStatus:ready?'complete':'incomplete',missingProjectionPlayers,
+        startedAtCapture:a.startedAtCapture||b.startedAtCapture,
+        lockedStarterCount:a.lockedStarterCount+b.lockedStarterCount,
+        predictedWinner:ready?(probabilityA>=.5?a.name:b.name):null,
+        winProbability:ready?Math.max(probabilityA,1-probabilityA):null,
         injuryCount:a.injuries.length+b.injuries.length,lockedSlots:a.lockedSlots.length+b.lockedSlots.length,pivots:[...a.pivots,...b.pivots]};
     });
-    return {season:snapshot.season,week:snapshot.currentWeek,phase:phase(snapshot),updatedAt:Date.now(),
+    return {season:snapshot.season,week:snapshot.currentWeek,phase:watchPhase,updatedAt:Date.now(),
       projectionCoverage:populatedStarters?projectedStarters/populatedStarters:0,teams,matchups,source:playerFeed&&playerFeed.source||'unavailable'};
   }
 
