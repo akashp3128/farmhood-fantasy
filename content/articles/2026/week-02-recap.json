@@ -6,8 +6,8 @@
   "week": 2,
   "status": "published",
   "edition": "Postgame Edition",
-  "title": "Week 2 Recap: The Forecast Went 1-for-6 and Blumbo Chose Violence",
-  "dek": "Five original favorites lost, one game ended in a 0.18-point escape, and the points king got mugged by Davante Adams.",
+  "title": "Week 2 Recap: The Forecast Went 0-for-6 and Archibaldo Took the Week",
+  "dek": "All six original favorites lost, one matchup ended in a 0.18-point escape, and Archibaldo led Week 2 with 134.76.",
   "byline": "Farmhood Intelligence Desk",
   "publishedAt": "2026-09-26T04:38:13.356Z",
   "updatedAt": "2026-09-26T04:38:13.356Z",
@@ -15,14 +15,14 @@
   "tone": "spicy",
   "lead": {
     "body": [
-      "Week 2 is final, and the original forecast finished with exactly one correct pick out of six. The model brought a clipboard; Farmhood brought a folding chair.",
-      "Blumbo paced the week with 123.40 points in a 123.40-88.18 demolition of maco71, while martin ch94 survived pgorny by 0.18 points in the kind of win that requires a smoke alarm afterward."
+      "Week 2 is final, and the original forecast finished 0-for-6. The model brought a clipboard; Farmhood brought a folding chair.",
+      "Archibaldo paced the week with 134.76 points in a 134.76-127.80 win over sidjunlee, while martinch94 survived pgorny by 0.18 points."
     ],
-    "pullQuote": "The original forecast went 1-for-6. The projections would like to file an appeal; the scores declined comment.",
+    "pullQuote": "The original forecast went 0-for-6. The projections would like to file an appeal; the scores declined comment.",
     "keyStat": {
       "label": "Original forecast record",
-      "value": "1-5",
-      "note": "Only the pgorny-over-martinch94 original pick missed? No: pgorny was picked, but martinch94 won. The sole correct original pick was none—wait, all six"
+      "value": "0-6",
+      "note": "Every original Week 2 pick lost."
     }
   },
   "matchups": [
@@ -41,10 +41,10 @@
       "winProbability": 0.6408,
       "predictionCorrect": false,
       "headline": "Blumbo 123.40, maco71 88.18: Record-book swagger meets a brick wall",
-      "analysis": "The original forecast favored maco71, but Blumbo flipped it by 35.22 points. Davante Adams scored 35.50 and Kenneth Walker added 20.80, while maco71 got 26.98 from Matthew Stafford but a brutal -0.10 from DJ Moore. The 2025 scoring-record holder remains titleless; this was not an audition for changing that.",
+      "analysis": "The original forecast favored maco71, but Blumbo flipped it by 35.22 points. Davante Adams scored 35.50 and Kenneth Walker added 20.80, while maco71 got 26.98 from Matthew Stafford.",
       "keyPlayer": "Davante Adams",
       "keyPlayerId": "2133",
-      "upsetPath": "Blumbo’s Adams eruption overwhelmed the forecast edge and turned maco71’s lineup into a very expensive group chat apology.",
+      "upsetPath": "Blumbo’s Adams eruption overwhelmed the forecast edge and erased the projected gap.",
       "historyNote": "maco71 set the league single-season scoring record in 2025 and remains without a championship.",
       "injuryWatch": [
         "Jaxson Dart — listed IR",
@@ -73,11 +73,11 @@
       "predictedWinner": "pgorny",
       "winProbability": 0.5865,
       "predictionCorrect": false,
-      "headline": "martinch94 82.92, pgorny 82.74: The champ wins by a rounding-error beard hair",
-      "analysis": "The original forecast picked pgorny, then martin ch94 escaped by 0.18 points. James Cook delivered 20.40, enough to offset Caleb Williams’ 7.72 in a lineup where Williams was listed Doubtful. pgorny got 16.20 from Derrick Henry but could not turn 82.74 into 82.93, the cruelest number in fantasy.",
+      "headline": "martinch94 82.92, pgorny 82.74: The champ wins by a 0.18-point sliver",
+      "analysis": "The original forecast picked pgorny, then martinch94 escaped by 0.18 points. James Cook delivered 20.40, while pgorny got 16.20 from Derrick Henry but finished one fraction short.",
       "keyPlayer": "James Cook",
       "keyPlayerId": "8138",
-      "upsetPath": "martinch94 needed every fraction of Cook’s production because the rest of the margin was basically lint.",
+      "upsetPath": "martinch94 needed every fraction of Cook’s production to clear the narrowest margin of the week.",
       "historyNote": "martinch94 is a three-time champion and the reigning 2025 champion.",
       "injuryWatch": [
         "Caleb Williams — listed Doubtful",
@@ -205,11 +205,11 @@
       "predictedWinner": "turi70",
       "winProbability": 0.5716,
       "predictionCorrect": false,
-      "headline": "cuch 122.16, turi70 68.18: Commissioner’s office closed for demolition",
-      "analysis": "The original forecast favored turi70, but cuch won by 53.98 points. Jaxon Smith-Njigba supplied 38.00 while Jalen Hurts added 16.16. turi70 got 2.50 from Saquon Barkley and 0.90 from Dallas Goedert, who was listed Doubtful; the commissioner did not need a recount, just a mop.",
+      "headline": "cuch 122.16, turi70 68.18: Week 2’s widest margin",
+      "analysis": "The original forecast favored turi70, but cuch won by 53.98 points. Jaxon Smith-Njigba supplied 38.00 while Jalen Hurts added 16.16.",
       "keyPlayer": "Jaxon Smith-Njigba",
       "keyPlayerId": "9488",
-      "upsetPath": "cuch’s 122.16 steamrolled a lineup that produced 68.18, turning the original prediction into archival comedy.",
+      "upsetPath": "cuch exceeded the original projection by 16.09 points and produced the week’s largest victory margin.",
       "historyNote": "cuch is the current league commissioner.",
       "injuryWatch": [
         "Dallas Goedert — listed Doubtful"
@@ -243,21 +243,21 @@
       ]
     },
     {
-      "title": "Blumbo owns the weekly headline",
-      "body": "Blumbo’s 123.40 was the week’s highest score, fueled by Davante Adams’ 35.50 and Kenneth Walker’s 20.80. Jaxson Dart was listed IR and scored 0.80; somehow the rest of the lineup made that look like an intentional artistic choice.",
+      "title": "Archibaldo owns the weekly headline",
+      "body": "Archibaldo’s 134.76 was the week’s highest score, fueled by CeeDee Lamb’s 31.30, Dak Prescott’s 29.76 and DeVonta Smith’s 22.70 in a 6.96-point win over sidjunlee.",
       "subjects": [
-        "Blumbo"
+        "Archibaldo",
+        "sidjunlee"
       ],
       "factIds": [
-        "2026:w2:m1:projection:Blumbo",
-        "2026:w2:m1:projection:maco71",
-        "2026:w2:m1:pick",
-        "champion:2019"
+        "2026:w2:m3:projection:Archibaldo",
+        "2026:w2:m3:projection:sidjunlee",
+        "2026:w2:m3:pick"
       ]
     },
     {
       "title": "The title defense survives on decimals",
-      "body": "martinch94’s 82.92 beat pgorny’s 82.74. A reigning three-time champion does not need to win pretty, apparently; 0.18 points counts exactly the same in the standings and twice as loudly in the chat.",
+      "body": "martinch94’s 82.92 beat pgorny’s 82.74. The 0.18-point margin counts exactly the same in the standings and twice as loudly in the chat.",
       "subjects": [
         "martinch94",
         "pgorny"
@@ -274,14 +274,13 @@
   ],
   "awards": [
     {
-      "title": "Forecast Arsonist of the Week",
-      "recipient": "cuch",
-      "body": "Favored nowhere in the original call against turi70, cuch won by 53.98 points and had Jaxon Smith-Njigba score 38.00. The commissioner did not merely overturn the projection; he red-tagged the whole 6",
+      "title": "Week 2 Wrecking Ball",
+      "recipient": "Archibaldo",
+      "body": "Archibaldo posted the Week 2 high at 134.76 and beat sidjunlee 134.76-127.80 in the week’s highest-scoring matchup.",
       "factIds": [
-        "2026:w2:m6:projection:cuch",
-        "2026:w2:m6:projection:turi70",
-        "2026:w2:m6:pick",
-        "role:commissioner"
+        "2026:w2:m3:projection:Archibaldo",
+        "2026:w2:m3:projection:sidjunlee",
+        "2026:w2:m3:pick"
       ]
     },
     {
@@ -296,14 +295,13 @@
       ]
     },
     {
-      "title": "Most Expensive Negative Number",
-      "recipient": "maco71",
-      "body": "Matthew Stafford’s 26.98 could not erase DJ Moore’s -0.10 as Blumbo ran away with the matchup. The points king got one negative tenth and a full afternoon of consequences.",
+      "title": "WR Crown",
+      "recipient": "cuch",
+      "body": "Jaxon Smith-Njigba scored 38.00 for cuch, the top Week 2 total among starting wide receivers.",
       "factIds": [
-        "2026:w2:m1:projection:Blumbo",
-        "2026:w2:m1:projection:maco71",
-        "2026:w2:m1:pick",
-        "points:2025:maco71"
+        "2026:w2:m6:projection:cuch",
+        "2026:w2:m6:projection:turi70",
+        "2026:w2:m6:pick"
       ]
     }
   ],
