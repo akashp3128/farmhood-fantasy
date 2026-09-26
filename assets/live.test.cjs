@@ -186,3 +186,86 @@ test('a started NFL game with zero fantasy points still moves the outlook to liv
   assert.equal(watch.teams[0].projection, 10);
   assert.equal(watch.matchups[0].startedAtCapture, true);
 });
+
+test('live matchup keeps the official score leader separate from the projected winner', () => {
+  const watch = fixture({
+    phase: 'live',
+    teamA: {
+      score: 30,
+      starters: [starter('1', 20, { status: 'final', points: 30 }), starter('2', 5)]
+    },
+    teamB: {
+      score: 10,
+      starters: [starter('3', 12, { status: 'final', points: 10 }), starter('4', 50)]
+    }
+  });
+
+  const matchup = watch.matchups[0];
+  assert.equal(watch.phase.key, 'live');
+  assert.deepEqual([matchup.currentScoreA, matchup.currentScoreB], [30, 10]);
+  assert.deepEqual([matchup.projectionA, matchup.projectionB], [35, 60]);
+  assert.equal(matchup.managerA, 'Alpha');
+  assert.equal(matchup.predictedWinner, 'Bravo');
+});
+
+test('a tied live score stays tied even when the forecasts are different', () => {
+  const watch = fixture({
+    phase: 'live',
+    teamA: {
+      score: 10,
+      starters: [starter('1', 20, { status: 'final', points: 10 }), starter('2', 5)]
+    },
+    teamB: {
+      score: 10,
+      starters: [starter('3', 12, { status: 'final', points: 10 }), starter('4', 20)]
+    }
+  });
+
+  const matchup = watch.matchups[0];
+  assert.equal(matchup.currentScoreA, matchup.currentScoreB);
+  assert.deepEqual([matchup.projectionA, matchup.projectionB], [15, 30]);
+  assert.equal(matchup.predictedWinner, 'Bravo');
+});
+
+test('an incomplete forecast preserves both official scores while suppressing projected outcome fields', () => {
+  const watch = fixture({
+    phase: 'live',
+    teamA: {
+      score: 14,
+      starters: [starter('1', 20, { status: 'final', points: 14 }), starter('2', 8)]
+    },
+    teamB: {
+      score: 6,
+      starters: [starter('3', 12, { status: 'final', points: 6 }), starter('4', null, { name: 'Projection Pending' })]
+    }
+  });
+
+  const matchup = watch.matchups[0];
+  assert.deepEqual([matchup.currentScoreA, matchup.currentScoreB], [14, 6]);
+  assert.equal(matchup.projectionA, 22);
+  assert.equal(matchup.projectionB, null);
+  assert.equal(matchup.forecastStatus, 'incomplete');
+  assert.equal(matchup.predictedWinner, null);
+  assert.equal(matchup.winProbability, null);
+  assert.deepEqual(matchup.missingProjectionPlayers.map((player) => player.name), ['Projection Pending']);
+});
+
+test('final matchup projections collapse to official totals and preserve the winner', () => {
+  const watch = fixture({
+    phase: 'final',
+    teamA: {
+      score: 101.5,
+      starters: [starter('1', 20, { status: 'final', points: 61.5 }), starter('2', 10, { status: 'final', points: 40 })]
+    },
+    teamB: {
+      score: 99.25,
+      starters: [starter('3', 12, { status: 'final', points: 50 }), starter('4', 14, { status: 'final', points: 49.25 })]
+    }
+  });
+
+  const matchup = watch.matchups[0];
+  assert.equal(watch.phase.key, 'final');
+  assert.deepEqual([matchup.currentScoreA, matchup.currentScoreB], [101.5, 99.25]);
+  assert.deepEqual([matchup.projectionA, matchup.projectionB], [101.5, 99.25]);
+  assert.equal(matchup.predictedWinner, 'Alpha');
+});

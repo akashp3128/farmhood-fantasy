@@ -463,10 +463,13 @@ h2.h .bar{display:none}
 .matchup-side{min-width:0}
 .matchup-totals{display:flex;align-items:center;gap:13px;flex:0 0 auto}
 .matchup-total{display:flex;flex-direction:column;align-items:flex-end;line-height:1.05;font-variant-numeric:tabular-nums}
-.matchup-total small{font-size:7px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.matchup-total small{display:flex;align-items:center;gap:4px;font-size:7px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2);white-space:nowrap}
 .matchup-total b{font-family:var(--serif);font-size:17px;margin-top:3px;color:var(--text)}
 .matchup-total.projected b{color:var(--muted)}
-.matchup-side.w .matchup-total.actual b{color:var(--gold-2)}
+.matchup-total .score-state{display:inline-flex;align-items:center;min-height:14px;padding:1px 3px;border:1px solid currentColor;letter-spacing:.6px;line-height:1;background:var(--surface)}
+.matchup-total.actual.score-winner b,.matchup-total.actual.score-winner .score-state{color:var(--win)}
+.matchup-total.actual.score-loser b,.matchup-total.actual.score-loser .score-state{color:var(--loss)}
+.matchup-total.actual.score-tie b,.matchup-total.actual.score-tie .score-state{color:var(--gold-2)}
 .matchup-side.right .matchup-totals{flex-direction:row-reverse}.matchup-side.right .matchup-total{align-items:flex-start}
 
 .lineup-panel{border:1px solid var(--blue);border-top:0;background:var(--surface)}

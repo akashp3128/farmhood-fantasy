@@ -181,6 +181,55 @@ function restoreLiveFocus(root,key){
   const target=[...root.querySelectorAll('[data-live-focus-key]')].find(item=>item.dataset.liveFocusKey===key);
   if(target&&!target.disabled){target.focus({preventScroll:true});delete root.dataset.restoreLiveFocus;}
 }
+
+function matchupScoreStates(left,right,active){
+  const leftValue=left===null||left===''?null:Number(left),rightValue=right===null||right===''?null:Number(right);
+  if(!active||!Number.isFinite(leftValue)||!Number.isFinite(rightValue))return ['neutral','neutral'];
+  if(Math.abs(leftValue-rightValue)<=0.0001)return ['tie','tie'];
+  return leftValue>rightValue?['winner','loser']:['loser','winner'];
+}
+
+function matchupScoreStateCopy(kind,state,isFinal){
+  if(state==='neutral')return {label:'',description:kind==='actual'?'result pending':'forecast comparison unavailable'};
+  if(kind==='projected'){
+    if(state==='winner')return {label:'',description:'higher estimate'};
+    if(state==='loser')return {label:'',description:'lower estimate'};
+    return {label:'',description:'equal estimate'};
+  }
+  if(state==='winner')return {label:isFinal?'Winner':'Leads',description:isFinal?'winner':'leading'};
+  if(state==='loser')return {label:isFinal?'Loss':'Trails',description:isFinal?'loss':'trailing'};
+  return {label:'Tied',description:'tied'};
+}
+
+function matchupScoreTotal(manager,kind,value,state,isFinal,projectionLabel){
+  const total=el('span',`matchup-total ${kind} score-${state}`),label=el('small','');
+  label.appendChild(document.createTextNode(kind==='actual'?'Pts':projectionLabel||'Proj'));
+  const copy=matchupScoreStateCopy(kind,state,isFinal);
+  if(copy.label)label.appendChild(el('span','score-state',copy.label));
+  const score=el('b','mono'),numeric=value===null||value===''?null:Number(value);
+  score.textContent=Number.isFinite(numeric)?numeric.toFixed(1):'–';
+  const scoreType=kind==='actual'?'actual score':'projected score';
+  total.setAttribute('aria-label',`${manager} ${scoreType} ${score.textContent}, ${copy.description}`);
+  total.title=`${copy.label||copy.description}: ${score.textContent}`;
+  total.append(label,score);return total;
+}
+
+function matchupSummarySide(team,direction,actualState,projectedState,projection,isFinal,projectionLabel){
+  const side=el('span',`side matchup-side${direction==='right'?' right':''}`);
+  const name=el('span','nm');name.textContent=team.name;
+  const totals=el('span','matchup-totals');
+  totals.append(matchupScoreTotal(team.name,'projected',projection,projectedState,isFinal,projectionLabel),matchupScoreTotal(team.name,'actual',team.points==null?0:team.points,actualState,isFinal,projectionLabel));
+  side.append(name,totals);return side;
+}
+
+function matchupSummaryAria(a,b,actualStates,projectedStates,projected,weekState){
+  const actualValue=team=>(team.points==null?0:Number(team.points)).toFixed(1),projectedValue=value=>value==null||!Number.isFinite(Number(value))?'unavailable':Number(value).toFixed(1);
+  const aActual=matchupScoreStateCopy('actual',actualStates[0],weekState==='Final').description,bActual=matchupScoreStateCopy('actual',actualStates[1],weekState==='Final').description;
+  const aProjected=matchupScoreStateCopy('projected',projectedStates[0],false).description,bProjected=matchupScoreStateCopy('projected',projectedStates[1],false).description;
+  const scoreLabel=weekState==='Final'?'Final score':weekState==='Live'?'Live score':'Current score',forecastLabel=weekState==='Live'?'Estimated final':'Projection';
+  return `${a.name} versus ${b.name}. ${scoreLabel}: ${a.name} ${actualValue(a)}, ${aActual}; ${b.name} ${actualValue(b)}, ${bActual}. ${forecastLabel}: ${a.name} ${projectedValue(projected[0])}, ${aProjected}; ${b.name} ${projectedValue(projected[1])}, ${bProjected}. Open starting lineups.`;
+}
+
 function liveStatusBar(snapshot,onRefresh){
   const state=window.FarmhoodLive.phase(snapshot), bar=el('div','live-status '+state.key+(snapshot.stale?' cache':''));
   const main=el('div','live-status-main');
@@ -967,7 +1016,11 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   const focused=document.activeElement&&node.contains(document.activeElement)&&document.activeElement.closest&&document.activeElement.closest('.matchup-detail');
   const focusedKey=focused&&focused.dataset.matchupKey;
   node.innerHTML='';node.appendChild(liveStatusBar(snapshot,onRefresh));
-  const phase=window.FarmhoodLive.phase(snapshot),scored=window.FarmhoodLive.hasScoring(rows);
+  const scopedSnapshot=Object.assign({},snapshot,{currentWeek:selectedWeek,matchups:rows});
+  let forecast=null;
+  try{if(typeof window.FarmhoodLive.lineupWatch==='function')forecast=window.FarmhoodLive.lineupWatch(scopedSnapshot,playerFeed);}
+  catch(_error){forecast=null;}
+  const phase=forecast&&forecast.phase||window.FarmhoodLive.phase(scopedSnapshot),scored=window.FarmhoodLive.hasScoring(rows);
   const weekState=selectedWeek<snapshot.currentWeek?(scored?'Final':'No scores'):
     selectedWeek>snapshot.currentWeek?'Scheduled':phase.key==='live'?'Live':phase.key==='final'?'Final':'Scheduled';
   const title=el('h2','h');
@@ -993,12 +1046,12 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   selector.append(previous,selectWrap,current,next);node.appendChild(selector);
   const feedNote=el('div','lineup-feed-note');
   feedNote.textContent=playerFeed.source==='unavailable'
-    ? 'Live scoring is connected. Player projections are temporarily unavailable.'
-    : `League-scoring projections ${playerFeed.stale?'from the last available feed':'refreshed '+liveTime(playerFeed.fetchedAt)} · starter scores refresh every minute`;
+    ? 'Live scoring is connected. Player projections are temporarily unavailable. Pts labels show official results.'
+    : `League-scoring projections ${playerFeed.stale?'from the last available feed':'refreshed '+liveTime(playerFeed.fetchedAt)} · Pts labels show the official result; ${weekState==='Live'?'Est shows the live forecast':'Proj shows the lineup projection'}`;
   node.appendChild(feedNote);
   const payoutMount=el('div','payout-matchup-context');node.appendChild(payoutMount);
   const board=el('div','live-board');node.appendChild(board);
-  drawLiveWeek(selectedWeek,rows,snapshot,board,weekState,playerFeed,openMatchups);
+  drawLiveWeek(selectedWeek,rows,snapshot,board,weekState,playerFeed,openMatchups,forecast);
   if(window.FarmhoodPayouts)window.FarmhoodPayouts.mountMatchupContext(payoutMount,board,selectedWeek);
 
   const standings=window.FarmhoodLive.standings(snapshot);
@@ -1021,9 +1074,9 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   }else restoreLiveFocus(node,focusedControl);
 }
 
-function drawLiveWeek(week,rows,snapshot,board,weekState,playerFeed,openMatchups){
+function drawLiveWeek(week,rows,snapshot,board,weekState,playerFeed,openMatchups,forecast){
   board.innerHTML='';
-  const groups=window.FarmhoodLive.groupMatchups(rows,snapshot.rosters),weekStarted=window.FarmhoodLive.hasScoring(rows);
+  const groups=window.FarmhoodLive.groupMatchups(rows,snapshot.rosters),forecastTeams=new Map(((forecast&&forecast.teams)||[]).map(team=>[Number(team.rosterId),team]));
   if(!groups.length){board.appendChild(el('div','note',`No matchups are posted for Week ${week} yet.`));return;}
   groups.forEach(group=>{
     if(group.sides.length<2){
@@ -1032,32 +1085,30 @@ function drawLiveWeek(week,rows,snapshot,board,weekState,playerFeed,openMatchups
       board.appendChild(bye);return;
     }
     const [a,b]=group.sides,pa=a.points==null?0:a.points,pb=b.points==null?0:b.points;
-    const tied=Math.abs(pa-pb)<=0.0001,started=weekStarted&&window.FarmhoodLive.hasScoring(group.sides);
-    const aClass=started&&!tied&&pa>pb?'w':started&&!tied?'l':'';
-    const bClass=started&&!tied&&pb>pa?'w':started&&!tied?'l':'';
-    const status=weekState==='Live'?(started?(tied?'TIED':'LIVE'):'UP NEXT'):weekState.toUpperCase();
+    const forecastA=forecastTeams.get(Number(a.rosterId)),forecastB=forecastTeams.get(Number(b.rosterId));
+    const started=window.FarmhoodLive.hasScoring(group.sides)||Boolean(forecastA&&forecastA.startedAtCapture)||Boolean(forecastB&&forecastB.startedAtCapture);
+    const actualStates=matchupScoreStates(pa,pb,started),tied=actualStates[0]==='tie';
+    const status=weekState==='Final'?(tied?'FINAL · TIE':'FINAL'):started?(tied?'TIED':'LIVE'):weekState==='Live'?'UP NEXT':weekState.toUpperCase();
     const lineups=[
       window.FarmhoodLive.lineupFor(a,snapshot.rosterPositions,playerFeed),
       window.FarmhoodLive.lineupFor(b,snapshot.rosterPositions,playerFeed)
     ];
-    const projected=lineups.map(lineup=>{
-      const values=lineup.map(player=>player.projection).filter(value=>value!=null);
-      return values.length?values.reduce((sum,value)=>sum+value,0):null;
-    });
-    const aProjection=projected[0]==null?'–':projected[0].toFixed(1),bProjection=projected[1]==null?'–':projected[1].toFixed(1);
+    const projectionFor=team=>{
+      if(!team)return null;
+      const value=weekState==='Live'?team.projection:(team.pregameProjection!=null?team.pregameProjection:team.projection);
+      return value==null?null:Number(value);
+    };
+    const projected=[projectionFor(forecastA),projectionFor(forecastB)];
+    const projectedStates=matchupScoreStates(projected[0],projected[1],projected[0]!==null&&projected[1]!==null),isFinal=weekState==='Final';
+    const projectionLabel=weekState==='Live'?'Est':'Proj';
     const key=week+':'+group.id,details=el('details','matchup-detail');details.dataset.matchupKey=key;
     details.dataset.managerA=a.name;details.dataset.managerB=b.name;
     details.open=openMatchups.has(key);
     const row=el('summary','mw matchup-summary');
-    row.innerHTML=
-      `<span class="side matchup-side ${aClass}"><span class="nm">${a.name}</span><span class="matchup-totals">
-         <span class="matchup-total projected"><small>Proj</small><b>${aProjection}</b></span>
-         <span class="matchup-total actual"><small>Pts</small><b>${pa.toFixed(1)}</b></span></span></span>
-       <span class="vs"><span>VS</span><small>${status}</small></span>
-       <span class="side right matchup-side ${bClass}"><span class="nm">${b.name}</span><span class="matchup-totals">
-         <span class="matchup-total projected"><small>Proj</small><b>${bProjection}</b></span>
-         <span class="matchup-total actual"><small>Pts</small><b>${pb.toFixed(1)}</b></span></span></span>
-       <span class="lineup-cue"><span class="cue-open">View lineups</span><span class="cue-close">Hide lineups</span><i aria-hidden="true"></i></span>`;
+    row.setAttribute('aria-label',matchupSummaryAria(a,b,actualStates,projectedStates,projected,weekState));
+    const versus=el('span','vs'),versusLabel=el('span','', 'VS'),statusLabel=el('small','',status);versus.append(versusLabel,statusLabel);
+    const cue=el('span','lineup-cue'),openCue=el('span','cue-open','View lineups'),closeCue=el('span','cue-close','Hide lineups'),chevron=el('i','');chevron.setAttribute('aria-hidden','true');cue.append(openCue,closeCue,chevron);
+    row.append(matchupSummarySide(a,'left',actualStates[0],projectedStates[0],projected[0],isFinal,projectionLabel),versus,matchupSummarySide(b,'right',actualStates[1],projectedStates[1],projected[1],isFinal,projectionLabel),cue);
     details.appendChild(row);details.appendChild(renderLineupPanel(group,snapshot,playerFeed,lineups));
     details.addEventListener('toggle',()=>{if(details.open)openMatchups.add(key);else openMatchups.delete(key);});
     board.appendChild(details);
