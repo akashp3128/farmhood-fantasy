@@ -59,11 +59,11 @@
       "finalScoreB": null,
       "winner": null,
       "headline": "maco71 38.9, pgorny 0: Bijan opens a tab",
-      "analysis": "maco71 already has 38.9 through two locked starters, including 34.3 from Bijan Robinson. pgorny is at zero and has no complete remaining projection because Puka Nacua is listed Doubtful in the FLEX spot. That is not a deficit so much as an administrative emergency.",
+      "analysis": "maco71 already has 38.9 through two locked starters, including 34.3 from Bijan Robinson. pgorny is at zero and has no complete remaining projection because Puka Nacua, listed Doubtful in the FLEX spot, has no projection. The matchup lean is intentionally withheld until that data is available.",
       "keyPlayer": "Derrick Henry",
       "keyPlayerId": "3198",
-      "upsetPath": "pgorny needs the Puka situation resolved and the remaining lineup to erase maco71’s early cushion.",
-      "historyNote": "maco71 set the league’s single-season scoring record in 2025 but is still chasing a title.",
+      "upsetPath": "",
+      "historyNote": "maco71 set the league’s single-season scoring record in 2025.",
       "injuryWatch": [
         "DJ Moore — listed Questionable",
         "Tank Bigsby — listed Questionable",
@@ -115,8 +115,8 @@
       "analysis": "Blumbo’s 2.0 Thursday points are already banked, and the current outlook lands at 121.5 to 110.7 with Blumbo carrying a 64.57% win probability. Archibaldo has not started anyone, so the margin remains perfectly available for group-chat chaos.",
       "keyPlayer": "Kenneth Walker",
       "keyPlayerId": "8151",
-      "upsetPath": "Archibaldo’s unstarted lineup has to outperform the 110.7 remaining projection and turn the clean slate into a comeback.",
-      "historyNote": "Archibaldo has long been on the wrong side of the expected-wins ledger, which is exactly why a 35.43% path should not be dismissed.",
+      "upsetPath": "Archibaldo’s unstarted lineup needs enough production to close Blumbo’s 10.8-point estimated-final edge.",
+      "historyNote": "",
       "injuryWatch": [
         "Zay Flowers — listed Questionable",
         "DeVonta Smith — listed Questionable"
@@ -127,8 +127,7 @@
         "2026:w3:m2:live-score:Archibaldo",
         "2026:w3:m2:remaining:Blumbo",
         "2026:w3:m2:remaining:Archibaldo",
-        "2026:w3:m2:late-forecast",
-        "alltime:luck:Archibaldo"
+        "2026:w3:m2:late-forecast"
       ]
     },
     {
@@ -153,12 +152,12 @@
       "finalScoreA": null,
       "finalScoreB": null,
       "winner": null,
-      "headline": "jwislek_20 vs. martin: 0-0, but the champ gets no courtesy discount",
-      "analysis": "Neither side has started a player. jwislek_20 holds the current 108.69-to-103.67 outlook and a 56.93% win probability against reigning champion martin ch94. The title belt does not add points, tragically.",
+      "headline": "jwislek_20 vs. martinch94: No Thursday starters, narrow Friday lean",
+      "analysis": "Neither side has started a player. jwislek_20 holds the current 108.69-to-103.67 outlook and a 56.93% win probability against martinch94.",
       "keyPlayer": "Joe Burrow",
       "keyPlayerId": "6770",
       "upsetPath": "martinch94 needs the unstarted roster to beat a narrow 5.02-point projected gap.",
-      "historyNote": "martinch94 is the reigning 2025 champion and a three-time winner.",
+      "historyNote": "",
       "injuryWatch": [
         "Brock Bowers — listed Questionable"
       ],
@@ -178,8 +177,7 @@
         "2026:w3:m3:live-score:martinch94",
         "2026:w3:m3:remaining:jwislek_20",
         "2026:w3:m3:remaining:martinch94",
-        "2026:w3:m3:late-forecast",
-        "champion:2020"
+        "2026:w3:m3:late-forecast"
       ]
     },
     {
@@ -260,7 +258,7 @@
       "keyPlayer": "Christian McCaffrey",
       "keyPlayerId": "4034",
       "upsetPath": "akaaashh needs the unstarted roster to make up 4.66 projected points and can consider the higher-projected Rhamondre Stevenson over Dontayvion Wicks in FLEX.",
-      "historyNote": "turi70 went 2-12 in 2025; any early lead deserves to be photographed and preserved.",
+      "historyNote": "",
       "injuryWatch": [
         "Jalen Coker — listed Questionable"
       ],
@@ -289,8 +287,7 @@
         "2026:w3:m5:live-score:turi70",
         "2026:w3:m5:remaining:akaaashh",
         "2026:w3:m5:remaining:turi70",
-        "2026:w3:m5:late-forecast",
-        "record:2025:turi70"
+        "2026:w3:m5:late-forecast"
       ]
     },
     {
@@ -315,12 +312,12 @@
       "finalScoreA": null,
       "finalScoreB": null,
       "winner": null,
-      "headline": "cuch 18.5, vpitello34 2.8: The commissioner gets a Thursday receipt",
+      "headline": "cuch 18.5, vpitello34 2.8: The commissioner gets a Thursday edge",
       "analysis": "cuch’s 18.5 from Matthew Golden has created a 124.33-to-114.61 outlook and a 63.18% win probability over vpitello34. The commissioner has an early edge; the league constitution does not require anyone to enjoy it.",
       "keyPlayer": "Josh Allen",
       "keyPlayerId": "4984",
       "upsetPath": "vpitello34 has 111.81 in remaining projection and can still turn the matchup with the unstarted lineup led by Josh Allen.",
-      "historyNote": "vpitello34 owns the best active-manager career win percentage.",
+      "historyNote": "",
       "injuryWatch": [],
       "suggestedSwaps": [],
       "factIds": [
@@ -363,7 +360,9 @@
         "2026:w3:m1:remaining:pgorny",
         "2026:w3:m2:remaining:Blumbo",
         "2026:w3:m2:remaining:Archibaldo",
-        "2026:w3:m3:remaining:jwislek_20"
+        "2026:w3:m3:remaining:jwislek_20",
+        "2026:w3:m4:late-forecast",
+        "2026:w3:m5:late-forecast"
       ]
     },
     {
