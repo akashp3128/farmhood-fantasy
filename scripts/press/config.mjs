@@ -5,6 +5,7 @@ export const LATE_OUTLOOK_MODEL = 'farmhood-live-outlook-v1';
 
 export const PRESS_CONFIG = Object.freeze({
   season: 2026,
+  timezone: 'America/Chicago',
   leagueId: '1377086848295260160',
   teamCount: 12,
   regularSeasonWeeks: 14,
@@ -15,6 +16,11 @@ export const PRESS_CONFIG = Object.freeze({
   maxOutputTokens: 3500,
   maxRequestCharacters: 28000,
   maxEstimatedCostUsd: 0.1,
+  editionLimits: Object.freeze({
+    preview: Object.freeze({ maxOutputTokens: 2600, maxEstimatedCostUsd: 0.07 }),
+    'late-preview': Object.freeze({ maxOutputTokens: 2300, maxEstimatedCostUsd: 0.065 }),
+    recap: Object.freeze({ maxOutputTokens: 2600, maxEstimatedCostUsd: 0.07 })
+  }),
   pricingAsOf: '2026-09-08',
   modelPricingPerMillionTokens: Object.freeze({
     'gpt-6-astra': Object.freeze({ input: 10, cachedInput: 1, cacheWriteInput: 12.5, output: 50 }),

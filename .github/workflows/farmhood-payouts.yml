@@ -17,7 +17,7 @@ on:
 permissions: {}
 
 concurrency:
-  group: farmhood-payout-reconciliation
+  group: farmhood-main-content-writer
   cancel-in-progress: false
 
 jobs:

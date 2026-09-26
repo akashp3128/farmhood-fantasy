@@ -48,3 +48,30 @@ test('allows an explicit denial of a missing original prediction', () => {
   const copy=copyWith('There was no original pregame prediction this week; this is a frozen Friday outlook.');
   assert.equal(validateArticleCopy(copy, snapshot, 'recap', { lateForecast: true }), copy);
 });
+
+test('rejects a spaced typo of a canonical manager handle', () => {
+  const misspelled = copyWith('martin ch94 has the remaining projection edge.');
+  const withManager = { ...snapshot, teams: [...snapshot.teams, { manager: 'martinch94' }] };
+  assert.throws(() => validateArticleCopy(misspelled, withManager, 'late-preview'), /misspells canonical manager martinch94/);
+});
+
+test('rejects a recap prediction record that contradicts the immutable receipt', () => {
+  const recap = copyWith('The original forecast finished 1-for-1.');
+  const finalSnapshot = {
+    ...snapshot,
+    matchups: [{ ...snapshot.matchups[0], currentScoreA: 100, currentScoreB: 90 }]
+  };
+  const prediction = { predictions: [{ matchupId: 1, predictedWinner: 'maco71', projectedScoreA: 95, projectedScoreB: 105 }] };
+  assert.throws(() => validateArticleCopy(recap, finalSnapshot, 'recap', { prediction }), /does not match 0-for-1/);
+});
+
+test('rejects a weekly-high award for anyone other than the verified scoring leader', () => {
+  const recap = copyWith('Blumbo finished on top.');
+  recap.awards = [{ title: 'Weekly high scorer', recipient: 'maco71', body: 'The highest team score of the week.', factIds: ['late:1'] }];
+  const finalSnapshot = {
+    ...snapshot,
+    matchups: [{ ...snapshot.matchups[0], currentScoreA: 100, currentScoreB: 90 }]
+  };
+  const prediction = { predictions: [{ matchupId: 1, predictedWinner: 'Blumbo', projectedScoreA: 95, projectedScoreB: 90 }] };
+  assert.throws(() => validateArticleCopy(recap, finalSnapshot, 'recap', { prediction }), /verified leader is Blumbo/);
+});

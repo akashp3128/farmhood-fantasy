@@ -127,6 +127,20 @@ function estimatedTokens(characters) {
   return Math.ceil((characters / 4) * 1.15) + 200;
 }
 
+export function editionBudget(type, requestedCostLimit) {
+  const policy = PRESS_CONFIG.editionLimits?.[type];
+  assert(policy, `No automatic cost policy is configured for ${type}.`);
+  const requested = requestedCostLimit === undefined || requestedCostLimit === ''
+    ? policy.maxEstimatedCostUsd
+    : Number(requestedCostLimit);
+  assert(Number.isFinite(requested) && requested > 0, 'PRESS_MAX_ESTIMATED_COST_USD must be a positive number.');
+  return {
+    maxOutputTokens: policy.maxOutputTokens,
+    maxEstimatedCostUsd: Math.min(policy.maxEstimatedCostUsd, requested),
+    policyMaximumCostUsd: policy.maxEstimatedCostUsd
+  };
+}
+
 function estimateCost({ model, inputTokens, outputTokens, cachedInputTokens = 0, cacheWriteInputTokens = 0 }) {
   const price = priceForModel(model);
   if (!price) return null;
@@ -277,10 +291,10 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
   const text = { verbosity: 'low', format: { type: 'json_schema', name: 'farmhood_press_article', strict: true, schema } };
   const requestCharacters = instructions.length + input.length + JSON.stringify(text).length;
   const inputTokenEstimate = estimatedTokens(requestCharacters);
-  const maxCost = Number(process.env.PRESS_MAX_ESTIMATED_COST_USD || PRESS_CONFIG.maxEstimatedCostUsd);
+  const budget = editionBudget(type, process.env.PRESS_MAX_ESTIMATED_COST_USD);
+  const maxCost = budget.maxEstimatedCostUsd;
   assert(requestCharacters <= PRESS_CONFIG.maxRequestCharacters, `The AI request is ${requestCharacters.toLocaleString()} characters, above the ${PRESS_CONFIG.maxRequestCharacters.toLocaleString()}-character cost guard.`);
-  assert(Number.isFinite(maxCost) && maxCost > 0, 'PRESS_MAX_ESTIMATED_COST_USD must be a positive number.');
-  const outputOnlyCost = estimateCost({ model, inputTokens: 0, outputTokens: PRESS_CONFIG.maxOutputTokens });
+  const outputOnlyCost = estimateCost({ model, inputTokens: 0, outputTokens: budget.maxOutputTokens });
   assert(outputOnlyCost !== null, `No cost guard is configured for ${model}. Add its token prices before using it.`);
   assert(outputOnlyCost <= maxCost, `The ${model} output ceiling alone could cost $${outputOnlyCost.toFixed(4)}, above the $${maxCost.toFixed(2)} per-article limit.`);
   const tokenCount = await fetchJson(`${PRESS_CONFIG.openaiApiRoot}/responses/input_tokens`, {
@@ -296,15 +310,16 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
   });
   const exactInputTokens = Number(tokenCount?.input_tokens);
   assert(Number.isInteger(exactInputTokens) && exactInputTokens >= 0, 'OpenAI input token count returned an invalid result.');
-  const worstCaseCost = estimateCost({ model, inputTokens: exactInputTokens, outputTokens: PRESS_CONFIG.maxOutputTokens });
+  const worstCaseCost = estimateCost({ model, inputTokens: exactInputTokens, outputTokens: budget.maxOutputTokens });
   assert(worstCaseCost <= maxCost, `The worst-case ${model} request is estimated at $${worstCaseCost.toFixed(4)}, above the $${maxCost.toFixed(2)} per-article limit.`);
   const preflight = {
     requestCharacters,
     localInputTokenEstimate: inputTokenEstimate,
     exactInputTokens,
-    maxOutputTokens: PRESS_CONFIG.maxOutputTokens,
+    maxOutputTokens: budget.maxOutputTokens,
     maximumEstimatedCostUsd: Number(worstCaseCost.toFixed(6)),
-    configuredCostLimitUsd: maxCost
+    configuredCostLimitUsd: maxCost,
+    policyMaximumCostUsd: budget.policyMaximumCostUsd
   };
   const response = await fetchJson(`${PRESS_CONFIG.openaiApiRoot}/responses`, {
     method: 'POST',
@@ -322,7 +337,7 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
       instructions,
       input,
       text,
-      max_output_tokens: PRESS_CONFIG.maxOutputTokens,
+      max_output_tokens: budget.maxOutputTokens,
       prompt_cache_options: { mode: 'explicit' },
       store: false
     })
@@ -338,7 +353,7 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
     assert(response?.status === 'completed', `OpenAI response did not complete: ${response?.error?.message || response?.incomplete_details?.reason || response?.status || 'unknown reason'}`);
     assert(attempt, 'The completed OpenAI response did not include token usage.');
     const copy = JSON.parse(outputText(response));
-    return { ...attempt, copy: validateArticleCopy(copy, snapshot, type, { lateForecast }) };
+    return { ...attempt, copy: validateArticleCopy(copy, snapshot, type, { lateForecast, prediction }) };
   } catch (error) {
     if (attempt && onAttempt) await onAttempt(attempt, 'rejected', error);
     throw new Error(`The structured article could not be accepted: ${error.message}`);
