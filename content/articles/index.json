@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-02-preview",
-  "updatedAt": "2026-09-16T11:53:47.704Z",
+  "featuredArticleId": "2026-week-02-recap",
+  "updatedAt": "2026-09-26T04:38:13.356Z",
   "articles": [
+    {
+      "articleId": "2026-week-02-recap",
+      "path": "content/articles/2026/week-02-recap.json",
+      "type": "week_recap",
+      "edition": "Postgame Edition",
+      "season": 2026,
+      "week": 2,
+      "status": "published",
+      "title": "Week 2 Recap: The Forecast Went 0-for-6 and Archibaldo Took the Week",
+      "dek": "All six original favorites lost, one matchup ended in a 0.18-point escape, and Archibaldo led Week 2 with 134.76.",
+      "publishedAt": "2026-09-26T04:38:13.356Z",
+      "dataAsOf": "2026-09-26T04:38:13.356Z",
+      "storylines": [
+        "The forecast got buried with its dignity",
+        "Archibaldo owns the weekly headline",
+        "The title defense survives on decimals"
+      ],
+      "tags": [
+        "Recap",
+        "Week 2",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-02-preview",
       "path": "content/articles/2026/week-02-preview.json",
