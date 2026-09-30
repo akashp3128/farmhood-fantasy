@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PRESS_CONFIG } from './config.mjs';
 import { assertPredictionLineage, isLateForecastLedger } from './lineage.mjs';
@@ -65,6 +65,12 @@ function walkText(value, label) {
 }
 
 async function main() {
+  const recoveryDirectory = path.join(root, '.github', 'press-recovery');
+  const recoveryFiles = await readdir(recoveryDirectory).catch((error) => {
+    if (error?.code === 'ENOENT') return [];
+    throw error;
+  });
+  assert(recoveryFiles.length === 0, `Unresolved paid-copy recovery checkpoint(s) cannot be published: ${recoveryFiles.join(', ')}. Repair and validate the article, then remove the checkpoint.`);
   const index = await readJsonIfExists(indexPath);
   assert(index?.schemaVersion === 1, 'Article index schemaVersion must be 1.');
   assert(Array.isArray(index.articles) && index.articles.length > 0, 'Article index must contain at least one published article.');

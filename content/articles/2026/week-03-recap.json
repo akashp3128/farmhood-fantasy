@@ -1,0 +1,613 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-03-recap",
+  "type": "week_recap",
+  "season": 2026,
+  "week": 3,
+  "status": "published",
+  "edition": "Postgame Edition",
+  "title": "Week 3 Recap: cuch Takes the Week and Archibaldo Flips Friday’s Lean",
+  "dek": "cuch posted 154.48, maco71 won by 73.42, and Archibaldo turned a 0-point Thursday start into a 108.54–104.02 victory.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-09-29T19:17:52.706Z",
+  "updatedAt": "2026-09-29T19:17:52.706Z",
+  "dataAsOf": "2026-09-29T19:17:52.706Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "Week 3 ended with four teams above 130, cuch on top at 154.48, and maco71 authoring the week’s largest margin at 73.42 points.",
+      "Archibaldo supplied the reversal, overcoming Blumbo’s early Thursday lead to win by 4.52. The frozen Friday outlook leaned the other way, but it was published after kickoff and remains ineligible for original-prediction receipts.",
+      "This recap records the final scores without manufacturing a pregame grade: Week 3 never had an original Preview."
+    ],
+    "pullQuote": "cuch scored 154.48, because apparently the commissioner also schedules the headlines.",
+    "keyStat": {
+      "label": "Week 3 high score",
+      "value": "154.48",
+      "note": "cuch led all 12 teams."
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "maco71",
+      "managerB": "pgorny",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 38.9,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 76.58,
+      "remainingProjectionB": null,
+      "forecastScoreA": 115.48,
+      "forecastScoreB": null,
+      "forecastWinner": null,
+      "forecastProbability": null,
+      "startedAtCapture": true,
+      "lockedStarterCount": 2,
+      "forecastStatus": "incomplete",
+      "missingProjectionPlayers": [
+        {
+          "id": "9493",
+          "name": "Puka Nacua",
+          "slot": "FLEX",
+          "position": "WR",
+          "injuryStatus": "Doubtful",
+          "manager": "pgorny",
+          "side": "B"
+        }
+      ],
+      "currentScoreA": 135.7,
+      "currentScoreB": 62.28,
+      "finalScoreA": 135.7,
+      "finalScoreB": 62.28,
+      "winner": "maco71",
+      "headline": "maco71 135.70, pgorny 62.28: Bijan Turns Thursday Into a Rout",
+      "analysis": "maco71 converted a 38.9-point Thursday start into a 135.70–62.28 win, the largest margin of Week 3 at 73.42 points. Bijan Robinson led the lineup with 34.3. pgorny’s Friday outlook was incomplete, so this matchup never carried a complete late forecast.",
+      "keyPlayer": "Bijan Robinson",
+      "keyPlayerId": "9509",
+      "upsetPath": "",
+      "historyNote": "maco71 set the league’s single-season scoring record in 2025.",
+      "injuryWatch": [
+        "Baker Mayfield — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m1:projection:maco71",
+        "2026:w3:m1:projection:pgorny",
+        "points:2025:maco71"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "Blumbo",
+      "managerB": "Archibaldo",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 2,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 119.5,
+      "remainingProjectionB": 110.7,
+      "forecastScoreA": 121.5,
+      "forecastScoreB": 110.7,
+      "forecastWinner": "Blumbo",
+      "forecastProbability": 0.6457,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 104.02,
+      "currentScoreB": 108.54,
+      "finalScoreA": 104.02,
+      "finalScoreB": 108.54,
+      "winner": "Archibaldo",
+      "headline": "Archibaldo 108.54, Blumbo 104.02: Friday’s Lean Gets Flipped",
+      "analysis": "Archibaldo erased the early 2.0–0 deficit and won 108.54–104.02. The frozen Weekend Outlook leaned toward Blumbo, but it was a post-kickoff outlook rather than an original prediction and remains outside the receipt grade.",
+      "keyPlayer": "Garrett Wilson",
+      "keyPlayerId": "8146",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [
+        "Mark Andrews — listed Questionable",
+        "Travis Etienne — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m2:projection:Blumbo",
+        "2026:w3:m2:projection:Archibaldo",
+        "alltime:luck:Archibaldo"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "jwislek_20",
+      "managerB": "martinch94",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 108.69,
+      "remainingProjectionB": 103.67,
+      "forecastScoreA": 108.69,
+      "forecastScoreB": 103.67,
+      "forecastWinner": "jwislek_20",
+      "forecastProbability": 0.5693,
+      "startedAtCapture": false,
+      "lockedStarterCount": 0,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 131.88,
+      "currentScoreB": 86.94,
+      "finalScoreA": 131.88,
+      "finalScoreB": 86.94,
+      "winner": "jwislek_20",
+      "headline": "jwislek_20 131.88, martinch94 86.94: A Close Outlook Becomes a Blowout",
+      "analysis": "jwislek_20 turned a narrow Friday outlook into a 44.94-point win, 131.88–86.94. Brock Bowers scored 22.6 and Joe Burrow added 22.58 for the winner.",
+      "keyPlayer": "Brock Bowers",
+      "keyPlayerId": "11604",
+      "upsetPath": "",
+      "historyNote": "martinch94 remains the league’s three-time champion.",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m3:projection:jwislek_20",
+        "2026:w3:m3:projection:martinch94",
+        "titles:martinch94"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "Siccboi",
+      "managerB": "sidjunlee",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 23.9,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 109.43,
+      "remainingProjectionB": 123.37,
+      "forecastScoreA": 133.33,
+      "forecastScoreB": 123.37,
+      "forecastWinner": "Siccboi",
+      "forecastProbability": 0.6349,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 134.64,
+      "currentScoreB": 103.14,
+      "finalScoreA": 134.64,
+      "finalScoreB": 103.14,
+      "winner": "Siccboi",
+      "headline": "Siccboi 134.64, sidjunlee 103.14: The Thursday Lead Holds",
+      "analysis": "Siccboi carried Drake London’s 23.9-point Thursday opener into a 134.64–103.14 victory. The final margin reached 31.50 after the frozen outlook had shown a much tighter game.",
+      "keyPlayer": "Drake London",
+      "keyPlayerId": "8112",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [
+        "Mike Evans — listed Out",
+        "De'Von Achane — listed IR",
+        "Breece Hall — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m4:projection:Siccboi",
+        "2026:w3:m4:projection:sidjunlee"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "akaaashh",
+      "managerB": "turi70",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 19.1,
+      "remainingProjectionA": 114.76,
+      "remainingProjectionB": 100.32,
+      "forecastScoreA": 114.76,
+      "forecastScoreB": 119.42,
+      "forecastWinner": "turi70",
+      "forecastProbability": 0.5644,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 80.76,
+      "currentScoreB": 115.94,
+      "finalScoreA": 80.76,
+      "finalScoreB": 115.94,
+      "winner": "turi70",
+      "headline": "turi70 115.94, akaaashh 80.76: Watson’s Head Start Was Enough",
+      "analysis": "turi70 finished a 115.94–80.76 win after Christian Watson supplied 19.1 on Thursday. What looked like a 4.66-point Friday edge ended as a 35.18-point final margin.",
+      "keyPlayer": "Christian McCaffrey",
+      "keyPlayerId": "4034",
+      "upsetPath": "",
+      "historyNote": "turi70 owns the league’s 2025 scoring record.",
+      "injuryWatch": [
+        "Jalen Coker — listed Out",
+        "Spencer Shrader — listed Questionable",
+        "Justin Jefferson — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m5:projection:akaaashh",
+        "2026:w3:m5:projection:turi70",
+        "record:2025:turi70"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "cuch",
+      "managerB": "vpitello34",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 18.5,
+      "outlookCurrentScoreB": 2.8,
+      "remainingProjectionA": 105.83,
+      "remainingProjectionB": 111.81,
+      "forecastScoreA": 124.33,
+      "forecastScoreB": 114.61,
+      "forecastWinner": "cuch",
+      "forecastProbability": 0.6318,
+      "startedAtCapture": true,
+      "lockedStarterCount": 2,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 154.48,
+      "currentScoreB": 129.36,
+      "finalScoreA": 154.48,
+      "finalScoreB": 129.36,
+      "winner": "cuch",
+      "headline": "cuch 154.48, vpitello34 129.36: The Week’s Biggest Number",
+      "analysis": "cuch posted the Week 3 high at 154.48 and defeated vpitello34 129.36. Jaxon Smith-Njigba scored 30.36 for cuch, while Jahmyr Gibbs delivered the week’s biggest individual line in this matchup at 37.9 for vpitello34.",
+      "keyPlayer": "Jahmyr Gibbs",
+      "keyPlayerId": "9221",
+      "upsetPath": "",
+      "historyNote": "The commissioner has the high-score headline this week.",
+      "injuryWatch": [
+        "Josh Allen — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w3:m6:projection:cuch",
+        "2026:w3:m6:projection:vpitello34",
+        "role:commissioner"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "cuch owns the Week 3 scoring headline",
+      "body": "cuch’s 154.48 was the highest team score of Week 3, powered by 30.36 from Jaxon Smith-Njigba and 23.2 from George Kittle.",
+      "subjects": [
+        "cuch"
+      ],
+      "factIds": [
+        "2026:w3:m6:projection:cuch",
+        "role:commissioner"
+      ]
+    },
+    {
+      "title": "Archibaldo reversed the Friday lean",
+      "body": "The frozen Weekend Outlook leaned toward Blumbo, but Archibaldo won the finalized matchup 108.54–104.02. The outlook remains receipt-ineligible because it was published after Thursday scoring began.",
+      "subjects": [
+        "Archibaldo",
+        "Blumbo"
+      ],
+      "factIds": [
+        "2026:w3:m2:projection:Blumbo",
+        "2026:w3:m2:projection:Archibaldo",
+        "alltime:luck:Archibaldo"
+      ]
+    },
+    {
+      "title": "maco71 produced the week’s widest margin",
+      "body": "maco71 beat pgorny 135.70–62.28, a 73.42-point gap, after Bijan Robinson opened the week with 34.3.",
+      "subjects": [
+        "maco71",
+        "pgorny"
+      ],
+      "factIds": [
+        "2026:w3:m1:projection:maco71",
+        "2026:w3:m1:projection:pgorny",
+        "points:2025:maco71"
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "title": "Week 3 High Score",
+      "recipient": "cuch",
+      "body": "cuch led the league with 154.48 points and a 25.12-point win over vpitello34.",
+      "factIds": [
+        "2026:w3:m6:projection:cuch",
+        "2026:w3:m6:projection:vpitello34"
+      ]
+    },
+    {
+      "title": "Individual Hammer",
+      "recipient": "vpitello34",
+      "body": "Jahmyr Gibbs scored 37.9, the largest individual starting-lineup total in Week 3.",
+      "factIds": [
+        "2026:w3:m6:projection:vpitello34"
+      ]
+    },
+    {
+      "title": "Friday Flip",
+      "recipient": "Archibaldo",
+      "body": "Archibaldo beat Blumbo 108.54–104.02 after the receipt-ineligible Weekend Outlook had leaned toward Blumbo.",
+      "factIds": [
+        "2026:w3:m2:projection:Blumbo",
+        "2026:w3:m2:projection:Archibaldo"
+      ]
+    }
+  ],
+  "receipts": null,
+  "forecastContext": {
+    "mode": "late_outlook_baseline",
+    "capturedAt": "2026-09-26T06:58:34.366Z",
+    "sourceSnapshotId": "farmhood-2026-week-03-live-4be8a872d62beea8",
+    "knownScoringIncluded": true,
+    "receiptEligible": false
+  },
+  "lineupSnapshot": {
+    "capturedAt": "2026-09-29T19:17:52.706Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "5849",
+          "9224",
+          "8151",
+          "8146",
+          "9487",
+          "5012",
+          "2133",
+          "13346",
+          "13545",
+          "SEA"
+        ],
+        "lineupHash": "5849.9224.8151.8146.9487.5012.2133.13346.13545.SEA",
+        "projection": 104.02
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "11564",
+          "4034",
+          "13287",
+          "11646",
+          "11632",
+          "5001",
+          "7526",
+          "9486",
+          "12185",
+          "NE"
+        ],
+        "lineupHash": "11564.4034.13287.11646.11632.5001.7526.9486.12185.NE",
+        "projection": 80.76
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12507",
+          "7543",
+          "6786",
+          "7525",
+          "7002",
+          "13286",
+          "12533",
+          "2747",
+          "JAX"
+        ],
+        "lineupHash": "3294.12507.7543.6786.7525.7002.13286.12533.2747.JAX",
+        "projection": 108.54
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "12474",
+          "7564",
+          "8144",
+          "11604",
+          "11635",
+          "4037",
+          "11533",
+          "CIN"
+        ],
+        "lineupHash": "6770.12490.12474.7564.8144.11604.11635.4037.11533.CIN",
+        "projection": 131.88
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "6904",
+          "7588",
+          "12481",
+          "9488",
+          "12519",
+          "4217",
+          "12501",
+          "4199",
+          "7839",
+          "BAL"
+        ],
+        "lineupHash": "6904.7588.12481.9488.12519.4217.12501.4199.7839.BAL",
+        "projection": 154.48
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "9228",
+          "8138",
+          "12527",
+          "10232",
+          "12526",
+          "2505",
+          "11631",
+          "12534",
+          "3451",
+          "LAR"
+        ],
+        "lineupHash": "9228.8138.12527.10232.12526.2505.11631.12534.3451.LAR",
+        "projection": 86.94
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "6797",
+          "4866",
+          "6790",
+          "6794",
+          "6801",
+          "12518",
+          "8167",
+          "8121",
+          "8259",
+          "MIN"
+        ],
+        "lineupHash": "6797.4866.6790.6794.6801.12518.8167.8121.8259.MIN",
+        "projection": 115.94
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "4046",
+          "6813",
+          "11584",
+          "8112",
+          "2216",
+          "12506",
+          "7594",
+          "10229",
+          "12711",
+          "HOU"
+        ],
+        "lineupHash": "4046.6813.11584.8112.2216.12506.7594.10229.12711.HOU",
+        "projection": 134.64
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "12545",
+          "9509",
+          "8150",
+          "11610",
+          "4983",
+          "9484",
+          "12512",
+          "10218",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "12545.9509.8150.11610.4983.9484.12512.10218.11792.PIT",
+        "projection": 135.7
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "4892",
+          "3198",
+          "9225",
+          "11624",
+          "12514",
+          "10859",
+          "8148",
+          "8134",
+          "11786",
+          "PHI"
+        ],
+        "lineupHash": "4892.3198.9225.11624.12514.10859.8148.8134.11786.PHI",
+        "projection": 62.28
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "4881",
+          "9226",
+          "8155",
+          "7547",
+          "9500",
+          "8130",
+          "8228",
+          "10236",
+          "12015",
+          "CAR"
+        ],
+        "lineupHash": "4881.9226.8155.7547.9500.8130.8228.10236.12015.CAR",
+        "projection": 103.14
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "5892",
+          "8137",
+          "11620",
+          "1466",
+          "11581",
+          "5872",
+          "6650",
+          "KC"
+        ],
+        "lineupHash": "4984.9221.5892.8137.11620.1466.11581.5872.6650.KC",
+        "projection": 129.36
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-03-final-c9150d8846b0d675",
+    "predictionId": "farmhood-2026-week-03-late",
+    "predictionKind": "late_forecast",
+    "dataAsOf": "2026-09-29T19:17:52.706Z",
+    "promptVersion": "farmhood-press-v3-late-outlook",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_0e2d935fe5459a42016abc0ee1f0a087d0bf2544013c8b86a7",
+    "usage": {
+      "inputTokens": 7277,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1872,
+      "reasoningTokens": 0,
+      "totalTokens": 9149,
+      "estimatedCostUsd": 0.037018,
+      "pricingAsOf": "2026-09-08",
+      "preflight": {
+        "requestCharacters": 25099,
+        "localInputTokenEstimate": 7416,
+        "exactInputTokens": 7277,
+        "maxOutputTokens": 2600,
+        "maximumEstimatedCostUsd": 0.045754,
+        "configuredCostLimitUsd": 0.07,
+        "policyMaximumCostUsd": 0.07
+      },
+      "model": "gpt-5.6-terra"
+    },
+    "recovery": {
+      "method": "manual_fact_check",
+      "originalOutcome": "rejected",
+      "originalValidationFailure": "Generated copy misspells canonical manager martinch94 as \"martin ch94\".",
+      "additionalOpenAIRequests": 0
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-03-final-c9150d8846b0d675",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Recap",
+    "Week 3",
+    "Lineup Watch"
+  ]
+}
