@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { appendFile } from 'node:fs/promises';
+import { appendFile, unlink } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { PRESS_CONFIG, PRESS_SCHEMA_VERSION, PROMPT_VERSION } from './config.mjs';
 import { buildWeeklyFacts } from './facts.mjs';
@@ -215,6 +215,51 @@ async function reportPaidFailure({ articleId, message, usage }) {
   }
 }
 
+export async function validateArticleCopyRecoverably({ copy, snapshot, prediction, type, lateForecast, recoveryPath, recoveryMetadata }) {
+  assert(recoveryPath, 'A recovery path is required before validating paid article copy.');
+  const checkpoint = {
+    schemaVersion: 1,
+    ...recoveryMetadata,
+    kind: 'farmhood_press_copy_recovery',
+    publicationStatus: 'not_published',
+    semanticValidation: { status: 'pending' },
+    structuredCopy: copy
+  };
+  await writeJsonAtomic(recoveryPath, checkpoint);
+
+  let accepted;
+  try {
+    accepted = validateArticleCopy(copy, snapshot, type, { lateForecast, prediction });
+  } catch (error) {
+    try {
+      await writeJsonAtomic(recoveryPath, {
+        ...checkpoint,
+        semanticValidation: {
+          status: 'rejected',
+          error: safeText(error?.message || error, 500)
+        }
+      });
+    } catch (checkpointError) {
+      error.message = `${error.message} The structured copy was checkpointed before validation, but its rejection status could not be recorded: ${checkpointError.message}`;
+    }
+    throw error;
+  }
+
+  await writeJsonAtomic(recoveryPath, {
+    ...checkpoint,
+    semanticValidation: { status: 'passed' }
+  });
+  return accepted;
+}
+
+export async function removeCopyRecoveryCheckpoint(recoveryPath) {
+  try {
+    await unlink(recoveryPath);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+}
+
 export function promptInstructions(type, tone, { lateForecast = false } = {}) {
   const assignment = type === 'recap'
     ? 'postgame recap'
@@ -235,7 +280,7 @@ Voice: sportswriter credibility with ${tone} group-chat energy. Be specific, con
 ${timingRules} Do not call a matchup final unless the supplied phase is final.`;
 }
 
-async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, editorial, storylines, corrections, previous, type, tone, model, apiKey, onAttempt }) {
+async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, editorial, storylines, corrections, previous, type, tone, model, apiKey, onAttempt, recoveryPath, recoveryMetadata }) {
   const knownFactIds = unique([
     ...(snapshot.factIds || []),
     ...snapshot.matchups.flatMap((matchup) => matchup.factIds),
@@ -353,7 +398,23 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
     assert(response?.status === 'completed', `OpenAI response did not complete: ${response?.error?.message || response?.incomplete_details?.reason || response?.status || 'unknown reason'}`);
     assert(attempt, 'The completed OpenAI response did not include token usage.');
     const copy = JSON.parse(outputText(response));
-    return { ...attempt, copy: validateArticleCopy(copy, snapshot, type, { lateForecast, prediction }) };
+    return {
+      ...attempt,
+      copy: await validateArticleCopyRecoverably({
+        copy,
+        snapshot,
+        prediction,
+        type,
+        lateForecast,
+        recoveryPath,
+        recoveryMetadata: {
+          ...recoveryMetadata,
+          responseId: attempt.responseId,
+          model: attempt.model,
+          usage: attempt.usage
+        }
+      })
+    };
   } catch (error) {
     if (attempt && onAttempt) await onAttempt(attempt, 'rejected', error);
     throw new Error(`The structured article could not be accepted: ${error.message}`);
@@ -542,6 +603,7 @@ async function main() {
   const predictionPath = path.join(root, 'content', 'predictions', `${season}-week-${String(week).padStart(2, '0')}.json`);
   const articleId = `${season}-${weekSlug(week)}-${type}`;
   const articlePath = path.join(root, 'content', 'articles', String(season), `${weekSlug(week)}-${type}.json`);
+  const copyRecoveryPath = path.join(root, '.github', 'press-recovery', `${articleId}.json`);
   const [existingPrediction, existingArticle, originalSnapshot, liveSnapshot, existingOriginalArticle] = await Promise.all([
     readJsonIfExists(predictionPath),
     readJsonIfExists(articlePath),
@@ -662,7 +724,30 @@ async function main() {
     }
     if (outcome === 'rejected') await reportPaidFailure({ articleId, message: failure?.message || failure, usage: attempt.usage });
   };
-  const generated = await requestArticleCopy({ snapshot, prediction: sourcePrediction, leagueCanon, canon: managerCanon, editorial, storylines, corrections, previous: index, type, tone, model, apiKey, onAttempt });
+  const generated = await requestArticleCopy({
+    snapshot,
+    prediction: sourcePrediction,
+    leagueCanon,
+    canon: managerCanon,
+    editorial,
+    storylines,
+    corrections,
+    previous: index,
+    type,
+    tone,
+    model,
+    apiKey,
+    onAttempt,
+    recoveryPath: copyRecoveryPath,
+    recoveryMetadata: {
+      articleId,
+      type: usageEdition.type,
+      season,
+      week,
+      generatedAt: snapshot.generatedAt,
+      dataAsOf: snapshot.factsAsOf
+    }
+  });
   const article = mergeArticle({ copy: generated.copy, snapshot, prediction: sourcePrediction, type, tone, model: generated.model, responseId: generated.responseId, usage: generated.usage });
   await writeJsonAtomic(articlePath, article);
   await recordUsage(root, article, generated, 'draft_created');
@@ -715,6 +800,7 @@ async function main() {
       ? { ...sourcePrediction, state: 'locked_late', receiptEligible: false, grading: null, recapRecordedAt: article.updatedAt }
       : { ...sourcePrediction, state: 'graded', grading: article.receipts, gradedAt: article.updatedAt });
   }
+  await removeCopyRecoveryCheckpoint(copyRecoveryPath);
   await reportGeneration({ changed: true, articleId: article.articleId, message: 'Draft generated for review.', usage: generated.usage });
   console.log(JSON.stringify({ articlePath: relativeArticlePath, articleId: article.articleId, model: generated.model, responseId: generated.responseId, usage: generated.usage }, null, 2));
 }

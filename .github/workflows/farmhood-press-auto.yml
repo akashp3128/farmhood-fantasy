@@ -232,15 +232,18 @@ jobs:
             exit 1
           fi
           git add content/
+          if [ -d .github/press-recovery ]; then
+            git add .github/press-recovery/
+          fi
           if ! git diff --cached --quiet; then
             git commit -m "Preserve paid ${EDITION} attempt for 2026 Week ${WEEK}"
-          elif git diff --quiet origin/main...HEAD -- content/; then
+          elif git diff --quiet origin/main...HEAD -- content/ .github/press-recovery/; then
             echo "A paid response was reported but no recovery files were available." >&2
             exit 1
           fi
           git push origin "HEAD:${MARKER_BRANCH}"
           compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${MARKER_BRANCH}?expand=1"
-          if pr_url=$(gh pr create --draft --base main --head "$MARKER_BRANCH" --title "Farmhood Press recovery: ${EDITION} Week ${WEEK}" --body "A paid automatic generation attempt did not reach production. This reserved branch preserves the generated publication files and usage record so the response can be repaired without buying the same draft again." 2>/dev/null); then
+          if pr_url=$(gh pr create --draft --base main --head "$MARKER_BRANCH" --title "Farmhood Press recovery: ${EDITION} Week ${WEEK}" --body "A paid automatic generation attempt did not reach production. This reserved branch preserves the non-public structured-copy checkpoint, generated fact files, and usage record so the response can be repaired without buying the same draft again. Do not merge this recovery pull request as-is: repair and validate the article first, then remove the .github/press-recovery checkpoint." 2>/dev/null); then
             echo "- Recovery review: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "- Recovery branch: ${compare_url}" >> "$GITHUB_STEP_SUMMARY"
@@ -252,8 +255,10 @@ jobs:
         with:
           name: farmhood-press-auto-recovery-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            .github/press-recovery/
             content/articles/
             content/predictions/
             content/snapshots/
             content/usage/ledger.json
+          include-hidden-files: true
           retention-days: 30

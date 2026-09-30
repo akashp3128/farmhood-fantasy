@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
+import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
-import { editionBudget, mergeArticle, promptInstructions } from './generate.mjs';
+import {
+  editionBudget,
+  mergeArticle,
+  promptInstructions,
+  removeCopyRecoveryCheckpoint,
+  validateArticleCopyRecoverably
+} from './generate.mjs';
 
 const copy = {
   title: 'Weekend Outlook after Thursday',
@@ -129,4 +138,60 @@ test('per-edition cost policy can be lowered but never raised by a repository va
   });
   assert.equal(editionBudget('recap', '0.50').maxEstimatedCostUsd, 0.07);
   assert.equal(editionBudget('preview').maxOutputTokens, 2600);
+});
+
+test('checkpoints paid structured copy before semantic rejection without creating an article', async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'farmhood-press-recovery-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const recoveryPath = path.join(directory, '.github', 'press-recovery', '2026-week-03-late-preview.json');
+  const rejectedCopy = structuredClone(copy);
+  rejectedCopy.matchups[0].factIds = ['invented:fact'];
+
+  await assert.rejects(
+    validateArticleCopyRecoverably({
+      copy: rejectedCopy,
+      snapshot: snapshot(),
+      prediction: latePrediction,
+      type: 'late-preview',
+      lateForecast: true,
+      recoveryPath,
+      recoveryMetadata: {
+        articleId: '2026-week-03-late-preview',
+        responseId: 'resp_paid_test',
+        model: 'test-model'
+      }
+    }),
+    /Unknown fact ID/
+  );
+
+  const checkpoint = JSON.parse(await readFile(recoveryPath, 'utf8'));
+  assert.equal(checkpoint.publicationStatus, 'not_published');
+  assert.equal(checkpoint.semanticValidation.status, 'rejected');
+  assert.match(checkpoint.semanticValidation.error, /Unknown fact ID/);
+  assert.deepEqual(checkpoint.structuredCopy, rejectedCopy);
+  await assert.rejects(access(path.join(directory, 'content', 'articles', '2026', 'week-03-late-preview.json')), { code: 'ENOENT' });
+});
+
+test('keeps validated copy recoverable until the caller finishes the draft, then removes it', async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'farmhood-press-recovery-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const recoveryPath = path.join(directory, '.github', 'press-recovery', '2026-week-03-late-preview.json');
+
+  const accepted = await validateArticleCopyRecoverably({
+    copy: structuredClone(copy),
+    snapshot: snapshot(),
+    prediction: latePrediction,
+    type: 'late-preview',
+    lateForecast: true,
+    recoveryPath,
+    recoveryMetadata: { articleId: '2026-week-03-late-preview' }
+  });
+  assert.equal(accepted.title, copy.title);
+  const checkpoint = JSON.parse(await readFile(recoveryPath, 'utf8'));
+  assert.equal(checkpoint.publicationStatus, 'not_published');
+  assert.equal(checkpoint.semanticValidation.status, 'passed');
+
+  await removeCopyRecoveryCheckpoint(recoveryPath);
+  await assert.rejects(access(recoveryPath), { code: 'ENOENT' });
+  await removeCopyRecoveryCheckpoint(recoveryPath);
 });

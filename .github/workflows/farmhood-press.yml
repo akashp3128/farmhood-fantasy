@@ -257,5 +257,8 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: farmhood-press-usage-${{ github.run_id }}-${{ github.run_attempt }}
-          path: content/usage/ledger.json
+          path: |
+            .github/press-recovery/
+            content/usage/ledger.json
+          include-hidden-files: true
           retention-days: 30
