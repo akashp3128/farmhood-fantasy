@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-04-waiver-recap",
-  "updatedAt": "2026-09-30T22:56:36.313Z",
+  "featuredArticleId": "2026-week-04-late-preview",
+  "updatedAt": "2026-10-02T19:07:51.613Z",
   "articles": [
+    {
+      "articleId": "2026-week-04-late-preview",
+      "path": "content/articles/2026/week-04-late-preview.json",
+      "type": "week_late_preview",
+      "edition": "Weekend Outlook",
+      "season": 2026,
+      "week": 4,
+      "status": "published",
+      "title": "Week 4 Weekend Outlook: Thursday Put Some Points on the Board, Not Much Peace",
+      "dek": "Known Thursday scoring has maco71, Siccboi and sidjunlee ahead early; the rest of Farmhood gets a full weekend to make the projections look smart or deeply embarrassing.",
+      "publishedAt": "2026-10-02T19:07:51.613Z",
+      "dataAsOf": "2026-10-02T19:07:51.613Z",
+      "storylines": [
+        "Thursday produced three leads, not three verdicts",
+        "Lineup maintenance has entered the chat",
+        "The title defense gets a razor-thin Week 4 test"
+      ],
+      "tags": [
+        "Weekend Outlook",
+        "Week 4",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-04-waiver-recap",
       "path": "content/articles/2026/week-04-waiver-recap.json",
