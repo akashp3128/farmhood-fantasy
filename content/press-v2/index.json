@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "farmhood_press_v2_shadow_index",
+  "shadowOnly": true,
+  "featuredArticleId": "2026-week-03-recap-v2-layout-preview",
+  "articles": [
+    {
+      "articleId": "2026-week-03-recap-v2-layout-preview",
+      "status": "shadow_preview",
+      "season": 2026,
+      "week": 3,
+      "edition": "recap",
+      "title": "Press V2 Layout Preview: Week 3 From Rout to Reversal",
+      "dek": "A review-only demonstration of the long-form story hierarchy, verified gamebook, and source rail using the already-published Week 3 record.",
+      "generatedAt": "2026-10-04T15:00:00.000Z",
+      "publishedAt": "2026-10-04T15:00:00.000Z",
+      "dataAsOf": "2026-09-29T19:17:52.706Z",
+      "storylines": [
+        "maco71 turns Thursday’s opening into the week’s defining rout",
+        "Archibaldo finds four and a half points of separation",
+        "cuch owns the number at the top of the page"
+      ],
+      "path": "content/press-v2/fixtures/week-03-layout-preview.json"
+    }
+  ]
+}

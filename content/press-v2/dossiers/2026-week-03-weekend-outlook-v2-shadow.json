@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "kind": "farmhood_press_v2_dry_run_dossier",
+  "shadowOnly": true,
+  "articleId": "2026-week-03-weekend-outlook-v2-shadow",
+  "generatedAt": "2026-10-05T01:13:33.798Z",
+  "league": {
+    "leagueId": "1377086848295260160",
+    "name": "Farmhood Fantasy",
+    "season": 2026,
+    "week": 3,
+    "phase": "live",
+    "capturedAt": "2026-09-26T06:58:34.366Z",
+    "externalIds": {
+      "sleeper": "1377086848295260160"
+    }
+  },
+  "reportingSummary": {
+    "managerCount": 12,
+    "activeManagerCount": 12,
+    "playerCount": 120,
+    "matchupCount": 6,
+    "completedSeasonWeeks": 2,
+    "factCount": 306
+  },
+  "assignment": {
+    "thesis": "Matchup 2 has the week's smallest live margin",
+    "main": {
+      "angleKey": "closest-live-margin:manager:450705025862201344+manager:79220990290575360",
+      "type": "closest-live-margin",
+      "scope": "matchup:2",
+      "headlineHint": "Matchup 2 has the week's smallest live margin",
+      "score": 91.5,
+      "primaryFactId": "fact:2026:w3:closest-game:7dec908006c8"
+    },
+    "supporting": [
+      {
+        "angleKey": "current-scoring-leader:manager:450905805542125568",
+        "type": "current-scoring-leader",
+        "scope": "manager:450905805542125568",
+        "headlineHint": "maco71 leads the live scoring board",
+        "score": 84,
+        "primaryFactId": "fact:2026:w3:weekly-high-score:303b776c6495"
+      },
+      {
+        "angleKey": "largest-live-margin:manager:450905805542125568+manager:450908261617496064",
+        "type": "largest-live-margin",
+        "scope": "matchup:1",
+        "headlineHint": "Matchup 1 has the week's largest live margin",
+        "score": 75.4,
+        "primaryFactId": "fact:2026:w3:largest-margin:58c74c52ef07"
+      }
+    ],
+    "notebook": [
+      {
+        "angleKey": "availability-watch:manager:450908261617496064+player:9493",
+        "type": "availability-watch",
+        "scope": "matchup:1",
+        "headlineHint": "Puka Nacua's listed availability belongs on the desk",
+        "score": 74,
+        "primaryFactId": "fact:2026:w3:availability:9493:7d6e556c5e1b"
+      },
+      {
+        "angleKey": "weekend-outlook-edge:manager:87253894098731008+manager:89787120084205568",
+        "type": "weekend-outlook-edge",
+        "scope": "matchup:5",
+        "headlineHint": "turi70 and akaaashh anchor the post-Thursday outlook",
+        "score": 63.34,
+        "primaryFactId": "fact:2026:w3:m5:outlook-edge:deb2aca89e03"
+      },
+      {
+        "angleKey": "weekend-outlook-edge:manager:464552386170449920+manager:92288423205158912",
+        "type": "weekend-outlook-edge",
+        "scope": "matchup:6",
+        "headlineHint": "cuch and vpitello34 anchor the post-Thursday outlook",
+        "score": 62.28,
+        "primaryFactId": "fact:2026:w3:m6:outlook-edge:901ae39ba5ff"
+      },
+      {
+        "angleKey": "availability-watch:manager:450705025862201344+player:7525",
+        "type": "availability-watch",
+        "scope": "matchup:2",
+        "headlineHint": "DeVonta Smith's listed availability belongs on the desk",
+        "score": 62,
+        "primaryFactId": "fact:2026:w3:availability:7525:45114862aa18"
+      },
+      {
+        "angleKey": "availability-watch:manager:450908261617496064+player:9225",
+        "type": "availability-watch",
+        "scope": "matchup:1",
+        "headlineHint": "Tank Bigsby's listed availability belongs on the desk",
+        "score": 62,
+        "primaryFactId": "fact:2026:w3:availability:9225:9835c181b922"
+      },
+      {
+        "angleKey": "availability-watch:manager:463423832728793088+player:8228",
+        "type": "availability-watch",
+        "scope": "matchup:4",
+        "headlineHint": "Jaylen Warren's listed availability belongs on the desk",
+        "score": 62,
+        "primaryFactId": "fact:2026:w3:availability:8228:7abedac2704c"
+      }
+    ],
+    "rankedAngleCount": 22
+  },
+  "selectedFactCount": 118,
+  "selectedFactDigest": "1c2dcd4e5f146cc1",
+  "researchSubjects": [
+    {
+      "key": "player:7525",
+      "label": "DeVonta Smith",
+      "type": "player",
+      "nflTeam": "PHI",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:8228",
+      "label": "Jaylen Warren",
+      "type": "player",
+      "nflTeam": "PIT",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:9493",
+      "label": "Puka Nacua",
+      "type": "player",
+      "nflTeam": "LAR",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:9225",
+      "label": "Tank Bigsby",
+      "type": "player",
+      "nflTeam": "PHI",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:4983",
+      "label": "DJ Moore",
+      "type": "player",
+      "nflTeam": "BUF",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:9509",
+      "label": "Bijan Robinson",
+      "type": "player",
+      "nflTeam": "ATL",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:8167",
+      "label": "Christian Watson",
+      "type": "player",
+      "nflTeam": "GB",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:8112",
+      "label": "Drake London",
+      "type": "player",
+      "nflTeam": "ATL",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:11581",
+      "label": "MarShawn Lloyd",
+      "type": "player",
+      "nflTeam": "GB",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:12501",
+      "label": "Matthew Golden",
+      "type": "player",
+      "nflTeam": "GB",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:13545",
+      "label": "Trey Smack",
+      "type": "player",
+      "nflTeam": "GB",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    }
+  ],
+  "researchPolicy": {
+    "unrestrictedExternalWeb": true,
+    "maximumSearchCalls": 3,
+    "hardResearchCostUsd": 0.04
+  },
+  "writerPolicy": {
+    "model": "gpt-5.6-terra",
+    "receivesTools": false,
+    "maximumOutputTokens": 3600,
+    "hardWriterCostUsd": 0.055,
+    "requestCharacters": 39524,
+    "roughLocalTokenEstimate": 9881,
+    "citationAliases": true,
+    "reusableSchemaDefinitions": true
+  },
+  "hardTotalCostUsd": 0.09,
+  "userApprovedMaximumUsd": 0.1,
+  "productionMutationAllowed": false,
+  "managerSubjectKeys": [
+    "manager:450705025862201344",
+    "manager:79220990290575360",
+    "manager:450905805542125568",
+    "manager:450908261617496064",
+    "manager:87253894098731008",
+    "manager:89787120084205568",
+    "manager:464552386170449920",
+    "manager:92288423205158912",
+    "manager:463423832728793088"
+  ]
+}

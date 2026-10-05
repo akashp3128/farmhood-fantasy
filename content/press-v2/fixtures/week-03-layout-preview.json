@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "kind": "farmhood_press_v2_shadow_edition",
+  "shadowOnly": true,
+  "publicationStatus": "format_preview",
+  "articleId": "2026-week-03-recap-v2-layout-preview",
+  "season": 2026,
+  "week": 3,
+  "editorialEdition": "recap",
+  "title": "Press V2 Layout Preview: Week 3 From Rout to Reversal",
+  "dek": "A review-only demonstration of the long-form story hierarchy, verified gamebook, and source rail using the already-published Week 3 record.",
+  "byline": "Farmhood Press Sports Desk",
+  "generatedAt": "2026-10-04T15:00:00.000Z",
+  "dataAsOf": "2026-09-29T19:17:52.706Z",
+  "article": {
+    "contractVersion": 2,
+    "edition": "recap",
+    "title": "Press V2 Layout Preview: Week 3 From Rout to Reversal",
+    "dek": "A review-only demonstration of the long-form story hierarchy, verified gamebook, and source rail using the already-published Week 3 record.",
+    "byline": "Farmhood Press Sports Desk",
+    "thesis": {
+      "text": "Week 3 stretched from maco71’s 73.42-point rout to Archibaldo’s 4.52-point escape, while cuch claimed the scoring headline at 154.48.",
+      "factIds": ["layout:w3:summary"]
+    },
+    "lead": [
+      {
+        "text": "The scoreboard offered three different kinds of consequence. maco71 produced the week’s widest margin, Archibaldo delivered its closest finish, and cuch raised the highest total of the six winners.",
+        "factIds": ["layout:w3:summary"]
+      },
+      {
+        "text": "This page is a format preview built from the frozen, already-published Week 3 results. It demonstrates the V2 reading experience without making an OpenAI request or claiming to be a newly approved article.",
+        "factIds": ["layout:w3:disclosure"]
+      }
+    ],
+    "mainEvent": {
+      "headline": "maco71 Turns Thursday’s Opening Into the Week’s Defining Rout",
+      "subjects": ["maco71", "pgorny"],
+      "matchupIds": [1],
+      "body": [
+        {
+          "text": "maco71 defeated pgorny 135.70–62.28, a 73.42-point margin that stood as the largest gap of Week 3. Bijan Robinson led the winning lineup with 34.3 points.",
+          "factIds": ["layout:w3:m1"]
+        },
+        {
+          "text": "The result gave the V2 front page a true main event: not merely the first matchup listed, but the game whose scale most clearly changed how the week should be remembered.",
+          "factIds": ["layout:w3:m1"]
+        }
+      ]
+    },
+    "supportingStories": [
+      {
+        "headline": "Archibaldo Finds Four and a Half Points of Separation",
+        "subjects": ["Archibaldo", "Blumbo"],
+        "matchupIds": [2],
+        "body": [
+          {
+            "text": "Archibaldo beat Blumbo 108.54–104.02 in the week’s tightest final. The 4.52-point margin carried more tension than the other five scoreboards combined could manufacture.",
+            "factIds": ["layout:w3:m2"]
+          },
+          {
+            "text": "The frozen Friday outlook had leaned toward Blumbo after Thursday, but it was always a post-kickoff outlook rather than an original prediction receipt.",
+            "factIds": ["layout:w3:m2"]
+          }
+        ]
+      },
+      {
+        "headline": "cuch Owns the Number at the Top of the Page",
+        "subjects": ["cuch", "vpitello34"],
+        "matchupIds": [6],
+        "body": [
+          {
+            "text": "cuch posted 154.48, the highest score of Week 3, and defeated vpitello34 129.36. Jaxon Smith-Njigba supplied 30.36 points for the winning lineup.",
+            "factIds": ["layout:w3:m6"]
+          },
+          {
+            "text": "vpitello34 still reached 129.36 behind Jahmyr Gibbs’s 37.9, turning a strong losing score into an essential part of the week’s scoring story.",
+            "factIds": ["layout:w3:m6"]
+          }
+        ]
+      }
+    ],
+    "deskSections": [
+      {
+        "kind": "turning_points",
+        "headline": "Turning Points",
+        "subjects": ["maco71", "Archibaldo"],
+        "matchupIds": [1, 2],
+        "body": [{"text": "The week’s extremes arrived in Matchups 1 and 2: one result was decided by 73.42, the other by 4.52.", "factIds": ["layout:w3:m1", "layout:w3:m2"]}]
+      },
+      {
+        "kind": "standings_fallout",
+        "headline": "Standings Fallout",
+        "subjects": ["cuch", "maco71"],
+        "matchupIds": [1, 6],
+        "body": [{"text": "cuch and maco71 left Week 3 with the two loudest winning totals, giving the next power-ranking update more than one credible lead candidate.", "factIds": ["layout:w3:m1", "layout:w3:m6"]}]
+      },
+      {
+        "kind": "receipt_desk",
+        "headline": "Receipt Desk",
+        "subjects": ["Archibaldo", "Blumbo"],
+        "matchupIds": [2],
+        "body": [{"text": "Week 3 had no original pregame Preview, so the Friday lean remains preserved for context and excluded from original-prediction grading.", "factIds": ["layout:w3:m2"]}]
+      },
+      {
+        "kind": "carries_forward",
+        "headline": "What Carries Forward",
+        "subjects": ["cuch", "Archibaldo", "maco71"],
+        "matchupIds": [1, 2, 6],
+        "body": [{"text": "The next edition inherits three live threads: cuch’s scoring ceiling, maco71’s week-winning margin, and Archibaldo’s ability to turn a narrow forecast against its favorite.", "factIds": ["layout:w3:summary"]}]
+      }
+    ],
+    "aroundLeague": [
+      {
+        "matchupId": 3,
+        "headline": "jwislek_20 Makes a Close Outlook Look Distant",
+        "subjects": ["jwislek_20", "martinch94"],
+        "body": "jwislek_20 defeated martinch94 131.88–86.94, turning a narrow Friday outlook into a 44.94-point final margin.",
+        "factIds": ["layout:w3:m3"]
+      },
+      {
+        "matchupId": 4,
+        "headline": "Siccboi Protects the Thursday Head Start",
+        "subjects": ["Siccboi", "sidjunlee"],
+        "body": "Siccboi carried the early advantage into a 134.64–103.14 win over sidjunlee, with Drake London’s 23.9-point opener setting the direction.",
+        "factIds": ["layout:w3:m4"]
+      },
+      {
+        "matchupId": 5,
+        "headline": "turi70 Converts the Early Edge",
+        "subjects": ["akaaashh", "turi70"],
+        "body": "turi70 beat akaaashh 115.94–80.76 after Christian Watson supplied 19.1 on Thursday.",
+        "factIds": ["layout:w3:m5"]
+      }
+    ],
+    "pullQuote": {
+      "text": "The V2 desk does not give every game equal space; it gives every game a verified place in the record.",
+      "factIds": ["layout:w3:disclosure"]
+    },
+    "tags": ["Week 3", "Layout Preview", "Shadow Newsroom"]
+  },
+  "gamebook": {
+    "phase": "final",
+    "matchups": [
+      {"matchupId": 1, "teams": [{"manager": "maco71", "score": 135.7, "projection": 115.48, "projectionKind": "late-outlook"}, {"manager": "pgorny", "score": 62.28, "projection": null, "projectionKind": "late-outlook"}], "resultLeader": "maco71", "resultClaim": "maco71 defeated pgorny 135.70–62.28."},
+      {"matchupId": 2, "teams": [{"manager": "Blumbo", "score": 104.02, "projection": 121.5, "projectionKind": "late-outlook"}, {"manager": "Archibaldo", "score": 108.54, "projection": 110.7, "projectionKind": "late-outlook"}], "resultLeader": "Archibaldo", "resultClaim": "Archibaldo defeated Blumbo 108.54–104.02."},
+      {"matchupId": 3, "teams": [{"manager": "jwislek_20", "score": 131.88, "projection": 108.69, "projectionKind": "late-outlook"}, {"manager": "martinch94", "score": 86.94, "projection": 103.67, "projectionKind": "late-outlook"}], "resultLeader": "jwislek_20", "resultClaim": "jwislek_20 defeated martinch94 131.88–86.94."},
+      {"matchupId": 4, "teams": [{"manager": "Siccboi", "score": 134.64, "projection": 133.33, "projectionKind": "late-outlook"}, {"manager": "sidjunlee", "score": 103.14, "projection": 123.37, "projectionKind": "late-outlook"}], "resultLeader": "Siccboi", "resultClaim": "Siccboi defeated sidjunlee 134.64–103.14."},
+      {"matchupId": 5, "teams": [{"manager": "akaaashh", "score": 80.76, "projection": 114.76, "projectionKind": "late-outlook"}, {"manager": "turi70", "score": 115.94, "projection": 119.42, "projectionKind": "late-outlook"}], "resultLeader": "turi70", "resultClaim": "turi70 defeated akaaashh 115.94–80.76."},
+      {"matchupId": 6, "teams": [{"manager": "cuch", "score": 154.48, "projection": 124.33, "projectionKind": "late-outlook"}, {"manager": "vpitello34", "score": 129.36, "projection": 114.61, "projectionKind": "late-outlook"}], "resultLeader": "cuch", "resultClaim": "cuch defeated vpitello34 154.48–129.36."}
+    ]
+  },
+  "evidence": {
+    "facts": [],
+    "citedFactIds": [],
+    "sourceLedger": [{"contentHash": "farmhood-2026-week-03-final-c9150d8846b0d675"}],
+    "acceptedWebClaims": [],
+    "webSources": []
+  },
+  "quality": {
+    "claimCheck": null,
+    "copyDesk": null,
+    "rubric": {"pass": false, "score": null}
+  },
+  "generation": {
+    "model": "none-layout-preview",
+    "estimatedCostUsd": 0,
+    "totalEstimatedCostUsd": 0,
+    "hardCostLimitUsd": 0.09,
+    "userApprovedMaximumUsd": 0.1,
+    "usage": null,
+    "responseId": null,
+    "pricingAsOf": "2026-10-04"
+  },
+  "review": {
+    "productionFilesMutated": false,
+    "eligibleForAutomaticPublication": false,
+    "requiredNextStep": "Run the protected shadow workflow to create an AI-written review artifact"
+  }
+}

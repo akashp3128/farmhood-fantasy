@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "kind": "farmhood_press_v2_dry_run_dossier",
+  "shadowOnly": true,
+  "articleId": "2026-week-03-recap-v2-shadow",
+  "generatedAt": "2026-10-05T01:13:33.590Z",
+  "league": {
+    "leagueId": "1377086848295260160",
+    "name": "Farmhood Fantasy",
+    "season": 2026,
+    "week": 3,
+    "phase": "final",
+    "capturedAt": "2026-09-29T19:17:52.706Z",
+    "externalIds": {
+      "sleeper": "1377086848295260160"
+    }
+  },
+  "reportingSummary": {
+    "managerCount": 12,
+    "activeManagerCount": 12,
+    "playerCount": 120,
+    "matchupCount": 6,
+    "completedSeasonWeeks": 3,
+    "factCount": 546
+  },
+  "assignment": {
+    "thesis": "Matchup 2 supplied the week's tightest finish",
+    "main": {
+      "angleKey": "close-finish:manager:450705025862201344+manager:79220990290575360",
+      "type": "close-finish",
+      "scope": "matchup:2",
+      "headlineHint": "Matchup 2 supplied the week's tightest finish",
+      "score": 88.35,
+      "primaryFactId": "fact:2026:w3:closest-game:241106a868e2"
+    },
+    "supporting": [
+      {
+        "angleKey": "weekly-scoring-leader:manager:92288423205158912",
+        "type": "weekly-scoring-leader",
+        "scope": "manager:92288423205158912",
+        "headlineHint": "cuch owns the week's scoring headline",
+        "score": 88,
+        "primaryFactId": "fact:2026:w3:weekly-high-score:309cbf9ec94f"
+      },
+      {
+        "angleKey": "blowout:manager:450905805542125568+manager:450908261617496064",
+        "type": "blowout",
+        "scope": "matchup:1",
+        "headlineHint": "Matchup 1 became the week's defining rout",
+        "score": 86,
+        "primaryFactId": "fact:2026:w3:largest-margin:88ca2c6360fa"
+      }
+    ],
+    "notebook": [
+      {
+        "angleKey": "losing-streak:manager:450908261617496064",
+        "type": "losing-streak",
+        "scope": "manager:450908261617496064",
+        "headlineHint": "pgorny's 3-game run shapes the season",
+        "score": 64,
+        "primaryFactId": "fact:2026:through-w3:streak:450908261617496064:62c409944909"
+      },
+      {
+        "angleKey": "losing-streak:manager:463423832728793088",
+        "type": "losing-streak",
+        "scope": "manager:463423832728793088",
+        "headlineHint": "sidjunlee's 3-game run shapes the season",
+        "score": 64,
+        "primaryFactId": "fact:2026:through-w3:streak:463423832728793088:05098bd77d64"
+      },
+      {
+        "angleKey": "winning-streak:manager:92288423205158912",
+        "type": "winning-streak",
+        "scope": "manager:92288423205158912",
+        "headlineHint": "cuch's 3-game run shapes the season",
+        "score": 64,
+        "primaryFactId": "fact:2026:through-w3:streak:92288423205158912:1e71078554be"
+      },
+      {
+        "angleKey": "player-breakout:manager:464552386170449920+player:9221",
+        "type": "player-breakout",
+        "scope": "matchup:6",
+        "headlineHint": "Jahmyr Gibbs produced a major projection swing",
+        "score": 60.75,
+        "primaryFactId": "fact:2026:w3:m6:projection-delta:464552386170449920:9221:c48336d52cdb"
+      },
+      {
+        "angleKey": "player-breakout:manager:92288423205158912+player:4217",
+        "type": "player-breakout",
+        "scope": "matchup:6",
+        "headlineHint": "George Kittle produced a major projection swing",
+        "score": 58.18,
+        "primaryFactId": "fact:2026:w3:m6:projection-delta:92288423205158912:4217:13cb9199d2c6"
+      },
+      {
+        "angleKey": "losing-streak:manager:464552386170449920",
+        "type": "losing-streak",
+        "scope": "manager:464552386170449920",
+        "headlineHint": "vpitello34's 2-game run shapes the season",
+        "score": 58,
+        "primaryFactId": "fact:2026:through-w3:streak:464552386170449920:10984ff1d3d6"
+      }
+    ],
+    "rankedAngleCount": 44
+  },
+  "selectedFactCount": 118,
+  "selectedFactDigest": "c5527284a5121a76",
+  "researchSubjects": [
+    {
+      "key": "player:9509",
+      "label": "Bijan Robinson",
+      "type": "player",
+      "nflTeam": "ATL",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:11604",
+      "label": "Brock Bowers",
+      "type": "player",
+      "nflTeam": "LV",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:8112",
+      "label": "Drake London",
+      "type": "player",
+      "nflTeam": "ATL",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:9221",
+      "label": "Jahmyr Gibbs",
+      "type": "player",
+      "nflTeam": "DET",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:7002",
+      "label": "Juwan Johnson",
+      "type": "player",
+      "nflTeam": "NO",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:10232",
+      "label": "Michael Wilson",
+      "type": "player",
+      "nflTeam": "ARI",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:4034",
+      "label": "Christian McCaffrey",
+      "type": "player",
+      "nflTeam": "SF",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:8167",
+      "label": "Christian Watson",
+      "type": "player",
+      "nflTeam": "GB",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:3198",
+      "label": "Derrick Henry",
+      "type": "player",
+      "nflTeam": "BAL",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:8146",
+      "label": "Garrett Wilson",
+      "type": "player",
+      "nflTeam": "NYJ",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:9488",
+      "label": "Jaxon Smith-Njigba",
+      "type": "player",
+      "nflTeam": "SEA",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:4881",
+      "label": "Lamar Jackson",
+      "type": "player",
+      "nflTeam": "BAL",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:11564",
+      "label": "Drake Maye",
+      "type": "player",
+      "nflTeam": "NE",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:4217",
+      "label": "George Kittle",
+      "type": "player",
+      "nflTeam": "SF",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:12506",
+      "label": "Harold Fannin",
+      "type": "player",
+      "nflTeam": "CLE",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:JAX",
+      "label": "Jacksonville Jaguars",
+      "type": "player",
+      "nflTeam": "JAX",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:6794",
+      "label": "Justin Jefferson",
+      "type": "player",
+      "nflTeam": "MIN",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:PHI",
+      "label": "Philadelphia Eagles",
+      "type": "player",
+      "nflTeam": "PHI",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    }
+  ],
+  "researchPolicy": {
+    "unrestrictedExternalWeb": true,
+    "maximumSearchCalls": 3,
+    "hardResearchCostUsd": 0.04
+  },
+  "writerPolicy": {
+    "model": "gpt-5.6-terra",
+    "receivesTools": false,
+    "maximumOutputTokens": 3600,
+    "hardWriterCostUsd": 0.055,
+    "requestCharacters": 39455,
+    "roughLocalTokenEstimate": 9864,
+    "citationAliases": true,
+    "reusableSchemaDefinitions": true
+  },
+  "hardTotalCostUsd": 0.09,
+  "userApprovedMaximumUsd": 0.1,
+  "productionMutationAllowed": false,
+  "managerSubjectKeys": [
+    "manager:450705025862201344",
+    "manager:79220990290575360",
+    "manager:92288423205158912",
+    "manager:450905805542125568",
+    "manager:450908261617496064",
+    "manager:463423832728793088",
+    "manager:464552386170449920"
+  ]
+}
