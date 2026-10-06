@@ -134,21 +134,33 @@ function index(overrides = {}) {
   return buildAllowedClaimIndex({ facts, identities, ...overrides });
 }
 
+function seasonIndex() {
+  const extra = [
+    { factId: 'season:alpha:record', kind: 'season_record', subject: identities[1], related: [], value: { wins: 3, losses: 0, ties: 0 }, claim: 'Alpha_One was 3-0 through Week 3.', tags: ['current-season'] },
+    { factId: 'season:beta:record', kind: 'season_record', subject: identities[2], related: [], value: { wins: 2, losses: 1, ties: 0 }, claim: 'BetaTwo was 2-1 through Week 3.', tags: ['current-season'] },
+    { factId: 'season:alpha:points', kind: 'season_points_for', subject: identities[1], related: [], value: 300, claim: 'Alpha_One scored 300 points through Week 3.', tags: ['current-season'] },
+    { factId: 'season:beta:points', kind: 'season_points_for', subject: identities[2], related: [], value: 240, claim: 'BetaTwo scored 240 points through Week 3.', tags: ['current-season'] },
+    { factId: 'season:beta:all-play', kind: 'season_all_play_record', subject: identities[2], related: [], value: { wins: 17, losses: 16, ties: 0 }, claim: 'BetaTwo had a 17-16 all-play record through Week 3.', tags: ['current-season'] }
+  ];
+  return index({ facts: [...facts, ...extra] });
+}
+
 test('narrative traversal covers prose plus title, dek, and section headlines', () => {
   const sample = {
     title: 'Grounded title',
     dek: 'Grounded dek',
     thesis: { text: 'One.', factIds: ['a'] },
     lead: [{ text: 'Two.', factIds: ['b'] }],
+    seasonStoryline: { headline: 'Season', thesis: { text: 'Season thesis.', factIds: ['s1'] }, body: [{ text: 'Season body.', factIds: ['s2'] }], whyNow: { text: 'Current relevance.', factIds: ['s3'] }, carryForward: { text: 'Next test.', factIds: ['s4'] } },
     mainEvent: { headline: 'Feature', body: [{ text: 'Three.', factIds: ['c'] }] },
     supportingStories: [{ body: [{ text: 'Four.', factIds: ['d'] }] }],
     deskSections: [{ body: [{ text: 'Five.', factIds: ['e'] }] }],
-    aroundLeague: [{ body: 'Six.', factIds: ['f'] }],
+    aroundLeague: [{ headline: 'Notebook', body: [{ focus: 'what_happened', text: 'Six.', factIds: ['f'] }] }],
     pullQuote: { text: 'Seven.', factIds: ['g'] }
   };
   assert.deepEqual(articleNarrativeBlocks(sample).map((block) => block.path), [
-    '$.title', '$.dek', '$.thesis', '$.lead[0]', '$.mainEvent.headline', '$.mainEvent.body[0]',
-    '$.supportingStories[0].body[0]', '$.deskSections[0].body[0]', '$.aroundLeague[0].body', '$.pullQuote'
+    '$.title', '$.dek', '$.thesis', '$.lead[0]', '$.seasonStoryline.headline', '$.seasonStoryline.thesis', '$.seasonStoryline.body[0]', '$.seasonStoryline.whyNow', '$.seasonStoryline.carryForward', '$.mainEvent.headline', '$.mainEvent.body[0]',
+    '$.supportingStories[0].body[0]', '$.deskSections[0].body[0]', '$.aroundLeague[0].headline', '$.aroundLeague[0].body[0]', '$.pullQuote'
   ]);
 });
 
@@ -342,4 +354,34 @@ test('assertion API throws one actionable aggregate error', () => {
     () => assertArticleClaims(article('Player One scored 99 points for BetaTwo.', ['fact:w3:player-one']), index()),
     /claim checker rejected[\s\S]*claim\.uncited_number[\s\S]*relationship\.roster_mismatch/
   );
+});
+
+test('accepts ordinary possessives and known-name neighbors without accepting misspelled names', () => {
+  for (const text of ["Player One’s 30 points came as Alpha_One’s starter.", "Alpha_One is the manager for Player One, who scored 30 points."]) {
+    const report = validateArticleClaims(article(text, ['fact:w3:player-one']), index());
+    assert.equal(report.pass, true, JSON.stringify(report.errors));
+  }
+  const misspelled = validateArticleClaims(article('Alpha_0ne received 30 points from Player One.', ['fact:w3:player-one']), index());
+  assert.ok(misspelled.errors.some((finding) => finding.code.startsWith('entity.')));
+});
+
+test('season records are exact owner-backed atoms rather than matchup scorelines', () => {
+  const citations = ['season:alpha:record', 'season:beta:record'];
+  const valid = validateArticleClaims(article('Alpha_One was 3-0 and BetaTwo was 2-1 through Week 3.', citations), seasonIndex());
+  assert.equal(valid.pass, true, JSON.stringify(valid.errors));
+  const reversed = validateArticleClaims(article('Alpha_One was 2-1 and BetaTwo was 3-0 through Week 3.', citations), seasonIndex());
+  assert.ok(reversed.errors.some((finding) => finding.code === 'relationship.season_record_mismatch'));
+  const allPlay = validateArticleClaims(article('BetaTwo had a 17-16 all-play record through Week 3.', ['season:beta:all-play']), seasonIndex());
+  assert.equal(allPlay.pass, true, JSON.stringify(allPlay.errors));
+});
+
+test('season scoring comparisons preserve direction and never excuse an unsupported actual result', () => {
+  const citations = ['season:alpha:points', 'season:beta:points'];
+  const valid = validateArticleClaims(article('Alpha_One leads BetaTwo in season points, 300 versus 240.', citations), seasonIndex());
+  assert.equal(valid.pass, true, JSON.stringify(valid.errors));
+  const reversed = validateArticleClaims(article('BetaTwo leads Alpha_One in season points, 240 versus 300.', citations), seasonIndex());
+  assert.ok(reversed.errors.some((finding) => finding.code === 'relationship.season_comparison_mismatch'));
+  const inventedGame = validateArticleClaims(article('BetaTwo defeated Alpha_One 240-300 during the season.', citations), seasonIndex());
+  assert.ok(inventedGame.errors.some((finding) => finding.code === 'relationship.matchup_mismatch'));
+  assert.ok(inventedGame.errors.some((finding) => finding.code === 'relationship.result_missing'));
 });

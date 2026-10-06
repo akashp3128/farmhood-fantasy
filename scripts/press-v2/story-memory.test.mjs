@@ -63,3 +63,30 @@ test('rejects invalid arc status and duplicate article IDs', () => {
   duplicate.entries.push(structuredClone(duplicate.entries[0]));
   assert.throws(() => validateStoryMemory(duplicate), /duplicate article IDs/);
 });
+
+test('orders same-week legacy forecasts before the recap rather than by article ID', () => {
+  const entries = ['recap', 'weekend_outlook'].map((edition) => ({
+    articleId: `2026-w3-${edition}`, season: 2026, week: 3, edition, angles: [], cooldownPhrases: [], historyFactIds: [],
+    storyArcs: [{ id: 'season:2026:manager-race', status: edition === 'recap' ? 'resolved' : 'active', summary: 'The same race has a final status.', subjects: ['Siccboi', 'Blumbo'] }]
+  }));
+  const result = deriveEditorialMemory({ schemaVersion: STORY_MEMORY_VERSION, entries }, { season: 2026, week: 4 });
+  assert.equal(result.activeStoryArcs.some((arc) => arc.id === 'season:2026:manager-race'), false);
+});
+
+test('preserves capture chronology when an earlier forecast is backfilled after a resolved recap', () => {
+  const entries = [
+    { articleId: 'late-outlook', season: 2026, week: 3, edition: 'weekend_outlook', generatedAt: '2026-10-01T12:00:00Z', dataAsOf: '2026-09-25T14:00:00Z', angles: [], cooldownPhrases: [], historyFactIds: [], storyArcs: [{ id: 'race', status: 'active', summary: 'Earlier forecast.', subjects: ['Siccboi'] }] },
+    { articleId: 'earlier-recap', season: 2026, week: 3, edition: 'recap', generatedAt: '2026-09-29T14:00:00Z', dataAsOf: '2026-09-29T12:00:00Z', angles: [], cooldownPhrases: [], historyFactIds: [], storyArcs: [{ id: 'race', status: 'resolved', summary: 'Final result resolved the arc.', subjects: ['Siccboi'] }] }
+  ];
+  const result = deriveEditorialMemory({ schemaVersion: STORY_MEMORY_VERSION, entries }, { season: 2026, week: 4 });
+  assert.deepEqual(result.activeStoryArcs, []);
+  assert.throws(() => validateStoryMemory({ schemaVersion: STORY_MEMORY_VERSION, entries: [{ ...entries[0], generatedAt: 'bad-time' }] }), /valid timestamp/);
+});
+
+test('keeps canonical manager history available after the ordinary arc idle window', () => {
+  const canonical = { ...memory.entries[0], articleId: 'canon-2026-managers', edition: 'feature' };
+  const result = deriveEditorialMemory({ schemaVersion: STORY_MEMORY_VERSION, entries: [canonical] }, { season: 2026, week: 12 });
+  assert.equal(result.activeStoryArcs.length, 1);
+  assert.equal(result.canonicalStoryArcs.length, 1);
+  assert.equal(result.canonicalStoryArcs[0].canonicalContext, true);
+});

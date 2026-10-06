@@ -265,11 +265,84 @@ function subjectOverlap(left, right) {
   return left.subjects.filter((subject) => right.subjects.includes(subject)).length;
 }
 
+/** A continuing manager beat, anchored in fresh standings evidence rather than last week's prose. */
+export function buildSeasonLead(packet, { edition, main, activeStoryArcs = [], excludedFactIds = [] } = {}) {
+  const excluded = new Set(excludedFactIds);
+  const facts = packet.facts.filter((fact) => fact.eligibleEditions.includes(edition) && !excluded.has(fact.factId));
+  const managers = packet.identities.filter((entity) => entity.type === 'manager');
+  const canonicalKeys = new Map(managers.flatMap((manager) => [[manager.key, manager.key], [manager.label, manager.key]]));
+  const active = activeStoryArcs.filter((arc) => arc.status === 'active')
+    .map((arc) => ({ ...arc, subjects: unique((arc.subjects || []).map((subject) => canonicalKeys.get(subject)).filter(Boolean)) }))
+    .filter((arc) => arc.subjects.length)
+    .sort((left, right) => (right.lastUpdatedWeek || 0) - (left.lastUpdatedWeek || 0) || compareText(left.id, right.id));
+  const standings = facts.filter((fact) => fact.kind === 'season_standing_rank')
+    .sort((left, right) => Number(left.value) - Number(right.value) || compareText(left.subject.key, right.subject.key));
+  const scoring = facts.filter((fact) => fact.kind === 'season_scoring_leader');
+  const currentManagers = unique((main?.subjects || []).filter((key) => canonicalKeys.has(key)));
+  const continuingArc = active.find((arc) => arc.id.startsWith('season:')) || active.find((arc) => arc.subjects.some((key) => currentManagers.includes(key)));
+  const subjects = unique([
+    ...subjectsFor(scoring[0] || standings[0] || facts.find((fact) => fact.subject.type === 'manager') || facts[0]).filter((key) => canonicalKeys.has(key)),
+    ...currentManagers,
+    ...(continuingArc?.subjects || []),
+    ...standings.map((fact) => fact.subject.key),
+    ...managers.map((manager) => manager.key)
+  ]).slice(0, 4);
+  invariant(subjects.length >= 2, 'The season lead requires at least two canonical managers.');
+  const hasSelectedManager = (fact) => subjectsFor(fact).some((key) => subjects.includes(key));
+  // Team-score/projection atoms name only their subject; the opposing manager is relationship metadata.
+  const scopedManagerKeys = (fact) => ['team_week_score', 'team_week_projection'].includes(fact.kind)
+    ? [fact.subject.key]
+    : subjectsFor(fact).filter((key) => canonicalKeys.has(key));
+  const onlySelectedManagers = (fact) => scopedManagerKeys(fact).every((key) => subjects.includes(key));
+  const relevant = facts.filter((fact) => hasSelectedManager(fact) && onlySelectedManagers(fact));
+  const primary = scoring.find(onlySelectedManagers) || standings.find((fact) => subjects.includes(fact.subject.key)) || relevant.find((fact) => fact.tags.includes('current-week'));
+  invariant(primary, 'The season lead has no current evidence.');
+  const score = (fact) => (fact.factId === primary.factId ? 1000 : 0)
+    + (fact.tags.includes('current-season') ? 100 : 0)
+    + (['season_record', 'season_standing_rank', 'season_scoring_rank', 'season_current_streak', 'season_points_for'].includes(fact.kind) ? 40 : 0)
+    + (['team_week_score', 'team_top_starter', 'matchup_result'].includes(fact.kind) ? 65 : 0)
+    + (['manager_championship_count', 'manager_canonical_lore'].includes(fact.kind) ? 70 : 0);
+  const selected = relevant.slice().sort((left, right) => score(right) - score(left) || compareText(left.semanticKey, right.semanticKey)).slice(0, 18);
+  const add = (fact) => { if (fact && !selected.some((row) => row.factId === fact.factId)) selected.push(fact); };
+  add(primary);
+  add(relevant.find((fact) => fact.kind === 'team_week_score'));
+  add(relevant.find((fact) => fact.tags.includes('history')));
+  for (const key of subjects) {
+    add(relevant.find((fact) => fact.kind === 'season_record' && fact.subject.key === key));
+    add(relevant.find((fact) => fact.kind === 'team_week_score' && fact.subject.key === key));
+  }
+  const labels = subjects.map((key) => managers.find((manager) => manager.key === key).label);
+  const standingsLeader = standings.find((fact) => subjects.includes(fact.subject.key));
+  const leaderRecord = relevant.find((fact) => fact.kind === 'season_record' && fact.subject.key === standingsLeader?.subject.key);
+  const leaderLabel = standingsLeader?.subject.label || primary.subject.label;
+  const recordHint = leaderRecord ? `${leaderRecord.value.wins}-${leaderRecord.value.losses}${leaderRecord.value.ties ? `-${leaderRecord.value.ties}` : ''}` : null;
+  const chasingLabels = labels.filter((label) => label !== leaderLabel);
+  const stableId = continuingArc?.id?.startsWith('season:') ? continuingArc.id : `season:${packet.league.season}:manager-race`;
+  return deepFreeze({
+    angleKey: stableId,
+    arcId: stableId,
+    type: 'manager-season-race',
+    scope: `season:${packet.league.season}`,
+    status: continuingArc ? 'active' : 'emerging',
+    subjects,
+    headlineHint: recordHint
+      ? `${leaderLabel}'s ${recordHint} start sets the standings standard; ${chasingLabels.join(', ')} shape the chase against the scoring table`
+      : `${leaderLabel} anchors an emerging race with ${chasingLabels.join(', ')}; the captured slate supplies the first observable test`,
+    primaryFactId: primary.factId,
+    factIds: selected.map((fact) => fact.factId),
+    evidence: selected.map((fact) => ({ factId: fact.factId, claim: fact.claim, state: fact.state, asOf: fact.asOf, category: evidenceCategory(fact) })),
+    previousArcIds: active.filter((arc) => arc.subjects.some((key) => subjects.includes(key))).map((arc) => arc.id),
+    priorSummary: continuingArc?.summary || null,
+    policy: 'Previous prose supplies continuity only. Every current claim needs this edition\'s cited facts; early-season arcs remain provisional.'
+  });
+}
+
 export function buildStoryAssignment(packet, {
   edition,
   recentAngleKeys = [],
   recentSubjectKeys = [],
   excludedFactIds = [],
+  activeStoryArcs = [],
   supportingCount = 2,
   notebookCount = 4
 } = {}) {
@@ -286,7 +359,8 @@ export function buildStoryAssignment(packet, {
   }
   const selectedKeys = new Set([main.angleKey, ...supporting.map((angle) => angle.angleKey)]);
   const notebook = ranked.filter((angle) => !selectedKeys.has(angle.angleKey)).slice(0, notebookCount);
-  const selected = [main, ...supporting, ...notebook];
+  const seasonLead = buildSeasonLead(packet, { edition, main, activeStoryArcs, excludedFactIds });
+  const selected = [main, ...supporting, ...notebook, seasonLead];
   const factIds = unique(selected.flatMap((angle) => angle.factIds));
   const factIndex = new Map(packet.facts.map((fact) => [fact.factId, fact]));
   factIds.forEach((factId) => invariant(factIndex.has(factId), `Assignment cites missing fact ${factId}.`));
@@ -302,6 +376,7 @@ export function buildStoryAssignment(packet, {
     dataAsOf: packet.league.capturedAt,
     thesis: main.headlineHint,
     main,
+    seasonLead,
     supporting,
     notebook,
     evidenceFactIds: factIds,

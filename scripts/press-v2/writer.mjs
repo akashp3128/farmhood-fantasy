@@ -37,7 +37,7 @@ function factPriority(fact, assigned) {
 }
 
 /** Selects a bounded evidence packet while preserving complete matchup coverage. */
-export function selectWriterFacts(packet, assignment, { maximumFacts = 118, prioritySubjectKeys = [], excludedFactIds = [] } = {}) {
+export function selectWriterFacts(packet, assignment, { maximumFacts = 160, prioritySubjectKeys = [], excludedFactIds = [] } = {}) {
   const edition = assignment.edition === 'recap' || assignment.edition === 'late-preview'
     ? assignment.edition
     : reportingEdition(assignment.edition);
@@ -46,6 +46,7 @@ export function selectWriterFacts(packet, assignment, { maximumFacts = 118, prio
   const assigned = new Set(assignment.evidenceFactIds || []);
   const mandatory = new Set([
     ...(assignment.main?.factIds || []),
+    ...(assignment.seasonLead?.factIds || []),
     ...(assignment.supporting || []).flatMap((angle) => angle.factIds || []),
     ...(assignment.notebook || []).map((angle) => angle.primaryFactId).filter(Boolean)
   ]);
@@ -54,12 +55,24 @@ export function selectWriterFacts(packet, assignment, { maximumFacts = 118, prio
   for (const id of matchupIds) {
     const rows = eligible.filter((fact) => matchupId(fact) === id);
     rows.filter((fact) => MATCHUP_CORE_KINDS.has(fact.kind)).forEach((fact) => mandatory.add(fact.factId));
-    rows.filter((fact) => fact.kind === 'player_projection_delta')
-      .sort((left, right) => Math.abs(Number(right.value)) - Math.abs(Number(left.value)) || left.factId.localeCompare(right.factId))
-      .slice(0, 2)
-      .forEach((fact) => mandatory.add(fact.factId));
+    const managerKeys = unique(rows.filter((fact) => fact.kind === 'team_week_score').map((fact) => fact.subject.key));
+    for (const managerKey of managerKeys) {
+      const managerDeltas = rows.filter((fact) => fact.kind === 'player_projection_delta' && (fact.related || []).some((entity) => entity.key === managerKey));
+      managerDeltas.sort((left, right) => Math.abs(Number(right.value)) - Math.abs(Number(left.value)) || left.factId.localeCompare(right.factId));
+      const selectedDelta = managerDeltas[0];
+      if (selectedDelta) {
+        mandatory.add(selectedDelta.factId);
+        (selectedDelta.derivedFrom || []).forEach((factId) => mandatory.add(factId));
+      }
+      const top = rows.find((fact) => fact.kind === 'team_top_starter' && (fact.related || []).some((entity) => entity.key === managerKey));
+      if (top) {
+        const playerKey = top.subject.key;
+        const points = rows.find((fact) => fact.kind === 'player_starter_points' && fact.subject.key === playerKey && (fact.related || []).some((entity) => entity.key === managerKey));
+        if (points) mandatory.add(points.factId);
+      }
+    }
   }
-  eligible.filter((fact) => ['season_record', 'season_standing_rank', 'season_scoring_rank'].includes(fact.kind) || fact.kind === 'head_to_head_record').forEach((fact) => mandatory.add(fact.factId));
+  eligible.filter((fact) => ['season_record', 'season_standing_rank'].includes(fact.kind) || fact.kind === 'head_to_head_record').forEach((fact) => mandatory.add(fact.factId));
   const prioritySubjects = new Set(prioritySubjectKeys);
   eligible.filter((fact) => ['manager_championship_count', 'manager_canonical_lore'].includes(fact.kind) && prioritySubjects.has(fact.subject.key)).forEach((fact) => mandatory.add(fact.factId));
   const ordered = eligible.slice().sort((left, right) => factPriority(right, assigned) - factPriority(left, assigned) || left.factId.localeCompare(right.factId));
@@ -86,7 +99,7 @@ function compactAngle(angle, availableIds, citationAliases, labelByKey) {
     scope: angle.scope,
     subjects: (angle.subjects || []).map((key) => labelByKey.get(key) || key),
     headlineHint: angle.headlineHint,
-    score: angle.score,
+    score: angle.score ?? null,
     primaryFactId: aliasOf(availableIds.has(angle.primaryFactId) ? angle.primaryFactId : factIds[0], citationAliases),
     factIds: factIds.map((factId) => aliasOf(factId, citationAliases))
   };
@@ -103,6 +116,13 @@ export function compactWriterAssignment(assignment, facts, citationAliases = nul
     dataAsOf: assignment.dataAsOf,
     thesis: assignment.thesis,
     main: compactAngle(assignment.main, availableIds, citationAliases, labelByKey),
+    seasonLead: {
+      ...compactAngle(assignment.seasonLead, availableIds, citationAliases, labelByKey),
+      arcId: assignment.seasonLead?.arcId,
+      status: assignment.seasonLead?.status,
+      previousArcIds: assignment.seasonLead?.previousArcIds || [],
+      priorSummary: assignment.seasonLead?.priorSummary || null
+    },
     supporting: (assignment.supporting || []).map((angle) => compactAngle(angle, availableIds, citationAliases, labelByKey)),
     notebook: (assignment.notebook || []).map((angle) => compactAngle(angle, availableIds, citationAliases, labelByKey)),
     evidenceFactIds: (assignment.evidenceFactIds || []).filter((factId) => availableIds.has(factId)).map((factId) => aliasOf(factId, citationAliases)),
@@ -165,7 +185,7 @@ export function webClaimsAsFacts(researchPacket) {
   })));
 }
 
-export function buildWriterContext({ packet, facts, webFacts = [], editorialEdition, memory = {} }) {
+export function buildWriterContext({ packet, facts, webFacts = [], editorialEdition, memory = {}, assignment = {} }) {
   const allFacts = [...facts, ...webFacts];
   const managerNames = packet.identities.filter((row) => row.type === 'manager').map((row) => row.label).sort();
   const playerKeys = new Set(allFacts.flatMap(references).filter((row) => row.type === 'player').map((row) => row.key));
@@ -192,7 +212,7 @@ export function buildWriterContext({ packet, facts, webFacts = [], editorialEdit
   });
   const scopedMatchupId = (fact) => matchupId(fact) ?? (fact.subject?.type === 'player' ? playerScopes.get(fact.subject.key)?.matchupId ?? null : null);
   const scopedManagerNames = (fact) => unique([
-    ...references(fact).filter((row) => row.type === 'manager').map((row) => row.label),
+    ...(['team_week_score', 'team_week_projection'].includes(fact.kind) ? [fact.subject] : references(fact)).filter((row) => row.type === 'manager').map((row) => row.label),
     ...(fact.subject?.type === 'player' && playerScopes.get(fact.subject.key)?.manager ? [playerScopes.get(fact.subject.key).manager] : [])
   ]);
   const factMatchupIds = Object.fromEntries(allFacts.map((fact) => [fact.factId, scopedMatchupId(fact)]));
@@ -210,6 +230,8 @@ export function buildWriterContext({ packet, facts, webFacts = [], editorialEdit
     factKinds,
     factTags,
     factManagerNames,
+    requiredSeasonStorylineSubjects: (assignment.seasonLead?.subjects || []).map((key) => packet.identities.find((entity) => entity.key === key)?.label).filter(Boolean),
+    seasonStorylineFactIds: assignment.seasonLead?.factIds || [],
     historyFactIds: facts.filter((fact) => fact.tags?.includes('history')).map((fact) => fact.factId),
     verifiedQuoteFactIds: [],
     verifiedIntentFactIds: [],
@@ -244,7 +266,11 @@ export function buildWriterRequest({ packet, assignment, facts, webFacts = [], c
     'Distinguish verified fantasy facts, external NFL context, projections, analysis, and historical context. Never invent a quote, motive, source, injury, lead change, or causal explanation.',
     'Private league handles must use their exact canonical spelling. Do not search or speculate about the people behind those handles.',
     'Use external web context only when it materially explains a verified fantasy development; retain uncertainty when a source says reported rather than official.',
-    'Make the main event deeper than the supporting stories, cover every matchup exactly once in the story hierarchy, and keep dry humor sparse and fact-led.',
+    'Write 1100-1700 words in total. Make the manager-led season storyline the continuing thesis of the season, with 180-260 words supported by current standings/form plus relevant verified history.',
+    'SeasonStoryline subjects must match assignment.seasonLead.subjects. Use previous arc summaries only to track continuity; fresh claims still need this edition\'s facts. Explain the contrast between those managers, why this week advances it, and the next observable test. Do not declare an early-season champion or invent personalities.',
+    'Give the main matchup 4-5 paragraphs and 200-300 words: the ordered result/outlook, key starters on both teams, the size and source of the swing, the manager standings/history stakes, and the next chapter. Supporting matchups need 3 paragraphs and 100-150 words each.',
+    'Every remaining matchup needs exactly 3 cited paragraphs in order: what_happened (result and player evidence), why_it_mattered (manager standings/form/history consequence), next_chapter (specific next observable test, conditional for forecasts). Give each notebook 100-140 words; no one-sentence game summaries.',
+    'Cover every matchup exactly once in the story hierarchy, and keep dry humor sparse and fact-led. Every matchup story must cite specific starter evidence and current-season standings/form evidence for BOTH managers when supplied; do not describe only the winner.',
     'Whenever two managers and a matchup result or live lead share a sentence, use only defeated/beat/lost to or led/trailed and include the verified ordered scoreline.',
     'Return only the strict structured article.'
   ].join(' ');
@@ -261,7 +287,8 @@ export function buildWriterRequest({ packet, assignment, facts, webFacts = [], c
     editorialMemory: {
       cooldownPhrases: memory.cooldownPhrases || [],
       recentAngles: memory.recentAngles || [],
-      activeStoryArcs: memory.activeStoryArcs || []
+      activeStoryArcs: memory.activeStoryArcs || [],
+      canonicalStoryArcs: memory.canonicalStoryArcs || []
     },
     evidence,
     sourcePolicy: {
@@ -272,7 +299,7 @@ export function buildWriterRequest({ packet, assignment, facts, webFacts = [], c
   });
   return {
     model,
-    service_tier: 'default',
+    service_tier: config.writerServiceTier,
     reasoning: { effort: 'none' },
     instructions,
     input,
@@ -316,6 +343,7 @@ export function aliasWriterContext(context, citationAliases) {
     factKinds: Object.fromEntries(Object.entries(context.factKinds || {}).map(([factId, kind]) => [citationAliases.toAlias[factId], kind])),
     factTags: Object.fromEntries(Object.entries(context.factTags || {}).map(([factId, tags]) => [citationAliases.toAlias[factId], tags])),
     factManagerNames: Object.fromEntries(Object.entries(context.factManagerNames || {}).map(([factId, names]) => [citationAliases.toAlias[factId], names])),
+    seasonStorylineFactIds: mapIds(context.seasonStorylineFactIds),
     historyFactIds: mapIds(context.historyFactIds),
     verifiedQuoteFactIds: mapIds(context.verifiedQuoteFactIds),
     verifiedIntentFactIds: mapIds(context.verifiedIntentFactIds),
@@ -349,20 +377,27 @@ function writerPrice(model, config) {
   return price;
 }
 
-export function writerPreflight({ exactInputTokens, researchCostUsd = 0, model = PRESS_V2_CONFIG.writerModel }, config = PRESS_V2_CONFIG) {
+export function writerPreflight({ exactInputTokens, researchCostUsd = 0, model = PRESS_V2_CONFIG.writerModel, serviceTier = PRESS_V2_CONFIG.writerServiceTier }, config = PRESS_V2_CONFIG) {
   invariant(Number.isInteger(exactInputTokens) && exactInputTokens >= 0, 'Exact writer input token count is invalid.');
   const price = writerPrice(model, config);
+  invariant(['default', 'flex'].includes(serviceTier), `Unsupported writer service tier ${serviceTier}.`);
+  const multiplier = serviceTier === 'flex' ? config.flexTokenPriceMultiplier : 1;
   const remainingTotal = config.totalCostLimitUsd - Number(researchCostUsd || 0);
   const writerCeiling = Math.min(config.writerCostLimitUsd, remainingTotal);
   invariant(writerCeiling > 0, 'Web research exhausted the total Press V2 budget.');
-  const inputCost = exactInputTokens * price.input / 1_000_000;
-  const affordableOutputTokens = Math.floor(((writerCeiling - inputCost) + 1e-9) * 1_000_000 / price.output);
+  // Reserve cache-write input too, so an expensive input category cannot overrun
+  // the budget before the usage receipt arrives.
+  const reservedInputRate = Math.max(price.input, price.cachedInput, price.cacheWriteInput) * multiplier;
+  const inputCost = exactInputTokens * reservedInputRate / 1_000_000;
+  const affordableOutputTokens = Math.floor(((writerCeiling - inputCost) + 1e-9) * 1_000_000 / (price.output * multiplier));
   const maxOutputTokens = Math.min(config.maxWriterOutputTokens, affordableOutputTokens);
   invariant(maxOutputTokens >= config.minimumWriterOutputTokens, `Only ${maxOutputTokens} writer output tokens remain after research; ${config.minimumWriterOutputTokens} are required for a long-form edition.`);
-  const maximumEstimatedCostUsd = inputCost + maxOutputTokens * price.output / 1_000_000;
+  const maximumEstimatedCostUsd = inputCost + maxOutputTokens * price.output * multiplier / 1_000_000;
   invariant(Number(researchCostUsd) + maximumEstimatedCostUsd <= config.totalCostLimitUsd + 1e-9, 'Writer preflight exceeded the total Press V2 cost ceiling.');
   return deepFreeze({
     exactInputTokens,
+    serviceTier,
+    reservedInputRatePerMillion: reservedInputRate,
     researchCostUsd: Number(researchCostUsd || 0),
     writerCostLimitUsd: Number(writerCeiling.toFixed(6)),
     maxOutputTokens,
@@ -391,7 +426,7 @@ export async function runWriter({ request, researchCostUsd = 0, apiKey, fetchImp
   });
   invariant(countResponse.ok, `OpenAI writer token count failed (${countResponse.status}).`);
   const count = await countResponse.json();
-  const preflight = writerPreflight({ exactInputTokens: Number(count.input_tokens), researchCostUsd, model: request.model }, config);
+  const preflight = writerPreflight({ exactInputTokens: Number(count.input_tokens), researchCostUsd, model: request.model, serviceTier: request.service_tier || 'default' }, config);
   const budgetedRequest = { ...request, max_output_tokens: preflight.maxOutputTokens };
   const response = await fetchImpl(`${config.openaiApiRoot}/responses`, {
     method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify(budgetedRequest)
@@ -402,7 +437,9 @@ export async function runWriter({ request, researchCostUsd = 0, apiKey, fetchImp
   invariant(payload.status === 'completed', `OpenAI Press V2 writer did not complete: ${payload.status || 'unknown'}.`);
   const article = JSON.parse(outputText(payload));
   invariant(Number.isFinite(Number(payload?.usage?.input_tokens)) && Number.isFinite(Number(payload?.usage?.output_tokens)), 'OpenAI writer response did not include a valid usage receipt.');
-  const estimatedCostUsd = estimateUsageCost({ model: payload.model || request.model, usage: payload.usage }, config);
+  const actualServiceTier = payload.service_tier || 'default';
+  const estimatedCostUsd = estimateUsageCost({ model: payload.model || request.model, usage: payload.usage, serviceTier: actualServiceTier }, config);
+  invariant(actualServiceTier === preflight.serviceTier, `Writer returned service tier ${actualServiceTier}, but the budget requires ${preflight.serviceTier}; preserve the response for review.`);
   invariant(estimatedCostUsd <= preflight.writerCostLimitUsd + 1e-9, `Writer cost $${estimatedCostUsd.toFixed(4)} exceeded its $${preflight.writerCostLimitUsd.toFixed(4)} ceiling.`);
   invariant(estimatedCostUsd + Number(researchCostUsd) <= config.totalCostLimitUsd + 1e-9, `Total Press V2 cost exceeded $${config.totalCostLimitUsd.toFixed(2)}.`);
   return deepFreeze({ payload, article, preflight, estimatedCostUsd, request: budgetedRequest });

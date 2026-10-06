@@ -1,6 +1,8 @@
-export const PRESS_V2_CONTRACT_VERSION = 2;
+export const PRESS_V2_CONTRACT_VERSION = 3;
 export const PRESS_V2_BYLINE = 'Farmhood Press Sports Desk';
 export const PRESS_V2_EDITIONS = Object.freeze(['recap', 'weekend_outlook']);
+export const PRESS_V2_SEASON_STORY_STATUSES = Object.freeze(['emerging', 'active', 'resolved']);
+export const PRESS_V2_MAX_PARAGRAPH_CITATIONS = 12;
 
 export const PRESS_V2_DESK_SECTIONS = Object.freeze({
   recap: Object.freeze(['turning_points', 'standings_fallout', 'receipt_desk', 'carries_forward']),
@@ -51,6 +53,16 @@ function inspectStoryEvidence(blocks, path, declaredMatchups, context, issues) {
     if (!hasCore) issues.push(issue('citation.matchup_core_missing', `${path}.body`, `The story needs at least one core result/score/projection fact for Matchup ${matchupId}.`));
   }
   const scopedManagers = matchupManagerSet(context, declaredMatchups);
+  const playerKinds = new Set(['team_top_starter', 'player_starter_points', 'player_projection_delta', 'player_projection']);
+  for (const manager of scopedManagers) {
+    const evidenceFor = (candidateId) => (context.factManagerNames?.[candidateId] || []).includes(manager);
+    const availablePlayer = [...context.allowedFactIds].some((candidateId) => evidenceFor(candidateId) && declaredMatchups.includes(context.factMatchupIds?.[candidateId]) && playerKinds.has(context.factKinds?.[candidateId]));
+    const citedPlayer = factIds.some((candidateId) => evidenceFor(candidateId) && declaredMatchups.includes(context.factMatchupIds?.[candidateId]) && playerKinds.has(context.factKinds?.[candidateId]));
+    if (availablePlayer && !citedPlayer) issues.push(issue('citation.matchup_player_missing', `${path}.body`, `The story needs specific starter evidence for ${manager}, not only the opponent.`));
+    const availableSeason = [...context.allowedFactIds].some((candidateId) => evidenceFor(candidateId) && (context.factTags?.[candidateId] || []).includes('current-season'));
+    const citedSeason = factIds.some((candidateId) => evidenceFor(candidateId) && (context.factTags?.[candidateId] || []).includes('current-season'));
+    if (availableSeason && !citedSeason) issues.push(issue('citation.matchup_season_missing', `${path}.body`, `The story must connect ${manager} to current-season standings or form evidence.`));
+  }
   for (const factId of factIds) {
     if ((context.factTags?.[factId] || []).includes('history')) continue;
     for (const manager of context.factManagerNames?.[factId] || []) {
@@ -65,13 +77,13 @@ function citedParagraphSchema(maxLength = 900) {
     additionalProperties: false,
     properties: {
       text: stringSchema(maxLength, 20),
-      factIds: uniqueStringArray({ $ref: '#/$defs/factId' }, 1, 8)
+      factIds: uniqueStringArray({ $ref: '#/$defs/factId' }, 1, PRESS_V2_MAX_PARAGRAPH_CITATIONS)
     },
     required: ['text', 'factIds']
   };
 }
 
-function featureSchema() {
+function featureSchema(minimumParagraphs, maximumParagraphs) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -81,12 +93,34 @@ function featureSchema() {
       matchupIds: uniqueIntegerArray({ $ref: '#/$defs/matchupId' }, 1, 2),
       body: {
         type: 'array',
-        minItems: 2,
-        maxItems: 4,
+        minItems: minimumParagraphs,
+        maxItems: maximumParagraphs,
         items: { $ref: '#/$defs/citedParagraph' }
       }
     },
     required: ['headline', 'subjects', 'matchupIds', 'body']
+  };
+}
+
+function seasonStorylineSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      status: { type: 'string', enum: [...PRESS_V2_SEASON_STORY_STATUSES] },
+      headline: stringSchema(120, 8),
+      thesis: { $ref: '#/$defs/thesisParagraph' },
+      subjects: uniqueStringArray({ $ref: '#/$defs/manager' }, 2, 4),
+      body: {
+        type: 'array',
+        minItems: 2,
+        maxItems: 3,
+        items: { $ref: '#/$defs/citedParagraph' }
+      },
+      whyNow: { $ref: '#/$defs/citedParagraph' },
+      carryForward: { $ref: '#/$defs/citedParagraph' }
+    },
+    required: ['status', 'headline', 'thesis', 'subjects', 'body', 'whyNow', 'carryForward']
   };
 }
 
@@ -118,10 +152,27 @@ function notebookSchema() {
       matchupId: { $ref: '#/$defs/matchupId' },
       headline: stringSchema(100, 8),
       subjects: uniqueStringArray({ $ref: '#/$defs/manager' }, 2, 2),
-      body: stringSchema(550, 30),
-      factIds: uniqueStringArray({ $ref: '#/$defs/factId' }, 1, 6)
+      body: {
+        type: 'array',
+        minItems: 3,
+        maxItems: 3,
+        items: { $ref: '#/$defs/notebookParagraph' }
+      }
     },
-    required: ['matchupId', 'headline', 'subjects', 'body', 'factIds']
+    required: ['matchupId', 'headline', 'subjects', 'body']
+  };
+}
+
+function notebookParagraphSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      focus: { type: 'string', enum: ['what_happened', 'why_it_mattered', 'next_chapter'] },
+      text: stringSchema(650, 30),
+      factIds: uniqueStringArray({ $ref: '#/$defs/factId' }, 1, PRESS_V2_MAX_PARAGRAPH_CITATIONS)
+    },
+    required: ['focus', 'text', 'factIds']
   };
 }
 
@@ -143,8 +194,11 @@ export function longFormArticleSchema(context) {
       thesisParagraph: citedParagraphSchema(420),
       deskParagraph: citedParagraphSchema(750),
       pullQuoteParagraph: citedParagraphSchema(180),
-      feature: featureSchema(),
+      mainFeature: featureSchema(4, 5),
+      supportingFeature: featureSchema(3, 3),
+      seasonStoryline: seasonStorylineSchema(),
       deskSection: deskSectionSchema(edition, matchupIds.length),
+      notebookParagraph: notebookParagraphSchema(),
       notebook: notebookSchema()
     },
     properties: {
@@ -160,12 +214,13 @@ export function longFormArticleSchema(context) {
         maxItems: 3,
         items: { $ref: '#/$defs/citedParagraph' }
       },
-      mainEvent: { $ref: '#/$defs/feature' },
+      seasonStoryline: { $ref: '#/$defs/seasonStoryline' },
+      mainEvent: { $ref: '#/$defs/mainFeature' },
       supportingStories: {
         type: 'array',
         minItems: 2,
         maxItems: 2,
-        items: { $ref: '#/$defs/feature' }
+        items: { $ref: '#/$defs/supportingFeature' }
       },
       deskSections: {
         type: 'array',
@@ -188,7 +243,7 @@ export function longFormArticleSchema(context) {
       }
     },
     required: [
-      'contractVersion', 'edition', 'title', 'dek', 'byline', 'thesis', 'lead',
+      'contractVersion', 'edition', 'title', 'dek', 'byline', 'thesis', 'lead', 'seasonStoryline',
       'mainEvent', 'supportingStories', 'deskSections', 'aroundLeague', 'pullQuote', 'tags'
     ]
   };
@@ -215,12 +270,13 @@ function inspectCitedBlock(block, path, allowedFactIds, issues) {
   if (new Set(block.factIds).size !== block.factIds.length) {
     issues.push(issue('citation.duplicate', `${path}.factIds`, 'A paragraph must not repeat the same fact ID.'));
   }
+  if (block.factIds.length > PRESS_V2_MAX_PARAGRAPH_CITATIONS) issues.push(issue('citation.too_many', `${path}.factIds`, `A paragraph may cite at most ${PRESS_V2_MAX_PARAGRAPH_CITATIONS} facts.`));
   for (const factId of block.factIds) {
     if (!allowedFactIds.has(factId)) issues.push(issue('citation.unknown', `${path}.factIds`, `Unknown fact ID: ${factId}`));
   }
 }
 
-function inspectFeature(feature, path, context, issues) {
+function inspectFeature(feature, path, context, issues, minimumParagraphs = 2, maximumParagraphs = 3) {
   const { allowedManagers, allowedMatchups, allowedFactIds } = context;
   if (!feature || typeof feature !== 'object' || Array.isArray(feature)) {
     issues.push(issue('shape.feature', path, 'Expected a feature object.'));
@@ -250,13 +306,54 @@ function inspectFeature(feature, path, context, issues) {
     });
   }
   if (Array.isArray(feature.body) && Array.isArray(feature.matchupIds) && feature.matchupIds.length) inspectStoryEvidence(feature.body, path, feature.matchupIds, context, issues);
-  if (!Array.isArray(feature.body) || feature.body.length < 2) {
-    issues.push(issue('shape.feature_body', `${path}.body`, 'A feature needs at least two cited paragraphs.'));
-  } else {
+  if (!Array.isArray(feature.body) || feature.body.length < minimumParagraphs || feature.body.length > maximumParagraphs) {
+    issues.push(issue('shape.feature_body', `${path}.body`, `This feature needs ${minimumParagraphs} to ${maximumParagraphs} cited paragraphs.`));
+  }
+  if (Array.isArray(feature.body)) {
     feature.body.forEach((block, index) => {
       inspectCitedBlock(block, `${path}.body[${index}]`, allowedFactIds, issues);
       inspectMatchupCitations(block, `${path}.body[${index}]`, feature.matchupIds || [], context, issues);
     });
+  }
+}
+
+function inspectSeasonStoryline(story, context, issues) {
+  const path = '$.seasonStoryline';
+  if (!story || typeof story !== 'object' || Array.isArray(story)) {
+    issues.push(issue('shape.season_storyline', path, 'A manager-led season storyline is required.'));
+    return;
+  }
+  if (!PRESS_V2_SEASON_STORY_STATUSES.includes(story.status)) issues.push(issue('shape.season_status', `${path}.status`, 'Season storyline status must be emerging, active, or resolved.'));
+  if (!isNonEmptyString(story.headline)) issues.push(issue('shape.headline', `${path}.headline`, 'Season storyline headline is required.'));
+  const subjects = Array.isArray(story.subjects) ? story.subjects : [];
+  if (subjects.length < 2 || subjects.length > 4 || new Set(subjects).size !== subjects.length) issues.push(issue('shape.season_subjects', `${path}.subjects`, 'The season lead requires two to four distinct canonical managers.'));
+  subjects.forEach((name) => {
+    if (!context.allowedManagers.has(name)) issues.push(issue('manager.unknown', `${path}.subjects`, `Unknown manager: ${name}`));
+  });
+  if (context.requiredSeasonStorylineSubjects.length && (subjects.length !== context.requiredSeasonStorylineSubjects.length || context.requiredSeasonStorylineSubjects.some((name) => !subjects.includes(name)))) {
+    issues.push(issue('manager.season_assignment_mismatch', `${path}.subjects`, 'Season storyline subjects must match the deterministic assignment desk.'));
+  }
+  inspectCitedBlock(story.thesis, `${path}.thesis`, context.allowedFactIds, issues);
+  inspectCitedBlock(story.whyNow, `${path}.whyNow`, context.allowedFactIds, issues);
+  inspectCitedBlock(story.carryForward, `${path}.carryForward`, context.allowedFactIds, issues);
+  if (!Array.isArray(story.body) || story.body.length < 2 || story.body.length > 3) issues.push(issue('shape.season_body', `${path}.body`, 'Season storyline needs two or three cited paragraphs.'));
+  else story.body.forEach((block, index) => inspectCitedBlock(block, `${path}.body[${index}]`, context.allowedFactIds, issues));
+  const blocks = [story.thesis, ...(Array.isArray(story.body) ? story.body : []), story.whyNow, story.carryForward];
+  const citedIds = [...new Set(blocks.flatMap((block) => block?.factIds || []))];
+  const hasTag = (tag) => citedIds.some((factId) => (context.factTags[factId] || []).includes(tag));
+  if (Object.values(context.factTags).some((tags) => tags.includes('current-season')) && !hasTag('current-season')) {
+    issues.push(issue('citation.season_context_missing', path, 'Season storyline must cite current-season standings, form, or scoring evidence.'));
+  }
+  if (Object.values(context.factTags).some((tags) => tags.includes('current-week')) && !hasTag('current-week')) {
+    issues.push(issue('citation.season_week_missing', path, 'Season storyline needs current-week evidence explaining why the arc changes now.'));
+  }
+  if (context.seasonStorylineFactIds.length && !citedIds.some((factId) => context.seasonStorylineFactIds.includes(factId))) {
+    issues.push(issue('citation.season_assignment_missing', path, 'Season storyline must use evidence from its assigned season lead.'));
+  }
+  for (const factId of citedIds) {
+    for (const manager of context.factManagerNames[factId] || []) {
+      if (!subjects.includes(manager)) issues.push(issue('citation.season_subject_mismatch', path, `${factId} introduces ${manager}, outside the season storyline subjects.`));
+    }
   }
 }
 
@@ -307,7 +404,9 @@ export function validateLongFormShape(article, inputContext) {
     factMatchupIds: inputContext.factMatchupIds || {},
     factKinds: inputContext.factKinds || {},
     factTags: inputContext.factTags || {},
-    factManagerNames: inputContext.factManagerNames || {}
+    factManagerNames: inputContext.factManagerNames || {},
+    requiredSeasonStorylineSubjects: inputContext.requiredSeasonStorylineSubjects || [],
+    seasonStorylineFactIds: inputContext.seasonStorylineFactIds || []
   };
   if (!article || typeof article !== 'object' || Array.isArray(article)) {
     return [issue('shape.article', '$', 'Expected a Press V2 article object.')];
@@ -327,11 +426,12 @@ export function validateLongFormShape(article, inputContext) {
     article.lead.forEach((block, index) => inspectCitedBlock(block, `$.lead[${index}]`, context.allowedFactIds, issues));
   }
 
-  inspectFeature(article.mainEvent, '$.mainEvent', context, issues);
+  inspectSeasonStoryline(article.seasonStoryline, context, issues);
+  inspectFeature(article.mainEvent, '$.mainEvent', context, issues, 4, 5);
   if (!Array.isArray(article.supportingStories) || article.supportingStories.length !== 2) {
     issues.push(issue('shape.supporting', '$.supportingStories', 'Exactly two supporting stories are required.'));
   } else {
-    article.supportingStories.forEach((feature, index) => inspectFeature(feature, `$.supportingStories[${index}]`, context, issues));
+    article.supportingStories.forEach((feature, index) => inspectFeature(feature, `$.supportingStories[${index}]`, context, issues, 3, 3));
   }
 
   if (!Array.isArray(article.deskSections)) {
@@ -357,7 +457,7 @@ export function validateLongFormShape(article, inputContext) {
       const path = `$.aroundLeague[${index}]`;
       if (!context.allowedMatchups.has(entry?.matchupId)) issues.push(issue('matchup.unknown', `${path}.matchupId`, `Unknown matchup ID: ${entry?.matchupId}`));
       else hierarchyMatchups.push(entry.matchupId);
-      if (!isNonEmptyString(entry?.headline) || !isNonEmptyString(entry?.body)) issues.push(issue('shape.notebook_entry', path, 'Notebook entry needs a headline and body.'));
+      if (!isNonEmptyString(entry?.headline)) issues.push(issue('shape.notebook_entry', path, 'Notebook entry needs a headline.'));
       for (const name of entry?.subjects || []) {
         if (!context.allowedManagers.has(name)) issues.push(issue('manager.unknown', `${path}.subjects`, `Unknown manager: ${name}`));
       }
@@ -366,9 +466,16 @@ export function validateLongFormShape(article, inputContext) {
       if (expectedSubjects.size && (actualSubjects.size !== expectedSubjects.size || [...expectedSubjects].some((name) => !actualSubjects.has(name)))) {
         issues.push(issue('manager.matchup_mismatch', `${path}.subjects`, `Around the League subjects must be the two managers in Matchup ${entry?.matchupId}.`));
       }
-      inspectCitedBlock({ text: entry?.body, factIds: entry?.factIds }, path, context.allowedFactIds, issues);
-      inspectMatchupCitations({ factIds: entry?.factIds }, path, [entry?.matchupId], context, issues);
-      inspectStoryEvidence([{ factIds: entry?.factIds }], path, [entry?.matchupId], context, issues);
+      const expectedFocuses = ['what_happened', 'why_it_mattered', 'next_chapter'];
+      if (!Array.isArray(entry?.body) || entry.body.length !== 3) issues.push(issue('shape.notebook_body', `${path}.body`, 'Each matchup needs three cited paragraphs: what happened, why it mattered, and the next chapter.'));
+      else {
+        entry.body.forEach((block, bodyIndex) => {
+          if (block?.focus !== expectedFocuses[bodyIndex]) issues.push(issue('shape.notebook_focus', `${path}.body[${bodyIndex}].focus`, `Expected ${expectedFocuses[bodyIndex]}.`));
+          inspectCitedBlock(block, `${path}.body[${bodyIndex}]`, context.allowedFactIds, issues);
+          inspectMatchupCitations(block, `${path}.body[${bodyIndex}]`, [entry.matchupId], context, issues);
+        });
+        inspectStoryEvidence(entry.body, path, [entry.matchupId], context, issues);
+      }
     });
   }
   for (const matchupId of matchupIds) {

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { assertCopyDesk, runCopyDesk } from './copy-desk.mjs';
 import { testContext, validArticle } from './test-fixtures.mjs';
 
-const relaxedDepth = Object.freeze({ minimumWords: 0, maximumWords: 3000 });
+const relaxedDepth = Object.freeze({ minimumWords: 0, maximumWords: 3000, minimumSectionDepth: false });
 const hasError = (report, code) => report.errors.some((finding) => finding.code === code);
 
 test('passes grounded, specific copy through the deterministic desk', () => {
@@ -48,7 +48,7 @@ test('requires verified support for motive and causal claims', () => {
 
 test('rejects a spaced or recased canonical manager handle', () => {
   const article = structuredClone(validArticle('recap'));
-  article.aroundLeague[2].body = 'jwislek_20 defeated martin ch94 121.7-99.8 in Week 4.';
+  article.aroundLeague[2].body[0].text = 'jwislek_20 defeated martin ch94 121.7-99.8 in Week 4.';
   const report = runCopyDesk(article, testContext('recap'), relaxedDepth);
   assert.equal(hasError(report, 'manager.noncanonical'), true);
 });
@@ -93,4 +93,19 @@ test('does not permit injury status to become a punch line', () => {
   article.lead[0].text = 'The injury report became the funniest punchline of Week 4 for Blumbo.';
   const report = runCopyDesk(article, testContext('recap'), relaxedDepth);
   assert.equal(hasError(report, 'voice.injury_joke'), true);
+});
+
+test('rejects shallow individual stories even when an overall word floor is disabled', () => {
+  const report = runCopyDesk(validArticle(), testContext(), { ...relaxedDepth, minimumSectionDepth: true });
+  assert(report.errors.some((finding) => finding.code === 'depth.section_too_short' && finding.path === '$.seasonStoryline'));
+  assert(report.errors.some((finding) => finding.code === 'depth.section_too_short' && finding.path === '$.aroundLeague[0].body'));
+});
+
+test('applies factual and voice gates throughout the new season and notebook paragraphs', () => {
+  const article = structuredClone(validArticle());
+  article.seasonStoryline.carryForward.text = 'Sources close to Blumbo say the season is already decided.';
+  article.aroundLeague[0].body[2].text = 'At the end of the day, akaaashh has a 3-1 record.';
+  const report = runCopyDesk(article, testContext(), relaxedDepth);
+  assert(report.errors.some((finding) => finding.code === 'claim.fake_access' && finding.path === '$.seasonStoryline.carryForward'));
+  assert(report.errors.some((finding) => finding.code === 'voice.cliche' && finding.path === '$.aroundLeague[0].body[2]'));
 });

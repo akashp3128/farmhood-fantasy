@@ -3,7 +3,7 @@ import test from 'node:test';
 import { scoreLongFormArticle } from './rubric.mjs';
 import { testContext, validArticle } from './test-fixtures.mjs';
 
-const testOptions = { copyDesk: { minimumWords: 0, maximumWords: 3000 } };
+const testOptions = { copyDesk: { minimumWords: 0, maximumWords: 3000, minimumSectionDepth: false } };
 
 test('awards a passing score only when the hard gate is clean', () => {
   const result = scoreLongFormArticle(validArticle('recap'), testContext('recap'), testOptions);
@@ -26,6 +26,7 @@ test('does not let a numerical score override an invented quote', () => {
 test('rewards relevant history without requiring trivia when none is assigned', () => {
   const withoutHistory = structuredClone(validArticle('recap'));
   withoutHistory.deskSections[3].body[0].factIds = ['week:4:standings'];
+  withoutHistory.seasonStoryline.body[0].factIds = ['week:4:standings'];
   const context = testContext('recap');
   const missed = scoreLongFormArticle(withoutHistory, context, testOptions);
   const used = scoreLongFormArticle(validArticle('recap'), context, testOptions);

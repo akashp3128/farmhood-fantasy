@@ -6,19 +6,21 @@
   "articles": [
     {
       "articleId": "2026-week-03-recap-v2-layout-preview",
-      "status": "shadow_preview",
+      "status": "format_preview",
+      "sampleType": "manually_authored_review",
+      "paidGeneratorRepresentative": false,
       "season": 2026,
       "week": 3,
       "edition": "recap",
-      "title": "Press V2 Layout Preview: Week 3 From Rout to Reversal",
-      "dek": "A review-only demonstration of the long-form story hierarchy, verified gamebook, and source rail using the already-published Week 3 record.",
+      "title": "Week 3: cuch sets the pace, and the champions have to answer",
+      "dek": "The commissioner is the lone unbeaten manager. Behind him, six teams share a record, the reigning champion is searching for points, and each Week 3 result adds a different chapter.",
       "generatedAt": "2026-10-04T15:00:00.000Z",
       "publishedAt": "2026-10-04T15:00:00.000Z",
       "dataAsOf": "2026-09-29T19:17:52.706Z",
       "storylines": [
-        "maco71 turns Thursday’s opening into the week’s defining rout",
-        "Archibaldo finds four and a half points of separation",
-        "cuch owns the number at the top of the page"
+        "cuch’s unbeaten start leads a six-manager pursuit",
+        "jwislek_20’s rise challenges martinch94’s title defense",
+        "Archibaldo’s narrow wins meet Blumbo’s falling weekly totals"
       ],
       "path": "content/press-v2/fixtures/week-03-layout-preview.json"
     }

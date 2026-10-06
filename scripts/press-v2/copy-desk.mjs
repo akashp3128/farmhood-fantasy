@@ -77,6 +77,11 @@ export function articleProseBlocks(article) {
   add('$.dek', article.dek);
   addCited('$.thesis', article.thesis);
   (article.lead || []).forEach((block, index) => addCited(`$.lead[${index}]`, block));
+  add('$.seasonStoryline.headline', article.seasonStoryline?.headline);
+  addCited('$.seasonStoryline.thesis', article.seasonStoryline?.thesis);
+  (article.seasonStoryline?.body || []).forEach((block, index) => addCited(`$.seasonStoryline.body[${index}]`, block));
+  addCited('$.seasonStoryline.whyNow', article.seasonStoryline?.whyNow);
+  addCited('$.seasonStoryline.carryForward', article.seasonStoryline?.carryForward);
   addFeature('$.mainEvent', article.mainEvent);
   (article.supportingStories || []).forEach((feature, index) => addFeature(`$.supportingStories[${index}]`, feature));
   (article.deskSections || []).forEach((section, index) => {
@@ -85,7 +90,8 @@ export function articleProseBlocks(article) {
   });
   (article.aroundLeague || []).forEach((entry, index) => {
     add(`$.aroundLeague[${index}].headline`, entry?.headline);
-    add(`$.aroundLeague[${index}].body`, entry?.body, entry?.factIds);
+    if (Array.isArray(entry?.body)) entry.body.forEach((block, bodyIndex) => addCited(`$.aroundLeague[${index}].body[${bodyIndex}]`, block));
+    else add(`$.aroundLeague[${index}].body`, entry?.body, entry?.factIds);
   });
   addCited('$.pullQuote', article.pullQuote);
   return blocks;
@@ -180,8 +186,9 @@ function averageSentenceWords(blocks) {
  */
 export function runCopyDesk(article, context, options = {}) {
   const config = {
-    minimumWords: options.minimumWords ?? (context.edition === 'recap' ? 900 : 850),
-    maximumWords: options.maximumWords ?? (context.edition === 'recap' ? 1500 : 1400),
+    minimumWords: options.minimumWords ?? 1100,
+    maximumWords: options.maximumWords ?? 1700,
+    minimumSectionDepth: options.minimumSectionDepth ?? true,
     minimumFactReferencesPer100Words: options.minimumFactReferencesPer100Words ?? 1,
     minimumConcreteSentenceRatio: options.minimumConcreteSentenceRatio ?? 0.55,
     cliches: options.cliches ?? DEFAULT_CLICHES,
@@ -233,6 +240,20 @@ export function runCopyDesk(article, context, options = {}) {
     ...citationMetrics(blocks, entities),
     ...averageSentenceWords(blocks)
   };
+  if (config.minimumSectionDepth) {
+    const requireWords = (path, minimum) => {
+      const actual = blocks.filter((block) => block.path.startsWith(path) && !block.path.endsWith('.headline')).reduce((sum, block) => sum + wordCount(block.text), 0);
+      if (actual < minimum) errors.push(issue('error', 'depth.section_too_short', path, `This story has ${actual} words; at least ${minimum} are required to explain the managers, evidence, and next chapter.`));
+      return actual;
+    };
+    requireWords('$.seasonStoryline', 180);
+    const mainWords = requireWords('$.mainEvent.body', 180);
+    (article.supportingStories || []).forEach((_, index) => {
+      const supportWords = requireWords(`$.supportingStories[${index}].body`, 90);
+      if (mainWords <= supportWords) errors.push(issue('error', 'depth.main_hierarchy', '$.mainEvent.body', 'The main event must be deeper than each supporting matchup.'));
+    });
+    (article.aroundLeague || []).forEach((_, index) => requireWords(`$.aroundLeague[${index}].body`, 90));
+  }
   if (metrics.totalWords < config.minimumWords) {
     errors.push(issue('error', 'depth.too_short', '$', `Long-form ${context.edition} copy has ${metrics.totalWords} words; minimum is ${config.minimumWords}.`));
   }

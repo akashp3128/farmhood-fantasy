@@ -81,3 +81,19 @@ test('history cooldown removes a fact from angles and supporting evidence', () =
   assert.equal(assignment.evidenceFactIds.includes(cooled), false);
   assert.equal([assignment.main, ...assignment.supporting, ...assignment.notebook].some((angle) => angle.primaryFactId === cooled), false);
 });
+
+test('season assignment joins fresh manager evidence to a continuing arc deterministically', () => {
+  const packet = buildReportingPacket(sampleWeekInput());
+  const options = { edition: 'recap', activeStoryArcs: [{ id: 'season:2026:manager-race', status: 'active', summary: 'Alpha_One and Gamma share the early race.', subjects: ['Alpha_One', 'manager:gamma'], lastUpdatedWeek: 2 }] };
+  const assignment = buildStoryAssignment(packet, options);
+  assert.deepEqual(assignment, buildStoryAssignment(packet, options));
+  assert.equal(assignment.seasonLead.arcId, 'season:2026:manager-race');
+  assert.equal(assignment.seasonLead.status, 'active');
+  assert.ok(assignment.seasonLead.subjects.length >= 2 && assignment.seasonLead.subjects.length <= 4);
+  assert.ok(assignment.seasonLead.previousArcIds.includes('season:2026:manager-race'));
+  const facts = assignment.seasonLead.factIds.map((id) => packet.facts.find((fact) => fact.factId === id));
+  assert.ok(facts.some((fact) => fact.tags.includes('current-season')));
+  assert.ok(facts.some((fact) => fact.tags.includes('current-week')));
+  assert.ok(facts.some((fact) => fact.tags.includes('history')));
+  assert.ok(assignment.seasonLead.factIds.every((id) => assignment.evidenceFactIds.includes(id)));
+});

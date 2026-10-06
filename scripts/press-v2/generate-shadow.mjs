@@ -104,7 +104,7 @@ function paidResponseReceipt(payload, fallbackModel, webSearchCalls = 0) {
   const output = Number(payload?.usage?.output_tokens);
   if (!Number.isFinite(input) || !Number.isFinite(output)) return { cost: null, status: 'usage_missing', pricingError: null };
   try {
-    return { cost: estimateUsageCost({ model: payload.model || fallbackModel, usage: payload.usage, webSearchCalls }), status: 'recorded', pricingError: null };
+    return { cost: estimateUsageCost({ model: payload.model || fallbackModel, usage: payload.usage, webSearchCalls, serviceTier: payload.service_tier || 'default' }), status: 'recorded', pricingError: null };
   } catch (error) {
     return { cost: null, status: 'pricing_unresolved', pricingError: String(error?.message || error).slice(0, 500) };
   }
@@ -149,7 +149,7 @@ function emptyMemory() {
 }
 
 function managerSubjectKeys(assignment) {
-  return unique([assignment.main, ...(assignment.supporting || []), ...(assignment.notebook || [])]
+  return unique([assignment.main, assignment.seasonLead, ...(assignment.supporting || []), ...(assignment.notebook || [])]
     .flatMap((angle) => angle?.subjects || [])
     .filter((key) => key.startsWith('manager:')));
 }
@@ -165,6 +165,7 @@ export function prepareShadowEdition({ rawInput, editorialEdition, storyMemory =
     edition: researchEdition,
     recentAngleKeys: memory.recentAngles,
     recentSubjectKeys: memory.activeStoryArcs.flatMap((arc) => arc.subjects || []),
+    activeStoryArcs: memory.activeStoryArcs,
     excludedFactIds: cooledFactIds,
     notebookCount: packet.summary.matchupCount
   });
@@ -282,6 +283,7 @@ function shadowRecord({ prepared, article, researchPacket, claimCheck, copyDesk,
     },
     generation: {
       model: writerRun.payload.model || PRESS_V2_CONFIG.writerModel,
+      serviceTier: writerRun.payload.service_tier || 'default',
       estimatedCostUsd: writerRun.estimatedCostUsd,
       totalEstimatedCostUsd: totalCostUsd,
       hardCostLimitUsd: PRESS_V2_CONFIG.totalCostLimitUsd,
@@ -318,7 +320,7 @@ async function nextShadowIndex(root, record, relativePath) {
     generatedAt: record.generatedAt,
     publishedAt: record.generatedAt,
     dataAsOf: record.dataAsOf,
-    storylines: [record.article.mainEvent?.headline, ...(record.article.supportingStories || []).map((row) => row.headline), ...(record.article.deskSections || []).map((row) => row.headline)].filter(Boolean),
+    storylines: [record.article.seasonStoryline?.headline, record.article.mainEvent?.headline, ...(record.article.supportingStories || []).map((row) => row.headline), ...(record.article.deskSections || []).map((row) => row.headline)].filter(Boolean),
     path: relativePath
   };
   const articles = [meta, ...(current.articles || []).filter((row) => row.articleId !== meta.articleId)]
@@ -337,14 +339,22 @@ async function nextStoryMemory(root, prepared, record) {
     summary: angle.headlineHint,
     subjects: angle.subjects
   }));
+  if (record.article.seasonStoryline && prepared.assignment.seasonLead) editionArcs.push({
+    id: prepared.assignment.seasonLead.arcId,
+    status: record.article.seasonStoryline.status === 'resolved' ? 'resolved' : 'active',
+    summary: `${record.article.seasonStoryline.headline} ${record.article.seasonStoryline.thesis.text} Next: ${record.article.seasonStoryline.carryForward.text}`,
+    subjects: prepared.assignment.seasonLead.subjects
+  });
   const storyArcs = [...new Map(editionArcs.map((arc) => [arc.id, arc])).values()];
   const next = recordStoryEdition(existing, {
     articleId: record.articleId,
     season: record.season,
     week: record.week,
     edition: record.editorialEdition,
+    generatedAt: record.generatedAt,
+    dataAsOf: record.dataAsOf,
     angles: [prepared.assignment.main, ...(prepared.assignment.supporting || [])].map((angle) => angle.angleKey),
-    cooldownPhrases: [record.article.title, record.article.mainEvent?.headline, ...(record.article.supportingStories || []).map((row) => row.headline)].filter(Boolean),
+    cooldownPhrases: [record.article.title, record.article.seasonStoryline?.headline, record.article.mainEvent?.headline, ...(record.article.supportingStories || []).map((row) => row.headline)].filter(Boolean),
     historyFactIds: usedHistory,
     storyArcs
   });
@@ -429,7 +439,8 @@ export async function generateShadowEdition({
       facts: prepared.facts,
       webFacts,
       editorialEdition,
-      memory: prepared.memory
+      memory: prepared.memory,
+      assignment: prepared.assignment
     });
     const citationAliases = buildCitationAliases([...prepared.facts, ...webFacts]);
     const requestContext = aliasWriterContext(context, citationAliases);
@@ -500,7 +511,7 @@ export async function generateShadowEdition({
 
 export async function buildDryRunDossier({ rawInput, editorialEdition, storyMemory = emptyMemory(), root = PRESS_V2_ROOT, now = new Date() }) {
   const prepared = prepareShadowEdition({ rawInput, editorialEdition, storyMemory });
-  const context = buildWriterContext({ packet: prepared.packet, facts: prepared.facts, editorialEdition, memory: prepared.memory });
+  const context = buildWriterContext({ packet: prepared.packet, facts: prepared.facts, editorialEdition, memory: prepared.memory, assignment: prepared.assignment });
   const citationAliases = buildCitationAliases(prepared.facts);
   const requestContext = aliasWriterContext(context, citationAliases);
   const writerRequest = buildWriterRequest({ packet: prepared.packet, assignment: prepared.assignment, facts: prepared.facts, context: requestContext, memory: prepared.memory, citationAliases });
@@ -511,7 +522,7 @@ export async function buildDryRunDossier({ rawInput, editorialEdition, storyMemo
     type: angle.type,
     scope: angle.scope,
     headlineHint: angle.headlineHint,
-    score: angle.score,
+    score: angle.score ?? null,
     primaryFactId: angle.primaryFactId
   });
   const dossier = {
@@ -525,6 +536,14 @@ export async function buildDryRunDossier({ rawInput, editorialEdition, storyMemo
     assignment: {
       thesis: prepared.assignment.thesis,
       main: summarizeAngle(prepared.assignment.main),
+      seasonLead: {
+        ...summarizeAngle(prepared.assignment.seasonLead),
+        arcId: prepared.assignment.seasonLead.arcId,
+        status: prepared.assignment.seasonLead.status,
+        subjects: prepared.assignment.seasonLead.subjects,
+        factIds: prepared.assignment.seasonLead.factIds,
+        previousArcIds: prepared.assignment.seasonLead.previousArcIds
+      },
       supporting: prepared.assignment.supporting.map(summarizeAngle),
       notebook: prepared.assignment.notebook.map(summarizeAngle),
       rankedAngleCount: prepared.assignment.rankedAngleCount
@@ -539,6 +558,7 @@ export async function buildDryRunDossier({ rawInput, editorialEdition, storyMemo
     },
     writerPolicy: {
       model: writerRequest.model,
+      serviceTier: writerRequest.service_tier,
       receivesTools: Boolean(writerRequest.tools),
       maximumOutputTokens: writerRequest.max_output_tokens,
       hardWriterCostUsd: PRESS_V2_CONFIG.writerCostLimitUsd,

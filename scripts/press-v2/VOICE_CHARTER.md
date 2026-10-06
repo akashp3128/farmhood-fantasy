@@ -27,6 +27,7 @@ Humor should sharpen a fact, not replace one. One good line is more effective th
 ## Writing principles
 
 - Lead with the week's most consequential development, not a schedule recap.
+- Connect that development to a continuing season story involving named managers, with a clear next observable test.
 - Make the main event meaningfully deeper than the rest of the slate.
 - Use active voice, concrete nouns, and varied sentence lengths.
 - Connect history only when it changes how the present result should be understood.
@@ -50,24 +51,26 @@ Humor should sharpen a fact, not replace one. One good line is more effective th
 
 ### Tuesday recap — The Morning After
 
-The recap should normally run 900–1,500 words and contain:
+The recap should run 1,100–1,700 words and contain:
 
 1. A two- or three-paragraph lead advancing one thesis.
-2. A main-event feature on the week's most important matchup.
-3. Two supporting stories selected for consequence, surprise, or explanatory value.
-4. Turning Points, Standings Fallout, Receipt Desk, and What Carries Forward sections.
-5. A concise Around the League notebook covering the rest of the slate.
+2. A season storyline explaining the developing race between two to four named managers, supported by fresh standings and relevant history.
+3. A main-event feature of four or five paragraphs on the week's most important matchup.
+4. Two supporting stories of three paragraphs each, selected for consequence, surprise, or explanatory value.
+5. Turning Points, Standings Fallout, Receipt Desk, and What Carries Forward sections.
+6. An Around the League notebook covering the rest of the slate, with three cited paragraphs per matchup: what happened, why it mattered, and the next chapter.
 
 The Receipt Desk may grade only receipt-eligible pre-kickoff forecasts. If no original forecast exists, it says so plainly and does not manufacture a score.
 
 ### Friday outlook — The Weekend Edition
 
-The outlook is published after Thursday and should normally run 850–1,400 words. It contains:
+The outlook is published after Thursday and should run 1,100–1,700 words. It contains:
 
 1. A lead explaining what Thursday changed.
-2. The weekend's main event and two supporting matchup stories.
-3. Thursday Headline, Availability Desk, Standings Stakes, and Sunday Watch sections.
-4. A concise Around the League notebook covering every matchup not already featured.
+2. A continuing season storyline explaining which manager arcs this slate can advance or resolve.
+3. The weekend's main event and two supporting matchup stories at the same paragraph depth as the recap.
+4. Thursday Headline, Availability Desk, Standings Stakes, and Sunday Watch sections.
+5. Three-paragraph Around the League matchup stories for every game not already featured.
 
 Known Thursday points are facts. Remaining projections are estimates. The article must distinguish the two every time it combines them.
 

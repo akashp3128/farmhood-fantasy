@@ -5,8 +5,8 @@ An edition needs both a score of at least **85/100** and a clean copy-desk repor
 | Category | Weight | Full-credit standard |
 | --- | ---: | --- |
 | Factual integrity | 40 | Every narrative block cites known facts; names, matchup IDs, quotes, intent, and causal claims are verified. |
-| Narrative coherence | 20 | One thesis governs the lead, main event, two supporting stories, edition desks, and complete slate notebook. |
-| Specificity and depth | 15 | Concrete people and numbers appear throughout; the article explains consequence instead of restating scores. |
+| Narrative coherence | 20 | A continuing manager-led season thesis governs the lead, weekly main event, two supporting stories, edition desks, and complete slate notebook. |
+| Specificity and depth | 15 | Every matchup explains what happened, why it mattered to both managers, and the next observable test; the deeper main story and season lead exceed their own length floors. |
 | Historical relevance | 10 | One to three assignment-selected history facts clarify the present story without becoming trivia filler. |
 | Voice and originality | 10 | News precedes jokes; no clichés, recycled punch lines, repeated sentences, or templated transitions appear. |
 | Readability | 5 | Paragraphs are focused, sentence lengths vary, and unusually long sentences are repaired. |
@@ -19,6 +19,9 @@ An edition needs both a score of at least **85/100** and a clean copy-desk repor
 - Causal language without a verified causal fact
 - Missing or duplicated matchup coverage in the article hierarchy
 - Missing edition-specific sections
+- Missing season lead, season evidence, or canonical manager subjects
+- A matchup omitting available starter or season evidence for either manager
+- A shallow individual story, even when the overall edition reaches its word floor
 - Injury jokes
 - Prohibited clichés or active phrase cooldowns
 

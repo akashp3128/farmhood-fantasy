@@ -9,6 +9,7 @@
     index:null,
     shadow:false,
     dossier:null,
+    storyMemory:null,
     chromeMounted:false,
     articles:new Map(),
     stage:null,
@@ -35,6 +36,101 @@
   function list(value){return Array.isArray(value)?value.filter(Boolean):[];}
   function numeric(value){const parsed=Number(value);return value!==null&&value!==''&&Number.isFinite(parsed)?parsed:null;}
   function points(value){const parsed=numeric(value);return parsed===null?'—':parsed.toFixed(2).replace(/0$/,'').replace(/\.0$/,'');}
+
+  function unique(values){return [...new Set(list(values).filter(Boolean))];}
+
+  function subjectLabels(value){
+    return unique(list(value).map(subject=>{
+      const label=typeof subject==='string'?subject:first(subject&&subject.label,subject&&subject.manager,subject&&subject.name);
+      const ownerId=String(label).replace(/^manager:/,'');
+      return window.LEAGUE&&window.LEAGUE.live2026&&window.LEAGUE.live2026.owners&&window.LEAGUE.live2026.owners[ownerId]||label;
+    }).filter(Boolean));
+  }
+
+  function citedBlocks(value,fallbackFactIds){
+    const fallback=unique(fallbackFactIds),rows=Array.isArray(value)?value:(value?[value]:[]),blocks=[];
+    rows.forEach(row=>{
+      if(typeof row==='string'){
+        const textValue=first(row);if(textValue)blocks.push({text:textValue,factIds:fallback});return;
+      }
+      if(!row||typeof row!=='object')return;
+      const rowFacts=unique(list(row.factIds).length?row.factIds:fallback);
+      if(Array.isArray(row.body)&&!first(row.text,row.summary,row.copy)){
+        blocks.push(...citedBlocks(row.body,rowFacts));return;
+      }
+      const textValue=first(row.text,typeof row.body==='string'?row.body:'',row.summary,row.copy);
+      if(textValue)blocks.push({text:textValue,factIds:rowFacts,focus:first(row.focus)});
+    });
+    return blocks;
+  }
+
+  function blockFactIds(blocks){return unique(list(blocks).flatMap(block=>list(block&&block.factIds)));}
+  function blocksText(blocks){return list(blocks).map(block=>first(block&&block.text,block)).filter(Boolean).join(' ');}
+
+  function matchupStorySections(source,fallbackText,fallbackFactIds){
+    const row=source&&typeof source==='object'?source:{},fallback=unique(fallbackFactIds||row.factIds);
+    const body=citedBlocks(row.body,fallback),focused=body.some(block=>block.focus);
+    let happened=citedBlocks(row.whatHappened,fallback),mattered=citedBlocks(row.whyItMattered||row.whyItMatters,fallback),next=citedBlocks(row.nextChapter||row.carryForward,fallback);
+    if(focused){
+      happened=body.filter(block=>block.focus==='what_happened');
+      mattered=body.filter(block=>block.focus==='why_it_mattered');
+      next=body.filter(block=>block.focus==='next_chapter');
+    }else if(!happened.length&&!mattered.length&&!next.length&&body.length>=3){
+      const openingCount=body.length>=4?2:1;
+      happened=body.slice(0,openingCount);mattered=body.slice(openingCount,-1);next=body.slice(-1);
+    }else if(!happened.length&&!mattered.length&&!next.length){
+      happened=body.length?body.slice(0,1):citedBlocks(fallbackText,fallback);
+      mattered=body.slice(1);
+    }
+    return [
+      {key:'happened',label:'What happened',blocks:happened},
+      {key:'mattered',label:'Why it mattered',blocks:mattered},
+      {key:'next',label:'Next chapter',blocks:next}
+    ].filter(section=>section.blocks.length);
+  }
+
+  function normalizedSeasonArc(row,fallbackStatus){
+    if(!row||typeof row!=='object')return null;
+    const fallbackFacts=unique(row.factIds),whyNow=citedBlocks(row.whyNow||row.whyItMattered||row.whyItMatters||row.body||row.summary,fallbackFacts);
+    const carryForward=citedBlocks(row.carryForward||row.nextChapter,fallbackFacts);
+    const headline=first(row.headline,row.title);
+    if(!headline&&!whyNow.length&&!carryForward.length)return null;
+    return {
+      id:first(row.id,row.arcId),
+      headline:first(headline,'Season storyline'),
+      status:first(row.status,row.state,fallbackStatus),
+      subjects:subjectLabels(row.subjects||row.managers),
+      thesis:citedBlocks(row.thesis,fallbackFacts),
+      body:citedBlocks(row.body,fallbackFacts),
+      whyNow,
+      carryForward
+    };
+  }
+
+  function normalizeSeasonStoryline(article){
+    if(!article||typeof article!=='object')return null;
+    const raw=article.seasonStoryline&&typeof article.seasonStoryline==='object'?article.seasonStoryline:null;
+    if(!raw)return null;
+    const carrySection=list(article.deskSections).find(section=>['carries_forward','sunday_watch','standings_stakes'].includes(first(section&&section.kind)));
+    const source=raw,fallbackFacts=unique(source&&source.factIds||blockFactIds(citedBlocks(source&&source.body)));
+    const whyNow=citedBlocks(source&&source.whyNow||source&&source.whyItMattered||source&&source.whyItMatters||source&&source.body,fallbackFacts);
+    const carryForward=citedBlocks(source&&source.carryForward||source&&source.nextChapter||carrySection&&carrySection.body,fallbackFacts);
+    const explicitSecondary=list(raw&&(raw.secondaryArcs||raw.arcs));
+    const secondarySource=explicitSecondary.length?explicitSecondary:list(article.secondaryArcs);
+    const secondaryArcs=secondarySource.map(row=>normalizedSeasonArc(row,'On the board')).filter(Boolean).slice(0,3);
+    return {
+      id:first(source.id,source.arcId),
+      headline:first(source&&source.headline,source&&source.title,'The season’s defining thread'),
+      status:first(source&&source.status,source&&source.state,raw?'Developing':'Current lead'),
+      subjects:subjectLabels(source&&source.subjects||source&&source.managers),
+      thesis:citedBlocks(source&&source.thesis,fallbackFacts),
+      body:citedBlocks(source&&source.body,fallbackFacts),
+      whyNow,
+      carryForward,
+      secondaryArcs,
+      explicit:true
+    };
+  }
 
   function dateLabel(value,withTime){
     const parsed=new Date(value);
@@ -103,7 +199,7 @@
     const leadParagraphs=Array.isArray(rawLead)?rawLead:list(lead.body||copy.body||copy.paragraphs);
     const longForm=envelope?copy:null;
     const features=longForm?[longForm.mainEvent,...list(longForm.supportingStories),...list(longForm.deskSections)]:[];
-    const featureBody=row=>Array.isArray(row&&row.body)?row.body:(row&&row.body?[{text:row.body,factIds:list(row.factIds)}]:[]);
+    const featureBody=row=>citedBlocks(row&&row.body,row&&row.factIds);
     const matchupStories=longForm?[longForm.mainEvent,...list(longForm.supportingStories),...list(longForm.aroundLeague).map(row=>({...row,matchupIds:[row.matchupId]}))]:[];
     const storylines=longForm?features.map(row=>({
       title:first(row&&row.headline,row&&row.kind&&String(row.kind).replaceAll('_',' ')),
@@ -122,6 +218,7 @@
       const feature=featureForMatchup(id);
       const top=facts.find(fact=>fact.kind==='team_top_starter');
       const history=facts.find(fact=>fact.kind==='head_to_head_record');
+      const storySections=matchupStorySections(feature,first(result&&result.claim),feature&&feature.factIds);
       return {
         matchupId:id,
         managerA:first(scores[0]&&scores[0].subject&&scores[0].subject.label,result&&result.subject&&result.subject.label),
@@ -130,8 +227,9 @@
         finalScoreB:scores[1]&&scores[1].value,
         winner:first(result&&result.subject&&result.subject.label),
         headline:first(feature&&feature.headline,'Matchup '+id),
-        analysis:feature?featureBody(feature).map(block=>first(block&&block.text,block)).join(' '):first(result&&result.claim),
-        citationIds:feature?featureBody(feature).flatMap(block=>list(block&&block.factIds)):[],
+        analysis:blocksText(storySections.flatMap(section=>section.blocks)),
+        storySections,
+        citationIds:blockFactIds(storySections.flatMap(section=>section.blocks)),
         keyPlayer:first(top&&top.subject&&top.subject.label),
         historyNote:first(history&&history.claim),
         injuryWatch:facts.filter(fact=>fact.kind==='player_availability_status').map(fact=>fact.claim)
@@ -145,6 +243,7 @@
       const projectionA=numeric(teamA.projection),projectionB=numeric(teamB.projection);
       const projectedWinner=projectionA===null||projectionB===null||projectionA===projectionB?'':projectionA>projectionB?teamA.manager:teamB.manager;
       const top=facts.find(fact=>fact.kind==='team_top_starter'),history=facts.find(fact=>fact.kind==='head_to_head_record');
+      const storySections=matchupStorySections(feature,first(row.resultClaim),feature&&feature.factIds);
       return {
         matchupId:id,
         managerA:first(teamA.manager,feature&&feature.subjects&&feature.subjects[0]),
@@ -154,8 +253,9 @@
         forecastScoreA:recap?null:projectionA,forecastScoreB:recap?null:projectionB,
         forecastWinner:recap?'':projectedWinner,winner:recap?first(row.resultLeader):'',
         headline:first(feature&&feature.headline,'Matchup '+id),
-        analysis:feature?featureBody(feature).map(block=>first(block&&block.text,block)).join(' '):first(row.resultClaim),
-        citationIds:feature?featureBody(feature).flatMap(block=>list(block&&block.factIds)):[],
+        analysis:blocksText(storySections.flatMap(section=>section.blocks)),
+        storySections,
+        citationIds:blockFactIds(storySections.flatMap(section=>section.blocks)),
         keyPlayer:first(row.topStarters&&row.topStarters[0]&&row.topStarters[0].player,top&&top.subject&&top.subject.label),
         historyNote:first(history&&history.claim),
         injuryWatch:list(row.injuries).map(injury=>first(injury.claim,[injury.player,injury.status].filter(Boolean).join(' — ')))
@@ -181,6 +281,7 @@
       pullQuote:first(lead.pullQuote,copy.pullQuote&&copy.pullQuote.text,copy.pullQuote),
       keyStat:lead.keyStat&&typeof lead.keyStat==='object'?lead.keyStat:(copy.keyStat||null),
       storylines:storylines,
+      seasonStoryline:longForm?normalizeSeasonStoryline(longForm):null,
       matchups:longForm?v2Matchups:list(copy.matchups),
       transactions:list(copy.transactions),
       transactionSummary:copy.transactionSummary&&typeof copy.transactionSummary==='object'?copy.transactionSummary:{},
@@ -193,6 +294,7 @@
       webSources:list(envelope&&envelope.evidence&&envelope.evidence.webSources),
       webClaims:webClaims,
       quality:envelope&&envelope.quality||null,
+      memory:envelope&&envelope.memory||envelope&&envelope.editorialMemory||null,
       totalCost:numeric(envelope&&envelope.generation&&envelope.generation.totalEstimatedCostUsd)
     };
   }
@@ -206,7 +308,8 @@
     words.push(...data.leadParagraphs);
     data.storylines.forEach(row=>words.push(storyBody(row)));
     data.matchups.forEach(row=>words.push(first(row.analysis,row.body,row.summary)));
-    const count=words.join(' ').trim().split(/\s+/).filter(Boolean).length;
+    if(data.seasonStoryline)words.push(...[data.seasonStoryline.thesis,data.seasonStoryline.body,data.seasonStoryline.whyNow,data.seasonStoryline.carryForward].flat().map(block=>block.text));
+    const count=unique(words).join(' ').trim().split(/\s+/).filter(Boolean).length;
     return Math.max(3,Math.ceil(count/210));
   }
 
@@ -321,10 +424,10 @@
   }
 
   function labStatusCard(){
-    const dossier=state.dossier,card=make('aside','pv2-news-brief pv2-lab-card');
-    card.append(make('span','pv2-label pv2-label-context','Shadow lab'),make('h2','','The new newsroom is armed'));
-    if(!dossier){card.appendChild(make('p','','The V2 interface is isolated from production. A generated shadow edition has not been loaded.'));return card;}
-    card.appendChild(make('p','','This free dry run compiled the real league record and stopped before any paid API request.'));
+    const dossier=state.dossier,card=make('details','pv2-news-brief pv2-lab-card pv2-review-details');
+    card.appendChild(make('summary','','About this review'));
+    if(!dossier){card.appendChild(make('p','','This review opens the existing league archive. A newly generated edition has not been loaded.'));return card;}
+    card.appendChild(make('p','','The review uses frozen league records. This generation plan was prepared without a paid request.'));
     const facts=make('div','pv2-fact-stack');
     appendFactRow(facts,'Verified registry',String(dossier.reportingSummary&&dossier.reportingSummary.factCount||'—')+' facts');
     appendFactRow(facts,'Writer brief',String(dossier.selectedFactCount||'—')+' facts');
@@ -336,8 +439,64 @@
     card.appendChild(facts);return card;
   }
 
+  function reviewNotice(data){
+    if(!data.envelope||data.envelope.publicationStatus!=='format_preview')return null;
+    return make('p','pv2-review-notice','Review copy · Based on the archived Week '+data.week+' league record.');
+  }
+
   function sectionHeading(title,description){
     const head=make('div','pv2-section-heading');head.append(make('h2','',title),make('p','',description));return head;
+  }
+
+  function appendSubjects(parent,subjects){
+    const names=subjectLabels(subjects);if(!names.length)return;
+    const tags=make('div','pv2-subjects');tags.setAttribute('aria-label','Managers in this story');
+    names.forEach(subject=>tags.appendChild(make('span','pv2-subject',subject)));parent.appendChild(tags);
+  }
+
+  function seasonStatus(status){
+    const labels={emerging:'Emerging',active:'Developing',resolved:'Resolved',retired:'Archived'};
+    return labels[String(status).toLowerCase()]||first(status,'Developing');
+  }
+
+  function renderSeasonDesk(data,options){
+    const arc=data.seasonStoryline;if(!arc)return null;
+    const settings=options||{},section=make('section','pv2-season-desk');
+    if(settings.reader)section.id='pv2-context';
+    section.setAttribute('aria-label','Main season storyline');
+    const heading=make('header','pv2-season-heading'),title=make('div','');
+    title.append(make('span','pv2-kicker','Season desk · '+data.season),make('h2','',arc.headline));
+    heading.append(title,make('span','pv2-arc-status',seasonStatus(arc.status)));section.appendChild(heading);
+    appendSubjects(section,arc.subjects);
+    const narrative=make('div','pv2-season-copy');
+    arc.thesis.forEach(block=>narrative.appendChild(citedParagraph(block,data,'pv2-season-thesis')));
+    arc.body.forEach(block=>narrative.appendChild(citedParagraph(block,data)));section.appendChild(narrative);
+    const developments=make('div','pv2-season-developments');
+    [['Why this week matters',arc.whyNow],['The next chapter',arc.carryForward]].forEach(([label,blocks])=>{
+      if(!blocks.length)return;
+      const card=make('section','pv2-season-development');card.appendChild(make('h3','',label));
+      blocks.forEach(block=>card.appendChild(citedParagraph(block,data)));developments.appendChild(card);
+    });section.appendChild(developments);
+    if(settings.withAction){const actions=make('div','pv2-actions');actions.appendChild(makeButton('Follow the season storylines',()=>go('storylines',true),true));section.appendChild(actions);}
+    return section;
+  }
+
+  function renderArcCard(arc,data,options){
+    const settings=options||{},card=make('article','pv2-thread');
+    card.append(make('span','pv2-label pv2-label-context',settings.label||seasonStatus(arc.status)),make('h2','',arc.headline));
+    appendSubjects(card,arc.subjects);
+    const blocks=unique([...(arc.thesis||[]),...(arc.body||[]),...(arc.whyNow||[])].map(block=>block.text));
+    blocks.forEach(textValue=>{
+      const block=[...(arc.thesis||[]),...(arc.body||[]),...(arc.whyNow||[])].find(item=>item.text===textValue);
+      card.appendChild(data?citedParagraph(block,data):make('p','',textValue));
+    });
+    if(arc.carryForward&&arc.carryForward.length){
+      const next=make('div','pv2-thread-next');next.appendChild(make('h3','','What comes next'));
+      arc.carryForward.forEach(block=>next.appendChild(data?citedParagraph(block,data):make('p','',block.text)));card.appendChild(next);
+    }
+    if(settings.week)card.appendChild(make('p','pv2-thread-date','Last reported · Week '+settings.week));
+    if(settings.articleId)card.appendChild(makeButton('Read this edition',()=>openArticle(settings.articleId),true));
+    return card;
   }
 
   async function renderLatest(){
@@ -352,6 +511,7 @@
       lead.append(make('span','pv2-kicker','Lead story · '+data.edition),make('h1','pv2-front-title',data.title));
       if(data.dek)lead.appendChild(make('p','pv2-front-dek',data.dek));
       lead.appendChild(metaLine(data));
+      const notice=reviewNotice(data);if(notice)lead.appendChild(notice);
       const preview=make('div','pv2-lead-preview');
       if(data.longForm)list(data.longForm.lead).slice(0,2).forEach(block=>preview.appendChild(citedParagraph(block,data)));
       else data.leadParagraphs.slice(0,2).forEach(paragraph=>preview.appendChild(make('p','',paragraph)));
@@ -365,6 +525,8 @@
       }
       if(data.pullQuote){const quote=make('blockquote','pv2-rail-quote');quote.appendChild(make('span','',data.pullQuote));if(data.longForm)appendInlineSourceLinks(quote,data,data.longForm.pullQuote&&data.longForm.pullQuote.factIds);rail.appendChild(quote);}
       hero.appendChild(rail);state.stage.appendChild(hero);
+
+      const seasonDesk=renderSeasonDesk(data,{withAction:true});if(seasonDesk)state.stage.appendChild(seasonDesk);
 
       const weekRows=publishedRows().filter(row=>numeric(row.week)===data.week).sort((a,b)=>{
         const order={preview:0,waivers:1,recap:2};return order[typeOf(a)]-order[typeOf(b)];
@@ -382,8 +544,11 @@
         state.stage.appendChild(sectionHeading('The Matchup Notebook','Open a matchup for the verified scoreline, the press-box read and the historical context behind it.'));
         state.stage.appendChild(renderMatchupNotebook(data));
       }
-      if(data.storylines.length){
-        state.stage.appendChild(sectionHeading('Stories Moving the Season','The current edition’s larger threads, with every claim tied back to the frozen issue.'));
+      if(data.seasonStoryline&&data.seasonStoryline.secondaryArcs.length){
+        state.stage.appendChild(sectionHeading('Other Stories to Follow','Manager stories running alongside the season’s main thread.'));
+        const secondary=make('div','pv2-thread-grid');data.seasonStoryline.secondaryArcs.forEach(arc=>secondary.appendChild(renderArcCard(arc,data)));state.stage.appendChild(secondary);
+      }else if(data.storylines.length&&!data.longForm){
+        state.stage.appendChild(sectionHeading('Stories Moving the Season','The current edition’s continuing manager stories.'));
         state.stage.appendChild(renderStoryList(data.storylines,data));
       }
       finishRender();
@@ -446,10 +611,16 @@
     }
 
     if(data.envelope){
-      const passed=Boolean(data.quality&&data.quality.rubric&&data.quality.rubric.pass),quality=make('section','pv2-gamebook-card');quality.append(make('span','pv2-label '+(passed?'pv2-label-fact':'pv2-label-context'),passed?'Copy desk':'Review status'),make('h3','',passed?'Passed every publication gate':'Layout preview — not an AI-approved edition'));
+      const preview=data.envelope.publicationStatus==='format_preview',passed=Boolean(data.quality&&data.quality.rubric&&data.quality.rubric.pass),quality=make('section','pv2-gamebook-card');
+      quality.append(make('span','pv2-label '+(passed?'pv2-label-fact':'pv2-label-context'),preview?'Review sample':passed?'Copy desk':'Review status'),make('h3','',preview?'Manually written review sample':passed?'Passed every publication gate':'Awaiting editorial review'));
+      if(preview)quality.appendChild(make('p','','This copy was written for review from archived league evidence. No paid AI generation was used.'));
       const list=make('dl','pv2-source-list');
-      appendSourceRow(list,'Quality score',String(data.quality&&data.quality.rubric&&data.quality.rubric.score||'—')+' / 100');
-      appendSourceRow(list,'Claim check',passed?String(data.quality&&data.quality.claimCheck&&data.quality.claimCheck.errors&&data.quality.claimCheck.errors.length||0)+' errors':'Not run for layout preview');
+      const score=numeric(data.quality&&data.quality.rubric&&data.quality.rubric.score);
+      appendSourceRow(list,'Quality score',score===null?'Not run':String(score)+' / 100');
+      ['claimCheck','copyDesk'].forEach(key=>{
+        const report=data.quality&&data.quality[key],errors=report&&Array.isArray(report.errors)?report.errors:[],label=key==='claimCheck'?'Claim check':'Copy desk';
+        appendSourceRow(list,label,report&&Array.isArray(report.errors)?errors.length+' error'+(errors.length===1?'':'s'):'Not run');
+      });
       appendSourceRow(list,'Generation cost',data.totalCost===null?'—':'$'+data.totalCost.toFixed(4));
       quality.appendChild(list);aside.appendChild(quality);
     }
@@ -506,6 +677,7 @@
     copy.append(make('span','pv2-label pv2-label-analysis','Reported narrative'),make('h2','','The desk’s case'));
     if(data.thesis)copy.appendChild(citedParagraph(article.thesis,data,'pv2-thesis'));
     list(article.lead).forEach(block=>copy.appendChild(citedParagraph(block,data)));
+    const seasonDesk=renderSeasonDesk(data,{reader:true});if(seasonDesk)copy.appendChild(seasonDesk);
     const feature=(row,label)=>{
       if(!row)return;
       const section=make('section','pv2-feature');section.append(make('span','pv2-label '+(label==='Main event'?'pv2-label-fact':'pv2-label-analysis'),label),make('h2','',row.headline));
@@ -516,7 +688,7 @@
     if(data.pullQuote){const block=make('blockquote','pv2-analysis-block');block.append(make('span','pv2-label pv2-label-analysis','The line'),make('h3','',data.pullQuote));appendInlineSourceLinks(block,data,article.pullQuote&&article.pullQuote.factIds,true);copy.appendChild(block);}
     list(article.deskSections).forEach((section,index)=>{
       const row=make('section','pv2-desk-section');row.append(make('span','pv2-label pv2-label-context',first(section.kind).replaceAll('_',' ')),make('h2','',section.headline));
-      if(index===0)row.id='pv2-context';
+      if(index===0&&!data.seasonStoryline)row.id='pv2-context';
       list(section.body).forEach(block=>row.appendChild(citedParagraph(block,data)));copy.appendChild(row);
     });
     return copy;
@@ -533,6 +705,7 @@
     return {
       id:first(row.matchupId,row.id,index+1),managerA,managerB,scoreA,scoreB,scoreLabel,
       headline:first(row.headline,managerA+' vs. '+managerB),analysis:first(row.analysis,row.body,row.summary,'The press-box report is still being filed.'),
+      storySections:list(row.storySections),
       winner:first(row.winner,row.forecastWinner,row.predictedWinner),keyPlayer:first(row.keyPlayer&&row.keyPlayer.name,row.keyPlayer),
       injuries:Array.isArray(row.injuryWatch)?row.injuryWatch.join(' · '):first(row.injuryWatch),
       history:first(row.historyNote,row.history),upset:first(row.upsetPath),pick:first(row.predictedWinner,row.pick&&row.pick.manager,row.forecastWinner),citationIds:list(row.citationIds)
@@ -547,11 +720,19 @@
     const notebook=make('div','pv2-notebook');notebook.id='pv2-matchups';
     data.matchups.forEach((row,index)=>{
       const item=matchupData(row,index,data),details=make('details','pv2-matchup');if(index===0)details.open=true;
-      const summary=make('summary',''),copy=make('div','');copy.append(make('span','pv2-matchup-id','Matchup '+item.id),make('h3','pv2-matchup-title',item.headline));
+      const summary=make('summary',''),copy=make('div','');copy.append(make('span','pv2-matchup-id','Matchup '+item.id),make('h3','pv2-matchup-title',item.headline),make('span','pv2-matchup-managers',item.managerA+' vs. '+item.managerB));
       const score=make('div','pv2-score');score.setAttribute('aria-label',item.scoreLabel+': '+item.managerA+' '+points(item.scoreA)+', '+item.managerB+' '+points(item.scoreB));
       score.append(make('span','',item.scoreLabel),make('strong','',points(item.scoreA)+' — '+points(item.scoreB)));summary.append(copy,score);details.appendChild(summary);
-      const body=make('div','pv2-matchup-body'),analysis=make('div','pv2-matchup-analysis');analysis.append(make('span','pv2-label pv2-label-analysis','Pressbox read'));
-      const analysisBlock={text:item.analysis,factIds:item.citationIds};analysis.appendChild(citedParagraph(analysisBlock,data));body.appendChild(analysis);
+      const body=make('div','pv2-matchup-body'),analysis=make('div','pv2-matchup-analysis');
+      if(item.storySections.length){
+        item.storySections.forEach(section=>{
+          const report=make('section','pv2-matchup-story-section');report.appendChild(make('h4','',section.label));
+          list(section.blocks).forEach(block=>report.appendChild(citedParagraph(block,data)));analysis.appendChild(report);
+        });
+      }else{
+        analysis.append(make('span','pv2-label pv2-label-analysis','Pressbox read'));
+        analysis.appendChild(citedParagraph({text:item.analysis,factIds:item.citationIds},data));
+      }body.appendChild(analysis);
       const facts=make('div','pv2-matchup-facts');
       if(item.keyPlayer)facts.appendChild(miniFact('Key player',item.keyPlayer,false));
       if(item.winner)facts.appendChild(miniFact(data.type==='recap'?'Winner':item.scoreLabel+' lean',item.winner,false));
@@ -588,6 +769,7 @@
       const data=normalizeArticle(article,meta);state.stage.replaceChildren();
       const head=make('header','pv2-reader-head');head.appendChild(makeButton('← Back to Latest',()=>go('latest',true),true));
       head.append(make('span','pv2-kicker',data.edition+' · Week '+data.week),make('h1','',data.title));if(data.dek)head.appendChild(make('p','pv2-reader-dek',data.dek));head.appendChild(metaLine(data));state.stage.appendChild(head);
+      const notice=reviewNotice(data);if(notice)head.appendChild(notice);
 
       const layout=make('div','pv2-reader-layout'),main=make('article','pv2-reader-main');main.id='pv2-story';
       const summary=make('section','pv2-summary');summary.append(make('span','pv2-label pv2-label-fact','60-second summary'),make('h2','','The edition in three points'));
@@ -607,7 +789,7 @@
       if(data.storylines.length&&!data.longForm){
         const context=make('section','');context.id='pv2-context';context.appendChild(sectionHeading('The Season in Context','These are the newsroom’s interpretations. Verified scores and source details remain in the Gamebook.'));context.appendChild(renderStoryList(data.storylines,data));main.appendChild(context);
       }
-      if(data.matchups.length){main.appendChild(sectionHeading('The Matchup Notebook','Every game gets a compact report; open any card for the facts and the pressbox read.'));main.appendChild(renderMatchupNotebook(data));}
+      if(data.matchups.length){main.appendChild(sectionHeading('The Matchup Notebook','Every game’s full story: what happened, why it mattered, and what comes next for its managers.'));main.appendChild(renderMatchupNotebook(data));}
       else if(data.transactions.length){main.appendChild(sectionHeading('The Transaction Notebook','Completed league records only. Open a manager’s card for adds and drops.'));main.appendChild(renderTransactionNotebook(data));}
       if(data.awards.length){
         const honors=make('section','');honors.appendChild(sectionHeading('Weekly Honors','Awards are editorial selections supported by the edition’s verified data.'));
@@ -629,31 +811,80 @@
     state.stage.appendChild(line);finishRender();
   }
 
-  function threadDefinitions(){
-    return [
-      {title:'Scoring race',description:'High scores, record pace and the performances moving the league ceiling.',pattern:/score|scoring|points|biggest|high|record/i},
-      {title:'Forecasts & receipts',description:'What the desk expected, what flipped, and where the original record held up.',pattern:/forecast|projection|favorite|underdog|lean|prediction|upset/i},
-      {title:'Lineup pressure',description:'Injuries, empty slots, waiver activity and the decisions changing the weekly board.',pattern:/lineup|injur|questionable|empty|waiver|transaction|wire/i},
-      {title:'Championship pressure',description:'The title defense, contenders and historical stakes carried into the current season.',pattern:/title|champion|dynasty|defense|reigning|king/i},
-      {title:'The weekly news desk',description:'The defining stories selected by the V2 assignment desk.',pattern:/.+/}
-    ];
-  }
-
-  function renderStorylines(){
+  async function renderStorylines(){
+    const request=++state.request;renderLoading('Opening the manager stories and their season history…');
+    const rows=publishedRows().sort((a,b)=>(numeric(b.week)||0)-(numeric(a.week)||0)||new Date(first(b.publishedAt,b.generatedAt))-new Date(first(a.publishedAt,a.generatedAt)));
+    const loaded=await Promise.allSettled(rows.map(async meta=>normalizeArticle(await loadArticle(meta),meta)));
+    if(request!==state.request)return;
+    const editions=loaded.filter(result=>result.status==='fulfilled').map(result=>result.value);
     state.stage.replaceChildren();
-    const intro=make('header','pv2-page-intro'),copy=make('div','');copy.append(make('span','pv2-kicker','Season-long reporting'),make('h1','','Stories that outlive one scoreboard'),make('p','','Published editions are organized into continuing beats. Threads link to the original article; they never rewrite it.'));intro.append(copy,make('strong','','2026 story desk'));state.stage.appendChild(intro);
-    const rows=publishedRows(),grid=make('div','pv2-thread-grid');
-    threadDefinitions().forEach(definition=>{
-      const matches=[];
-      rows.forEach(row=>{
-        const haystack=[row.title,row.dek,...list(row.storylines)].join(' ');
-        if(definition.pattern.test(haystack))matches.push(row);
+    const current=editions.find(data=>data.seasonStoryline),season=current?current.season:2026;
+    const intro=make('header','pv2-page-intro'),copy=make('div','');
+    copy.append(make('span','pv2-kicker','Season-long reporting'),make('h1','','The managers shaping the season'),make('p','','Follow the main season story, the managers moving it, and the chapters each week adds.'));
+    intro.append(copy,make('strong','',season+' season desk'));state.stage.appendChild(intro);
+    if(current){
+      const main=renderSeasonDesk(current);state.stage.appendChild(main);
+      const actions=make('div','pv2-actions');actions.appendChild(makeButton('Read Week '+current.week+' edition',()=>openArticle(current.id),true));main.appendChild(actions);
+    }
+    const secondary=new Map();
+    editions.forEach(data=>{
+      const arcs=data.seasonStoryline?data.seasonStoryline.secondaryArcs:[];
+      arcs.forEach(arc=>{const key=arc.id||arc.headline.toLowerCase();if(!secondary.has(key))secondary.set(key,{arc,data});});
+      if(!data.longForm)data.storylines.forEach((row,index)=>{
+        const arc=normalizedSeasonArc({...row,headline:storyTitle(row,index),body:storyBody(row)},'Reported');
+        if(arc&&arc.subjects.length&&!secondary.has(arc.headline.toLowerCase()))secondary.set(arc.headline.toLowerCase(),{arc,data});
       });
-      if(!matches.length)return;
-      const card=make('article','pv2-thread');card.append(make('span','pv2-label pv2-label-context','Season thread'),make('h2','',definition.title),make('p','',definition.description));
-      const links=make('div','pv2-thread-list');matches.slice(0,4).forEach(row=>{const button=make('button','pv2-thread-link','Week '+row.week+' · '+row.title);button.type='button';button.addEventListener('click',()=>openArticle(articleId(row)));links.appendChild(button);});card.appendChild(links);grid.appendChild(card);
     });
-    state.stage.appendChild(grid);finishRender();
+    if(secondary.size){
+      state.stage.appendChild(sectionHeading('Other Manager Stories','The latest reported chapter of each continuing thread.'));
+      const grid=make('div','pv2-thread-grid');secondary.forEach(({arc,data})=>grid.appendChild(renderArcCard(arc,data,{week:data.week,articleId:data.id})));state.stage.appendChild(grid);
+    }
+    const entries=list(state.storyMemory&&state.storyMemory.entries).filter(entry=>numeric(entry.season)===season).sort((a,b)=>(numeric(a.week)||0)-(numeric(b.week)||0));
+    const remembered=new Map();entries.forEach(entry=>list(entry.storyArcs).forEach(arc=>remembered.set(arc.id,{arc,entry})));
+    const memoryRows=[...remembered.values()].filter(({arc})=>subjectLabels(arc.subjects).length&&first(arc.summary));
+    if(memoryRows.length){
+      state.stage.appendChild(sectionHeading('The Season Notebook','Earlier manager chapters kept for context. Their reporting week shows when the thread was last updated.'));
+      const grid=make('div','pv2-thread-grid');memoryRows.forEach(({arc,entry})=>{
+        const data=editions.find(item=>item.id===entry.articleId),summary=first(arc.summary),opening=summary.split(/(?<=[.!?])\s+/)[0];
+        const editionHeadline=data&&data.seasonStoryline&&!first(arc.id).startsWith('angle:')?data.seasonStoryline.headline:'';
+        const headline=first(arc.headline,editionHeadline,opening.length<=130?opening:subjectLabels(arc.subjects).join(' / ')+' · Season thread');
+        const normalized=normalizedSeasonArc({...arc,headline,body:summary},arc.status);
+        grid.appendChild(renderArcCard(normalized,data,{label:seasonStatus(arc.status)+' · Season background',week:entry.week,articleId:data&&data.id}));
+      });state.stage.appendChild(grid);
+    }
+    const reviewMemories=[];
+    editions.filter(data=>data.season===season&&data.envelope&&data.envelope.publicationStatus==='format_preview'&&data.memory).forEach(data=>{
+      list(data.memory.entries).filter(entry=>numeric(entry.season)===season).forEach(entry=>list(entry.storyArcs).forEach(arc=>reviewMemories.push({arc,data,week:numeric(entry.week)||data.week,sourceId:first(entry.articleId,data.id)})));
+      list(data.memory.activeStoryArcs).forEach(arc=>reviewMemories.push({arc,data,week:numeric(arc.lastUpdatedWeek)||data.week,sourceId:first(arc.sourceArticleId,data.id)}));
+    });
+    const reviewedArcs=new Map();
+    reviewMemories.sort((a,b)=>(a.week||0)-(b.week||0)||new Date(a.data.publishedAt)-new Date(b.data.publishedAt)).forEach(row=>{
+      if(subjectLabels(row.arc.subjects).length&&first(row.arc.summary,row.arc.headline))reviewedArcs.set(first(row.arc.id,row.arc.headline,row.arc.summary),row);
+    });
+    if(reviewedArcs.size){
+      state.stage.appendChild(sectionHeading('Review Continuity','Manager threads preserved with the manually written review sample.'));
+      const grid=make('div','pv2-thread-grid');reviewedArcs.forEach(({arc,data,week,sourceId})=>{
+        const source=editions.find(edition=>edition.id===sourceId)||data,summary=first(arc.summary),opening=summary.split(/(?<=[.!?])\s+/)[0];
+        const headline=first(arc.headline,opening.length<=130?opening:subjectLabels(arc.subjects).join(' / ')+' · Season thread');
+        const normalized=normalizedSeasonArc({...arc,headline,body:arc.body||summary},arc.status);
+        grid.appendChild(renderArcCard(normalized,source,{label:'Review-only continuity · '+seasonStatus(arc.status),week,articleId:source.id}));
+      });state.stage.appendChild(grid);
+    }
+    const chapters=editions.filter(data=>data.seasonStoryline);
+    if(chapters.length>1){
+      state.stage.appendChild(sectionHeading('How the Main Story Developed','Each chapter preserves what the desk knew that week.'));
+      const timeline=make('div','pv2-weekline');chapters.forEach(data=>{
+        const card=make('article','pv2-week-card'),textValue=make('div','pv2-week-copy');
+        card.appendChild(make('div','pv2-week-date','Week '+data.week+' · '+data.edition));
+        textValue.appendChild(make('h2','',data.seasonStoryline.headline));data.seasonStoryline.thesis.forEach(block=>textValue.appendChild(citedParagraph(block,data)));
+        card.append(textValue,makeButton('Read chapter',()=>openArticle(data.id),true));timeline.appendChild(card);
+      });state.stage.appendChild(timeline);
+    }
+    if(!current&&!secondary.size&&!memoryRows.length&&!reviewedArcs.size){
+      const empty=make('div','pv2-empty'),textValue=make('div','');textValue.append(make('h2','','The first season chapter is being reported'),make('p','','The next edition will add a main season storyline and the managers driving it.'));empty.appendChild(textValue);state.stage.appendChild(empty);
+    }
+    if(loaded.some(result=>result.status==='rejected'))state.stage.appendChild(make('p','pv2-partial-note','Some earlier editions could not be loaded. The available season chapters are shown above.'));
+    finishRender();
   }
 
   function renderArchive(){
@@ -670,7 +901,7 @@
     if(current.name==='week'||current.name==='storylines'||current.name==='archive')state.request+=1;
     if(current.name==='latest')await renderLatest();
     else if(current.name==='week')renderWeek();
-    else if(current.name==='storylines')renderStorylines();
+    else if(current.name==='storylines')await renderStorylines();
     else if(current.name==='archive')renderArchive();
     else if(current.name==='article')await renderArticle(current.id);
   }
@@ -681,6 +912,7 @@
       let shadowIndex=null;
       try{shadowIndex=await fetchJson('content/press-v2/index.json');}catch(_error){shadowIndex=null;}
       try{state.dossier=await fetchJson('content/press-v2/dossiers/2026-week-03-recap-v2-shadow.json');}catch(_error){state.dossier=null;}
+      try{state.storyMemory=await fetchJson('content/press-v2/story-memory.json');}catch(_error){state.storyMemory=null;}
       if(shadowIndex&&list(shadowIndex.articles).length){state.index=shadowIndex;state.shadow=true;}
       else{state.index=await fetchJson('content/articles/index.json');state.shadow=false;}
       await route(false);

@@ -40,9 +40,11 @@ The owner-authorized maximum is **$0.10**, while the code stops its estimate at 
 - Internal estimated stop: **$0.09**, checked before and after each paid stage
 - Owner-approved maximum: **$0.10**
 
-The writer's exact input token count is requested before generation. Its output-token allowance is then calculated from the cents still available. If at least 2,000 output tokens cannot be afforded, the writer call is blocked. Paid structured copy is checkpointed before editorial validation so a rejected draft can be recovered without automatically buying another full generation.
+The writer's exact input token count is requested before generation. Research and writing reserve the highest input-category rate, including cache writes. The writer's output-token allowance is then calculated from the cents still available, up to 6,000 output tokens. If at least 4,500 output tokens cannot be afforded, the writer call is blocked rather than buying a draft too short for the reporting contract. Paid structured copy is checkpointed before editorial validation so a rejected draft can be recovered without automatically buying another full generation.
 
-The paid request uses three additional conservation measures: only about 118 assignment-relevant facts survive the 500+ fact registry, repeated JSON Schema structures use `$defs`/`$ref`, and long immutable fact IDs become short temporary citation aliases. Full fact IDs are restored before validation and storage, so the audit trail stays intact without paying to repeat long identifiers throughout the prompt and schema.
+The writer uses **Flex processing**, with half the standard token price for the configured writing model. This funds longer stories without increasing the spending ceiling. Flex can be slower or temporarily unavailable; V2 does not automatically retry a paid call or fall back to a more expensive service tier. The response's actual service tier is checked and recorded in its usage receipt.
+
+The paid request uses three additional conservation measures: at most 160 assignment-relevant facts survive the 500+ fact registry, repeated JSON Schema structures use `$defs`/`$ref`, and long immutable fact IDs become short temporary citation aliases. Full fact IDs are restored before validation and storage, so the audit trail stays intact without paying to repeat long identifiers throughout the prompt and schema.
 
 Pricing lives in `config.mjs` with an explicit `pricingAsOf` date. Paid calls fail closed when that pricing is more than 31 days old. Update those values when model or web-search prices change, and configure an OpenAI project budget as the account-level backstop; repository calculations are estimates rather than a provider-enforced billing limit.
 
@@ -50,7 +52,7 @@ Pricing lives in `config.mjs` with an explicit `pricingAsOf` date. Paid calls fa
 
 An edition cannot pass when it contains an unsupported number, unknown fact ID, misspelled manager, player/roster mismatch, incorrect opponent relationship, invented quote or motive, fake reporting access, unsupported causal claim, recycled phrase, incomplete matchup slate, or score below the 85/100 quality threshold.
 
-Long-form recaps target 900–1,500 words. Friday Weekend Outlooks target 850–1,400 words and must distinguish Thursday facts from remaining projections.
+Both editions target 1,100–1,700 words. Friday Weekend Outlooks must distinguish Thursday facts from remaining projections. Each edition includes a manager-led season feature, a deeper main matchup, and substantive coverage of every other matchup. Each matchup needs specific starter evidence and current-season context for both managers. The copy desk rejects shallow individual stories even when the overall edition is long enough.
 
 ## Local review
 
@@ -66,7 +68,7 @@ Paid generation requires `OPENAI_API_KEY` and should normally run through the ma
 
 Workflow artifacts are readable by people who can read the repository; they are not described as private storage. Immediately before the first paid request, the workflow uploads a 90-day spend reservation for that week and edition. This survives later cancellation or runner loss and blocks an accidental second purchase; delete the reservation manually only when a deliberate retry is approved. Failed raw model payloads are sanitized before a separate recovery upload, leaving only the structured draft/output, accepted research packet, usage receipt, and validation error needed for recovery.
 
-`press-v2.html` includes a zero-cost Week 3 layout preview made from the existing frozen recap. It exercises the Front Page, long-form reader, and gamebook without pretending that an AI edition has passed the V2 copy desk.
+`press-v2.html` includes a zero-cost, manually written Week 3 editorial review made from frozen league evidence. It exercises the Front Page, Season Desk, long-form matchup reader, story memory, and gamebook without pretending to be a paid AI generation. The authored sample uses a broader evidence set than the paid writer's compact packet and separate review-only continuity; it demonstrates an editorial direction, not proven model performance. Actual model performance still needs a separately approved shadow run.
 
 ## Promotion path
 

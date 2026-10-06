@@ -99,7 +99,8 @@ function modelPrice(model, config) {
   return price;
 }
 
-export function estimateUsageCost({ model, usage = {}, webSearchCalls = 0 }, config = PRESS_V2_CONFIG) {
+export function estimateUsageCost({ model, usage = {}, webSearchCalls = 0, serviceTier = 'default' }, config = PRESS_V2_CONFIG) {
+  invariant(['default', 'flex'].includes(serviceTier), `No Press V2 pricing policy exists for service tier ${serviceTier}.`);
   const price = modelPrice(model, config);
   const input = Number(usage.input_tokens || usage.inputTokens || 0);
   const output = Number(usage.output_tokens || usage.outputTokens || 0);
@@ -107,20 +108,23 @@ export function estimateUsageCost({ model, usage = {}, webSearchCalls = 0 }, con
   const cacheWrite = Math.min(input - cached, Number(usage?.input_tokens_details?.cache_write_tokens || usage.cacheWriteInputTokens || 0));
   const uncached = Math.max(0, input - cached - cacheWrite);
   const tokenCost = (uncached * price.input + cached * price.cachedInput + cacheWrite * price.cacheWriteInput + output * price.output) / 1_000_000;
-  return Number((tokenCost + Number(webSearchCalls) * config.webSearchCallCostUsd).toFixed(6));
+  const multiplier = serviceTier === 'flex' ? config.flexTokenPriceMultiplier : 1;
+  return Number((tokenCost * multiplier + Number(webSearchCalls) * config.webSearchCallCostUsd).toFixed(6));
 }
 
 export function researchPreflight({ exactInputTokens, model = PRESS_V2_CONFIG.researchModel } = {}, config = PRESS_V2_CONFIG) {
   const price = modelPrice(model, config);
   const inputTokens = Number(exactInputTokens);
   invariant(Number.isInteger(inputTokens) && inputTokens >= 0, 'Exact research input token count is invalid.');
+  const reservedInputRate = Math.max(price.input, price.cachedInput, price.cacheWriteInput);
   const maximumCost = (
-    (inputTokens + config.reservedSearchContentTokens) * price.input
+    (inputTokens + config.reservedSearchContentTokens) * reservedInputRate
     + config.maxResearchOutputTokens * price.output
   ) / 1_000_000 + config.maxWebSearchCalls * config.webSearchCallCostUsd;
   invariant(maximumCost <= config.researchCostLimitUsd, `Research worst-case $${maximumCost.toFixed(4)} exceeds the $${config.researchCostLimitUsd.toFixed(2)} research ceiling.`);
   return deepFreeze({
     exactInputTokens: inputTokens,
+    reservedInputRatePerMillion: reservedInputRate,
     reservedSearchContentTokens: config.reservedSearchContentTokens,
     maxOutputTokens: config.maxResearchOutputTokens,
     maxWebSearchCalls: config.maxWebSearchCalls,

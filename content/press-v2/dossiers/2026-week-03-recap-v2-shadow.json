@@ -3,7 +3,7 @@
   "kind": "farmhood_press_v2_dry_run_dossier",
   "shadowOnly": true,
   "articleId": "2026-week-03-recap-v2-shadow",
-  "generatedAt": "2026-10-05T01:13:33.590Z",
+  "generatedAt": "2026-10-06T00:30:51.344Z",
   "league": {
     "leagueId": "1377086848295260160",
     "name": "Farmhood Fantasy",
@@ -32,6 +32,50 @@
       "headlineHint": "Matchup 2 supplied the week's tightest finish",
       "score": 88.35,
       "primaryFactId": "fact:2026:w3:closest-game:241106a868e2"
+    },
+    "seasonLead": {
+      "angleKey": "season:2026:manager-race",
+      "type": "manager-season-race",
+      "scope": "season:2026",
+      "headlineHint": "cuch's 3-0 start sets the standings standard; Archibaldo, Blumbo, Siccboi shape the chase against the scoring table",
+      "score": null,
+      "primaryFactId": "fact:2026:through-w3:season-scoring-leader:b7261161eaa5",
+      "arcId": "season:2026:manager-race",
+      "status": "emerging",
+      "subjects": [
+        "manager:92288423205158912",
+        "manager:450705025862201344",
+        "manager:79220990290575360",
+        "manager:450755017129848832"
+      ],
+      "factIds": [
+        "fact:2026:through-w3:season-scoring-leader:b7261161eaa5",
+        "fact:2026:through-w3:points-for:450705025862201344:9918425e1575",
+        "fact:2026:through-w3:points-for:450755017129848832:bbc872e46201",
+        "fact:2026:through-w3:points-for:79220990290575360:6810d0809533",
+        "fact:2026:through-w3:points-for:92288423205158912:5451a35806d8",
+        "fact:2026:through-w3:scoring-rank:450705025862201344:dac8f1470c41",
+        "fact:2026:through-w3:scoring-rank:450755017129848832:1f73ee90d676",
+        "fact:2026:through-w3:scoring-rank:79220990290575360:cea7d98de66f",
+        "fact:2026:through-w3:scoring-rank:92288423205158912:852417ce93bf",
+        "fact:2026:through-w3:season-record:450705025862201344:3f511798d1b3",
+        "fact:2026:through-w3:season-record:450755017129848832:f831cd5af23f",
+        "fact:2026:through-w3:season-record:79220990290575360:28f24e421ec5",
+        "fact:2026:through-w3:season-record:92288423205158912:27baf7d49143",
+        "fact:2026:through-w3:standing-rank:450705025862201344:b999979b0ce6",
+        "fact:2026:through-w3:standing-rank:450755017129848832:0cbb9bf40934",
+        "fact:2026:through-w3:standing-rank:79220990290575360:149c14f3dbf4",
+        "fact:2026:through-w3:standing-rank:92288423205158912:d9226222dcba",
+        "fact:2026:through-w3:streak:450705025862201344:7a9f02972190",
+        "fact:2026:w3:m2:score:450705025862201344:bef9a520090b",
+        "fact:history:canon:manager-1-lore-1:04f11541e6b3",
+        "fact:2026:w3:m6:score:92288423205158912:aef9322f7acb",
+        "fact:2026:w3:m2:score:79220990290575360:ed0475b3cd9a",
+        "fact:2026:w3:m4:score:450755017129848832:b167ab2fd1a9"
+      ],
+      "previousArcIds": [
+        "2026-lineup-watch"
+      ]
     },
     "supporting": [
       {
@@ -103,9 +147,29 @@
     ],
     "rankedAngleCount": 44
   },
-  "selectedFactCount": 118,
-  "selectedFactDigest": "c5527284a5121a76",
+  "selectedFactCount": 160,
+  "selectedFactDigest": "5ea090d10e557bc2",
   "researchSubjects": [
+    {
+      "key": "player:9226",
+      "label": "De'Von Achane",
+      "type": "player",
+      "nflTeam": "MIA",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:9221",
+      "label": "Jahmyr Gibbs",
+      "type": "player",
+      "nflTeam": "DET",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
     {
       "key": "player:9509",
       "label": "Bijan Robinson",
@@ -127,20 +191,10 @@
       ]
     },
     {
-      "key": "player:8112",
-      "label": "Drake London",
+      "key": "player:8146",
+      "label": "Garrett Wilson",
       "type": "player",
-      "nflTeam": "ATL",
-      "questions": [
-        "What current official availability designation or team-reported injury context is relevant?",
-        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
-      ]
-    },
-    {
-      "key": "player:9221",
-      "label": "Jahmyr Gibbs",
-      "type": "player",
-      "nflTeam": "DET",
+      "nflTeam": "NYJ",
       "questions": [
         "What current official availability designation or team-reported injury context is relevant?",
         "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
@@ -197,30 +251,10 @@
       ]
     },
     {
-      "key": "player:8146",
-      "label": "Garrett Wilson",
+      "key": "player:8112",
+      "label": "Drake London",
       "type": "player",
-      "nflTeam": "NYJ",
-      "questions": [
-        "What current official availability designation or team-reported injury context is relevant?",
-        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
-      ]
-    },
-    {
-      "key": "player:9488",
-      "label": "Jaxon Smith-Njigba",
-      "type": "player",
-      "nflTeam": "SEA",
-      "questions": [
-        "What current official availability designation or team-reported injury context is relevant?",
-        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
-      ]
-    },
-    {
-      "key": "player:4881",
-      "label": "Lamar Jackson",
-      "type": "player",
-      "nflTeam": "BAL",
+      "nflTeam": "ATL",
       "questions": [
         "What current official availability designation or team-reported injury context is relevant?",
         "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
@@ -257,10 +291,10 @@
       ]
     },
     {
-      "key": "player:JAX",
-      "label": "Jacksonville Jaguars",
+      "key": "player:9488",
+      "label": "Jaxon Smith-Njigba",
       "type": "player",
-      "nflTeam": "JAX",
+      "nflTeam": "SEA",
       "questions": [
         "What current official availability designation or team-reported injury context is relevant?",
         "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
@@ -271,6 +305,16 @@
       "label": "Justin Jefferson",
       "type": "player",
       "nflTeam": "MIN",
+      "questions": [
+        "What current official availability designation or team-reported injury context is relevant?",
+        "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
+      ]
+    },
+    {
+      "key": "player:4881",
+      "label": "Lamar Jackson",
+      "type": "player",
+      "nflTeam": "BAL",
       "questions": [
         "What current official availability designation or team-reported injury context is relevant?",
         "What recent role, usage, milestone, or NFL-game context is well sourced and materially useful?"
@@ -294,11 +338,12 @@
   },
   "writerPolicy": {
     "model": "gpt-5.6-terra",
+    "serviceTier": "flex",
     "receivesTools": false,
-    "maximumOutputTokens": 3600,
+    "maximumOutputTokens": 6000,
     "hardWriterCostUsd": 0.055,
-    "requestCharacters": 39455,
-    "roughLocalTokenEstimate": 9864,
+    "requestCharacters": 56087,
+    "roughLocalTokenEstimate": 14022,
     "citationAliases": true,
     "reusableSchemaDefinitions": true
   },
@@ -309,6 +354,7 @@
     "manager:450705025862201344",
     "manager:79220990290575360",
     "manager:92288423205158912",
+    "manager:450755017129848832",
     "manager:450905805542125568",
     "manager:450908261617496064",
     "manager:463423832728793088",

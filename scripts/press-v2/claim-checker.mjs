@@ -226,6 +226,9 @@ function normalizeFactEntry(fact, identities) {
     markers: unique(markersIn(claim, fact.kind, fact.tags)).sort(),
     matchupIds: fact?.context?.matchupId == null ? [] : [Number(fact.context.matchupId)],
     kind: fact.kind || null,
+    subjectKey: entityKey(fact.subject),
+    value: fact.value,
+    tags: fact.tags || [],
     context: fact.context || {},
     sourceUrls: [],
     availabilityStatus: fact.kind === 'player_availability_status' ? String(fact.value) : null,
@@ -347,6 +350,13 @@ export function articleNarrativeBlocks(article) {
   if (typeof article.dek === 'string') blocks.push({ path: '$.dek', text: article.dek, claimIds: leadIds });
   add('$.thesis', article.thesis);
   (article.lead || []).forEach((block, index) => add(`$.lead[${index}]`, block));
+  const season = article.seasonStoryline;
+  const seasonBlocks = [season?.thesis, ...(season?.body || []), season?.whyNow, season?.carryForward];
+  if (typeof season?.headline === 'string') blocks.push({ path: '$.seasonStoryline.headline', text: season.headline, claimIds: idsFrom(seasonBlocks) });
+  add('$.seasonStoryline.thesis', season?.thesis);
+  (season?.body || []).forEach((block, index) => add(`$.seasonStoryline.body[${index}]`, block));
+  add('$.seasonStoryline.whyNow', season?.whyNow);
+  add('$.seasonStoryline.carryForward', season?.carryForward);
   if (typeof article.mainEvent?.headline === 'string') blocks.push({ path: '$.mainEvent.headline', text: article.mainEvent.headline, claimIds: idsFrom(article.mainEvent.body) });
   (article.mainEvent?.body || []).forEach((block, index) => add(`$.mainEvent.body[${index}]`, block));
   (article.supportingStories || []).forEach((story, storyIndex) => {
@@ -358,8 +368,10 @@ export function articleNarrativeBlocks(article) {
     (section?.body || []).forEach((block, index) => add(`$.deskSections[${sectionIndex}].body[${index}]`, block));
   });
   (article.aroundLeague || []).forEach((entry, index) => {
-    if (typeof entry?.headline === 'string') blocks.push({ path: `$.aroundLeague[${index}].headline`, text: entry.headline, claimIds: entry?.factIds });
-    blocks.push({ path: `$.aroundLeague[${index}].body`, text: entry?.body, claimIds: entry?.factIds });
+    const entryIds = Array.isArray(entry?.body) ? idsFrom(entry.body) : entry?.factIds;
+    if (typeof entry?.headline === 'string') blocks.push({ path: `$.aroundLeague[${index}].headline`, text: entry.headline, claimIds: entryIds });
+    if (Array.isArray(entry?.body)) entry.body.forEach((block, bodyIndex) => add(`$.aroundLeague[${index}].body[${bodyIndex}]`, block));
+    else blocks.push({ path: `$.aroundLeague[${index}].body`, text: entry?.body, claimIds: entry?.factIds });
   });
   add('$.pullQuote', article.pullQuote);
   return blocks;
@@ -383,13 +395,15 @@ function levenshtein(left, right) {
 
 function noncanonicalEntityIssues(text, identities, path) {
   const issues = [];
-  const words = String(text || '').match(/[A-Za-z0-9_'-]+/g) || [];
+  const words = String(text || '').replace(/['’]s\b/g, '').match(/[A-Za-z0-9_'-]+/g) || [];
   for (const identity of identities.filter((item) => item.type === 'manager' || item.type === 'player')) {
     const expected = compactEntity(identity.label);
     const expectedWords = identity.label.match(/[A-Za-z0-9_'-]+/g)?.length || 1;
     for (let size = Math.max(1, expectedWords - 1); size <= expectedWords + 1; size += 1) {
       for (let start = 0; start + size <= words.length; start += 1) {
         const rendered = words.slice(start, start + size).join(' ');
+        // A correct name followed by an ordinary word or score is not a near-miss name.
+        if (new RegExp(`(?:^|[^A-Za-z0-9_])${escapePattern(identity.label)}(?:$|[^A-Za-z0-9_])`).test(rendered)) continue;
         if (!/[A-Z0-9_]/.test(rendered)) continue;
         const candidate = compactEntity(rendered);
         if (candidate === expected && rendered !== identity.label) {
@@ -441,10 +455,15 @@ function relationshipIssues(text, identities, citedEntries, path) {
     const positioned = positionedIdentityMentions(sentence, identities);
     const managers = positioned.filter(({ identity }) => identity.type === 'manager');
     const players = positioned.filter(({ identity }) => identity.type === 'player');
+    const hasDirectMatchupAssertion = /\b(?:defeated|defeats|beat|beats|lost to|loses to|fell to|falls to|was beaten by|tied|routed|crushed|edged|topped|handled|downed|bested|prevailed|triumphed|triumphs|won against|wins against|won over|wins over)\b/i.test(sentence);
+    const seasonContext = !hasDirectMatchupAssertion
+      && citedEntries.some((entry) => /^season_/.test(entry.kind || '') || entry.tags?.includes('current-season'))
+      && (/\b(?:season|scoring|standings|record|start|win column|through Week|title defense|career|next chapter|next test|needs?\b[^.!?]{0,140}\b(?:wins?|losses?|lead|standing))\b/i.test(sentence)
+        || citedEntries.every((entry) => entry.matchupIds.length === 0));
     for (const relation of sentence.matchAll(new RegExp(RELATIONSHIP_PATTERN.source, 'gi'))) {
       const before = managers.filter((mention) => mention.end <= relation.index).at(-1);
       const after = managers.find((mention) => mention.start >= relation.index + relation[0].length);
-      if (before && after && before.identity.key !== after.identity.key) {
+      if (before && after && before.identity.key !== after.identity.key && !seasonContext) {
         const pair = [before.identity.key, after.identity.key];
         const verb = relation[0].toLowerCase();
         const directionalWin = /^(?:beat|beats|defeated|defeats|led|leads|edged|edges|outscored|outscores|topped|tops|routed|routes|crushed|crushes|handled|handles|downed|downs|bested|bests|slipped past|prevailed over|prevails over|prevailed against|prevails against|won against|wins against|won over|wins over|margin over)$/.test(verb);
@@ -471,17 +490,59 @@ function relationshipIssues(text, identities, citedEntries, path) {
     }
     const orderedManagers = managers.filter((mention, index, rows) => rows.findIndex((row) => row.identity.key === mention.identity.key) === index);
     const orderedScore = sentence.match(/(-?\d+(?:\.\d+)?)\s*[–—-]\s*(-?\d+(?:\.\d+)?)/);
+    const recordAtoms = citedEntries.filter((entry) => ['season_record', 'season_all_play_record'].includes(entry.kind));
+    let seasonRecord = false;
+    if (seasonContext && orderedScore && [Number(orderedScore[1]), Number(orderedScore[2])].every((value) => Number.isInteger(value) && value >= 0)) {
+      const records = [...sentence.matchAll(/(?<![\d.])(\d{1,2})\s*[–—-]\s*(\d{1,2})(?:\s*[–—-]\s*(\d{1,2}))?(?![\d.])/g)];
+      seasonRecord = records.length > 0 && records.every((record) => {
+        const prefix = sentence.slice(0, record.index);
+        const recordContext = sentence.slice(Math.max(0, record.index - 55), record.index + record[0].length + 55);
+        const genericGroup = /\b(?:[\d]+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+(?:managers|teams)(?:\s+[a-z]+){0,8}\s*$/i.test(prefix) || /\b(?:pack|group|managers|teams)\b[^.!?;]{0,12}$/i.test(prefix);
+        let owner = genericGroup ? null : managers.filter((mention) => mention.end <= record.index).at(-1);
+        if (/\b(?:the )?reigning champion(?:['’]s)?\b[^.!?;]{0,25}$/i.test(prefix)) {
+          const champions = citedEntries.filter((entry) => entry.subjectKey && /\breigning\b[^.!?]{0,25}\bchampion\b/i.test(entry.claim));
+          const championKeys = unique(champions.map((entry) => entry.subjectKey));
+          if (championKeys.length === 1) owner = { identity: { key: championKeys[0], label: identities.find((identity) => identity.key === championKeys[0])?.label || 'the reigning champion' } };
+        }
+        const expectedKind = /\ball[- ]play\b/i.test(recordContext) ? 'season_all_play_record' : 'season_record';
+        const supportedAtom = recordAtoms.some((entry) => entry.kind === expectedKind && (!owner || entry.subjectKey === owner.identity.key)
+          && entry.value?.wins === Number(record[1]) && entry.value?.losses === Number(record[2])
+          && (entry.value?.ties || 0) === Number(record[3] || 0));
+        const exactRecord = new RegExp(`(?<![\\d.])${record[1]}\\s*[–—-]\\s*${record[2]}${record[3] ? `\\s*[–—-]\\s*${record[3]}` : ''}(?!\\d|\\.\\d)`);
+        const groupAtom = genericGroup && citedEntries.some((entry) => entry.tags?.includes('current-season') && exactRecord.test(entry.claim));
+        const historicalAtom = /\b20\d{2}\b/.test(recordContext) && citedEntries.some((entry) => entry.kind === 'manager_canonical_lore' && (!owner || entry.subjectKey === owner.identity.key) && exactRecord.test(entry.claim));
+        const supported = supportedAtom || groupAtom || historicalAtom;
+        if (!supported) issues.push(issue('relationship.season_record_mismatch', path, `Season record ${record[0]} lacks a matching cited record atom${owner ? ` for ${owner.identity.label}` : ''}.`));
+        return supported;
+      });
+    }
+    if (seasonContext) {
+      const relevantKind = /\b(?:points|scoring)\b/i.test(sentence) ? 'season_points_for' : 'season_standing_rank';
+      for (const comparison of sentence.matchAll(/\b(led|leads|outscored|outscores|trailed|trails|ahead of|behind)\b/gi)) {
+        if (/\b(?:both|their|the)\s*$/i.test(sentence.slice(0, comparison.index))) continue;
+        const before = managers.filter((mention) => mention.end <= comparison.index).at(-1);
+        const after = managers.find((mention) => mention.start >= comparison.index + comparison[0].length);
+        if (!before || !after || before.identity.key === after.identity.key) continue;
+        const first = citedEntries.find((entry) => entry.kind === relevantKind && entry.subjectKey === before.identity.key);
+        const second = citedEntries.find((entry) => entry.kind === relevantKind && entry.subjectKey === after.identity.key);
+        const firstIsAhead = !/trailed|trails|behind/i.test(comparison[0]);
+        const supported = first && second && (relevantKind === 'season_standing_rank'
+          ? firstIsAhead ? Number(first.value) < Number(second.value) : Number(first.value) > Number(second.value)
+          : firstIsAhead ? Number(first.value) > Number(second.value) : Number(first.value) < Number(second.value));
+        if (!supported) issues.push(issue('relationship.season_comparison_mismatch', path, `The ${relevantKind === 'season_points_for' ? 'season scoring' : 'standings'} comparison between ${before.identity.label} and ${after.identity.label} lacks correctly ordered cited evidence.`));
+      }
+    }
     const pairKeys = orderedManagers.map((mention) => mention.identity.key);
     const citedResults = citedEntries.filter((entry) => entry.relationship && pairKeys.length === 2 && pairKeys.every((key) => entry.entityKeys.includes(key)));
     const relevantResults = citedEntries.filter((entry) => entry.relationship && managers.some((manager) => entry.entityKeys.includes(manager.identity.key)));
     const hasMatchupScopedEvidence = citedEntries.some((entry) => entry.matchupIds.length > 0);
-    if (RESULT_ASSERTION_LANGUAGE.test(sentence) && !PROJECTION_ASSERTION_CONTEXT.test(sentence) && managers.length > 0 && relevantResults.length === 0 && (orderedManagers.length >= 2 || hasMatchupScopedEvidence)) {
+    if (RESULT_ASSERTION_LANGUAGE.test(sentence) && !seasonContext && !PROJECTION_ASSERTION_CONTEXT.test(sentence) && managers.length > 0 && relevantResults.length === 0 && (orderedManagers.length >= 2 || hasMatchupScopedEvidence)) {
       issues.push(issue('relationship.result_missing', path, 'Win/loss/lead/tie language requires a cited matchup_result fact.', { entityKeys: managers.map((row) => row.identity.key) }));
     }
-    if (orderedManagers.length === 2 && orderedScore && citedResults.length === 0 && !/\b(?:project(?:ed|ion)?|forecast|estimated|outlook)\b/i.test(sentence)) {
+    if (orderedManagers.length === 2 && orderedScore && !seasonRecord && citedResults.length === 0 && !/\b(?:project(?:ed|ion)?|forecast|estimated|outlook)\b/i.test(sentence)) {
       issues.push(issue('relationship.result_missing', path, 'A two-manager non-projection scoreline requires a cited matchup_result fact.', { entityKeys: pairKeys }));
     }
-    if (orderedManagers.length === 2 && orderedScore && citedResults.length) {
+    if (orderedManagers.length === 2 && orderedScore && !seasonRecord && citedResults.length) {
       const [firstManager, secondManager] = orderedManagers;
       const scoreSupported = citedResults.some((entry) => {
         if (entry.matchupIds.length === 0) return false;
@@ -495,10 +556,10 @@ function relationshipIssues(text, identities, citedEntries, path) {
       if (!scoreSupported) issues.push(issue('relationship.score_mismatch', path, `The ordered scoreline does not match ${firstManager.identity.label} and ${secondManager.identity.label} in the cited matchup result.`, { entityKeys: [firstManager.identity.key, secondManager.identity.key] }));
       if (!CANONICAL_RESULT_LANGUAGE.test(sentence)) issues.push(issue('relationship.result_format', path, 'Result sentences must use defeated/beat/lost to, or led/trailed for a live score, with the verified ordered scoreline.', { entityKeys: pairKeys }));
     }
-    if (orderedManagers.length === 2 && citedResults.length && !orderedScore) {
+    if (orderedManagers.length === 2 && citedResults.length && !orderedScore && !seasonContext) {
       issues.push(issue('relationship.result_format', path, 'A sentence citing a matchup result and naming both managers must include the verified ordered scoreline.', { entityKeys: pairKeys }));
     }
-    if (RESULT_ASSERTION_LANGUAGE.test(sentence) && relevantResults.length) {
+    if (RESULT_ASSERTION_LANGUAGE.test(sentence) && relevantResults.length && !seasonContext) {
       if (orderedManagers.length !== 2 || !orderedScore || !CANONICAL_RESULT_LANGUAGE.test(sentence)) {
         issues.push(issue('relationship.result_format', path, 'Result assertions must name both managers, use the verified ordered scoreline, and use defeated/beat/lost to or led/trailed.', { entityKeys: orderedManagers.map((row) => row.identity.key) }));
       } else {
@@ -634,7 +695,8 @@ export function validateArticleClaims(article, allowedClaims, options = {}) {
     if (NEGATED_PREDICATE_PATTERN.test(text) && !/\bdid not (?:participate|practice)\b/i.test(text)) {
       errors.push(issue('claim.unsupported_predicate', block.path, 'Negated status, projection, transaction, or championship predicates are not permitted; state the verified atom directly.', { marker: 'predicate:negated' }));
     }
-    const availability = assertedAvailability(text);
+    const availabilityText = text.replace(/\bactive career\b/gi, 'career').replace(/\blineups available(?: at capture)?\b/gi, 'captured lineups');
+    const availability = assertedAvailability(availabilityText);
     const mentionedKeys = new Set(mentioned.map((identity) => identity.key));
     const citedAvailability = citedEntries.filter((entry) => entry.availabilityStatus && entry.entityKeys.some((key) => mentionedKeys.has(key)));
     if (citedAvailability.length && !availability) {
@@ -647,7 +709,7 @@ export function validateArticleClaims(article, allowedClaims, options = {}) {
         ? citedEntries.some((entry) => /\bavailable to play\b/i.test(entry.claim))
         : citedEntries.some((entry) => normalizedText(entry.availabilityStatus) === normalizedText(availability));
       if (!supported) errors.push(issue('claim.unsupported_predicate', block.path, `Availability assertion “${availability.replaceAll('_', ' ')}” conflicts with or is absent from this paragraph's cited evidence.`, { marker: `availability:${availability}` }));
-    } else if (AVAILABILITY_LANGUAGE_PATTERN.test(text)) {
+    } else if (AVAILABILITY_LANGUAGE_PATTERN.test(availabilityText)) {
       errors.push(issue('claim.unsupported_predicate', block.path, 'Availability language could not be mapped to a verified status atom.', { marker: 'availability:unclassified' }));
     }
     if (/\b(?:ringless|titleless|without (?:a|any) championships?|without (?:a|any) rings?|no championships?|no rings?)\b/i.test(text)) {

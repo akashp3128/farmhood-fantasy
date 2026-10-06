@@ -70,7 +70,7 @@ export function scoreLongFormArticle(article, context, options = {}) {
 
   let narrativeCoherence = 20;
   narrativeCoherence -= countByPrefix(errors, ['section.']) * 4;
-  narrativeCoherence -= countByPrefix(errors, ['shape.lead', 'shape.feature', 'shape.supporting', 'shape.notebook']) * 3;
+  narrativeCoherence -= countByPrefix(errors, ['shape.lead', 'shape.feature', 'shape.supporting', 'shape.notebook', 'shape.season', 'depth.main_hierarchy']) * 3;
   narrativeCoherence -= countByPrefix(errors, ['matchup.coverage']) * 3;
   if (!article?.thesis?.text) narrativeCoherence -= 5;
   narrativeCoherence = clamp(narrativeCoherence, 0, 20);
