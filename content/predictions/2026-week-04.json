@@ -183,5 +183,6 @@
   ],
   "grading": null,
   "lockedAt": "2026-10-02T19:07:51.613Z",
-  "lockReason": "Weekend Outlook captured after scoring began; it is immutable and ineligible for original-prediction receipts."
+  "lockReason": "Weekend Outlook captured after scoring began; it is immutable and ineligible for original-prediction receipts.",
+  "recapRecordedAt": "2026-10-06T19:26:25.111Z"
 }

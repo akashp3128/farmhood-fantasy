@@ -1,0 +1,614 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-04-recap",
+  "type": "week_recap",
+  "season": 2026,
+  "week": 4,
+  "status": "published",
+  "edition": "Postgame Edition",
+  "title": "Week 4 Recap: maco71 Detonates, martin94 Defends the Belt With a Flamethrower",
+  "dek": "Six finals, one 170-point masterpiece, and a few projected point totals left face-down in the group chat.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-10-06T19:26:25.111Z",
+  "updatedAt": "2026-10-06T19:26:25.111Z",
+  "dataAsOf": "2026-10-06T19:26:25.111Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "maco71 posted the week’s loudest result, rolling Archibaldo 170.94–115.4 behind Kyren Williams and Nico Collins. The 2025 points king is still chasing a first title, but this was the kind of score that makes everyone check whether the settings changed.",
+      "The reigning champion martin94 answered his Week 4 test with a 161.86–82.86 demolition of turi70. Elsewhere, pgorny survived jwislek_20, Siccboi handled Blumbo, cuch beat sidjunlee, and akaaashh took down vpitello34.",
+      "No original pregame forecast was published. The late Weekend Outlook was captured after scoring began and is not eligible for prediction receipts or grading."
+    ],
+    "pullQuote": "maco71 put up 170.94 while DJ Moore scored 2.2. That is not a lineup; that is a flex.",
+    "keyStat": {
+      "label": "Week 4 high score",
+      "value": "170.94",
+      "note": "maco71 over Archibaldo"
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "Archibaldo",
+      "managerB": "maco71",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 24.6,
+      "remainingProjectionA": 100.32,
+      "remainingProjectionB": 91.78,
+      "forecastScoreA": 100.32,
+      "forecastScoreB": 116.38,
+      "forecastWinner": "maco71",
+      "forecastProbability": 0.7093,
+      "startedAtCapture": true,
+      "lockedStarterCount": 2,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 115.4,
+      "currentScoreB": 170.94,
+      "finalScoreA": 115.4,
+      "finalScoreB": 170.94,
+      "winner": "maco71",
+      "headline": "maco71 170.94, Archibaldo 115.4: A scoring-record encore with extra volume",
+      "analysis": "maco71 cleared 170 behind Kyren Williams’ 31.7 and Nico Collins’ 27.3, overwhelming Archibaldo despite CeeDee Lamb’s 32.8. DJ Moore’s 2.2 barely mattered, which is the fantasy equivalent of winning a drag race with the parking brake on.",
+      "keyPlayer": "CeeDee Lamb",
+      "keyPlayerId": "6786",
+      "upsetPath": "",
+      "historyNote": "maco71 set the league’s single-season scoring record in 2025 and is still seeking a first championship.",
+      "injuryWatch": [
+        "DJ Moore — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w4:m1:projection:Archibaldo",
+        "2026:w4:m1:projection:maco71",
+        "2026:w4:m1:pick",
+        "points:2025:maco71",
+        "titles:maco71"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "jwislek_20",
+      "managerB": "pgorny",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 117.78,
+      "remainingProjectionB": 110.16,
+      "forecastScoreA": 117.78,
+      "forecastScoreB": 110.16,
+      "forecastWinner": "jwislek_20",
+      "forecastProbability": 0.6043,
+      "startedAtCapture": false,
+      "lockedStarterCount": 0,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 117.42,
+      "currentScoreB": 122.98,
+      "finalScoreA": 117.42,
+      "finalScoreB": 122.98,
+      "winner": "pgorny",
+      "headline": "pgorny 122.98, jwislek_20 117.42: Five-and-a-half points and a very uncomfortable Monday",
+      "analysis": "pgorny got 23.08 from C.J. Stroud, 23.2 from Puka Nacua and 18.4 from Sam LaPorta to edge jwislek_20 by 5.56. Joe Burrow and Emanuel Wilson did their part for jwislek_20, but Ja’Marr Chase was listed Out and finished with 4.2.",
+      "keyPlayer": "Emanuel Wilson",
+      "keyPlayerId": "11435",
+      "upsetPath": "",
+      "historyNote": "pgorny owns consecutive titles from 2022 and 2023.",
+      "injuryWatch": [
+        "Ja'Marr Chase — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w4:m2:projection:jwislek_20",
+        "2026:w4:m2:projection:pgorny",
+        "2026:w4:m2:pick",
+        "champion:2022",
+        "champion:2023"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "Blumbo",
+      "managerB": "Siccboi",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 10.2,
+      "remainingProjectionA": 133.68,
+      "remainingProjectionB": 107.57,
+      "forecastScoreA": 133.68,
+      "forecastScoreB": 117.77,
+      "forecastWinner": "Blumbo",
+      "forecastProbability": 0.7076,
+      "startedAtCapture": true,
+      "lockedStarterCount": 1,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 107.26,
+      "currentScoreB": 117.4,
+      "finalScoreA": 107.26,
+      "finalScoreB": 117.4,
+      "winner": "Siccboi",
+      "headline": "Siccboi 117.4, Blumbo 107.26: The Walker-and-Flowers rally ran into a Rice-sized crater",
+      "analysis": "Blumbo received 30.4 from Kenneth Walker and 21.8 from Zay Flowers, but Parker Washington’s 1.5 left too much work for the rest of the roster. Siccboi banked 22.2 from Jonathan Taylor and 25.4 from Chuba Hubbard, surviving a zero from Rashee Rice, who was listed Questionable.",
+      "keyPlayer": "Kenneth Walker",
+      "keyPlayerId": "8151",
+      "upsetPath": "",
+      "historyNote": "Siccboi won the 2015 Founders Era title.",
+      "injuryWatch": [
+        "Rashee Rice — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w4:m3:projection:Blumbo",
+        "2026:w4:m3:projection:Siccboi",
+        "2026:w4:m3:pick",
+        "champion:2015"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "martinch94",
+      "managerB": "turi70",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 107.27,
+      "remainingProjectionB": 110.86,
+      "forecastScoreA": 107.27,
+      "forecastScoreB": 110.86,
+      "forecastWinner": "turi70",
+      "forecastProbability": 0.5497,
+      "startedAtCapture": false,
+      "lockedStarterCount": 0,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 161.86,
+      "currentScoreB": 82.86,
+      "finalScoreA": 161.86,
+      "finalScoreB": 82.86,
+      "winner": "martinch94",
+      "headline": "martinch94 161.86, turi70 82.86: The champion chose violence",
+      "analysis": "martinch94 nearly doubled turi70, powered by Tetairoa McMillan’s 38.2 and Kyle Monangai’s 27.5. Turi70 got 21.2 from Tee Higgins, listed Questionable, but Saquon Barkley was listed Out and scored 1.5 as the matchup became a very expensive viewing party.",
+      "keyPlayer": "Tetairoa McMillan",
+      "keyPlayerId": "12526",
+      "upsetPath": "",
+      "historyNote": "martinch94 is a three-time champion and the reigning 2025 champion.",
+      "injuryWatch": [
+        "Kyle Monangai — listed Questionable",
+        "Saquon Barkley — listed Out",
+        "Tee Higgins — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w4:m4:projection:martinch94",
+        "2026:w4:m4:projection:turi70",
+        "2026:w4:m4:pick",
+        "champion:2020",
+        "champion:2021",
+        "champion:2025"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "cuch",
+      "managerB": "sidjunlee",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 37.1,
+      "remainingProjectionA": 123.73,
+      "remainingProjectionB": 84.55,
+      "forecastScoreA": 123.73,
+      "forecastScoreB": 121.65,
+      "forecastWinner": "cuch",
+      "forecastProbability": 0.5289,
+      "startedAtCapture": true,
+      "lockedStarterCount": 3,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 119.92,
+      "currentScoreB": 90.02,
+      "finalScoreA": 119.92,
+      "finalScoreB": 90.02,
+      "winner": "cuch",
+      "headline": "cuch 119.92, sidjunlee 90.02: Commissioner’s office remains open, opponent’s scoring closed",
+      "analysis": "cuch rode Javonte Williams’ 28.8 and George Kittle’s 15 to a 29.9-point win. Sidjunlee got near-projection work from Brock Purdy and Jaylen Warren, but Ladd McConkey and Terry McLaurin were listed Out and each posted zero.",
+      "keyPlayer": "Javonte Williams",
+      "keyPlayerId": "7588",
+      "upsetPath": "",
+      "historyNote": "cuch is the current league commissioner.",
+      "injuryWatch": [
+        "Ladd McConkey — listed Out",
+        "Terry McLaurin — listed Out"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w4:m5:projection:cuch",
+        "2026:w4:m5:projection:sidjunlee",
+        "2026:w4:m5:pick",
+        "role:commissioner"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "akaaashh",
+      "managerB": "vpitello34",
+      "receiptEligible": false,
+      "outlookCurrentScoreA": 0,
+      "outlookCurrentScoreB": 0,
+      "remainingProjectionA": 118.9,
+      "remainingProjectionB": 120.75,
+      "forecastScoreA": 118.9,
+      "forecastScoreB": 120.75,
+      "forecastWinner": "vpitello34",
+      "forecastProbability": 0.5257,
+      "startedAtCapture": false,
+      "lockedStarterCount": 0,
+      "forecastStatus": "complete",
+      "missingProjectionPlayers": [],
+      "currentScoreA": 111.02,
+      "currentScoreB": 90.52,
+      "finalScoreA": 111.02,
+      "finalScoreB": 90.52,
+      "winner": "akaaashh",
+      "headline": "akaaashh 111.02, vpitello34 90.52: The founder gets the result, the win-percentage king gets the invoice",
+      "analysis": "akaaashh won by 20.5 with Malik Nabers’ 20.2 and Spencer Shrader’s 16 helping offset Jeremiyah Love’s 6; Love was listed Questionable. vpitello34 received 18.52 from Josh Allen but saw Jahmyr Gibbs and David Montgomery combine for 20 points.",
+      "keyPlayer": "Malik Nabers",
+      "keyPlayerId": "11632",
+      "upsetPath": "",
+      "historyNote": "akaaashh won the 2017 Founders Era title; vpitello34 owns the best active-manager career win percentage.",
+      "injuryWatch": [
+        "Jeremiyah Love — listed Questionable"
+      ],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w4:m6:projection:akaaashh",
+        "2026:w4:m6:projection:vpitello34",
+        "2026:w4:m6:pick",
+        "champion:2017",
+        "alltime:winpct:vpitello34"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "The points king is being extremely unsubtle",
+      "body": "maco71’s 170.94 was the week’s highest score, a reminder that last season’s record-setting offense did not retire—it apparently found louder speakers. The title case remains unfinished, but Week 4 supplied a very persuasive exhibit.",
+      "subjects": [
+        "maco71"
+      ],
+      "factIds": [
+        "2026:w4:m1:projection:maco71",
+        "points:2025:maco71",
+        "titles:martinch94"
+      ]
+    },
+    {
+      "title": "The title defense has its first big statement",
+      "body": "martinch94’s 161.86 was second only to maco71’s explosion and came in an 79-point rout. Reigning champions are allowed to be annoying; scoring 161.86 is how you make it official.",
+      "subjects": [
+        "martinch94",
+        "turi70"
+      ],
+      "factIds": [
+        "2026:w4:m4:projection:martinch94",
+        "2026:w4:m4:projection:turi70",
+        "champion:2025",
+        "titles:martinch94"
+      ]
+    },
+    {
+      "title": "The close one belonged to pgorny",
+      "body": "pgorny’s 122.98–117.42 win over jwislek_20 was Week 4’s narrowest finish, with only 5.56 points separating them. The former back-to-back champion still knows how to make a scoreboard sweat.",
+      "subjects": [
+        "pgorny",
+        "jwislek_20"
+      ],
+      "factIds": [
+        "2026:w4:m2:projection:jwislek_20",
+        "2026:w4:m2:projection:pgorny",
+        "champion:2022",
+        "champion:2023"
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "title": "Nuclear Option",
+      "recipient": "maco71",
+      "body": "For 170.94 points, led by Kyren Williams and Nico Collins. The league-record scorer brought receipts, plus a small explosion.",
+      "factIds": [
+        "2026:w4:m1:projection:maco71",
+        "points:2025:maco71"
+      ]
+    },
+    {
+      "title": "Margin of Error: None Needed",
+      "recipient": "martinch94",
+      "body": "A 161.86–82.86 win is less a matchup than a strongly worded title-defense memo.",
+      "factIds": [
+        "2026:w4:m4:projection:martinch94",
+        "2026:w4:m4:projection:turi70",
+        "champion:2025"
+      ]
+    },
+    {
+      "title": "Sweatbox Survivor",
+      "recipient": "pgorny",
+      "body": "Escaped jwislek_20 by 5.56 points, the smallest margin among the Week 4 finals.",
+      "factIds": [
+        "2026:w4:m2:projection:jwislek_20",
+        "2026:w4:m2:projection:pgorny"
+      ]
+    }
+  ],
+  "receipts": null,
+  "forecastContext": {
+    "mode": "late_outlook_baseline",
+    "capturedAt": "2026-10-02T19:07:51.613Z",
+    "sourceSnapshotId": "farmhood-2026-week-04-live-631609378e555204",
+    "knownScoringIncluded": true,
+    "receiptEligible": false
+  },
+  "lineupSnapshot": {
+    "capturedAt": "2026-10-06T19:26:25.111Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "11563",
+          "9224",
+          "8151",
+          "8146",
+          "9997",
+          "13330",
+          "2133",
+          "9487",
+          "4227",
+          "SEA"
+        ],
+        "lineupHash": "11563.9224.8151.8146.9997.13330.2133.9487.4227.SEA",
+        "projection": 107.26
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "4943",
+          "4034",
+          "13287",
+          "7526",
+          "11632",
+          "8131",
+          "11576",
+          "11157",
+          "12185",
+          "CHI"
+        ],
+        "lineupHash": "4943.4034.13287.7526.11632.8131.11576.11157.12185.CHI",
+        "projection": 111.02
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12507",
+          "12533",
+          "6786",
+          "5045",
+          "7002",
+          "12495",
+          "10213",
+          "2747",
+          "JAX"
+        ],
+        "lineupHash": "3294.12507.12533.6786.5045.7002.12495.10213.2747.JAX",
+        "projection": 115.4
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "11435",
+          "7564",
+          "8144",
+          "11604",
+          "9500",
+          "3634",
+          "11533",
+          "BUF"
+        ],
+        "lineupHash": "6770.12490.11435.7564.8144.11604.9500.3634.11533.BUF",
+        "projection": 117.42
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "6904",
+          "7588",
+          "12481",
+          "9488",
+          "12519",
+          "4217",
+          "12501",
+          "4199",
+          "7839",
+          "BAL"
+        ],
+        "lineupHash": "6904.7588.12481.9488.12519.4217.12501.4199.7839.BAL",
+        "projection": 119.92
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "9228",
+          "8138",
+          "12527",
+          "10232",
+          "12526",
+          "2505",
+          "11631",
+          "12534",
+          "6083",
+          "LV"
+        ],
+        "lineupHash": "9228.8138.12527.10232.12526.2505.11631.12534.6083.LV",
+        "projection": 161.86
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "6797",
+          "4866",
+          "6790",
+          "8167",
+          "6801",
+          "12518",
+          "5001",
+          "8126",
+          "8259",
+          "MIN"
+        ],
+        "lineupHash": "6797.4866.6790.8167.6801.12518.5001.8126.8259.MIN",
+        "projection": 82.86
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "4046",
+          "6813",
+          "11584",
+          "8112",
+          "11834",
+          "12506",
+          "7594",
+          "10229",
+          "12711",
+          "HOU"
+        ],
+        "lineupHash": "4046.6813.11584.8112.11834.12506.7594.10229.12711.HOU",
+        "projection": 117.4
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "12545",
+          "9509",
+          "8150",
+          "7569",
+          "4983",
+          "9484",
+          "12512",
+          "11610",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "12545.9509.8150.7569.4983.9484.12512.11610.11792.PIT",
+        "projection": 170.94
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "9758",
+          "3198",
+          "9508",
+          "9493",
+          "12514",
+          "10859",
+          "8148",
+          "5947",
+          "11786",
+          "GB"
+        ],
+        "lineupHash": "9758.3198.9508.9493.12514.10859.8148.5947.11786.GB",
+        "projection": 122.98
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "8183",
+          "12474",
+          "8228",
+          "7547",
+          "11635",
+          "8130",
+          "5927",
+          "5846",
+          "12015",
+          "CLE"
+        ],
+        "lineupHash": "8183.12474.8228.7547.11635.8130.5927.5846.12015.CLE",
+        "projection": 90.02
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "5892",
+          "8137",
+          "11620",
+          "1466",
+          "9756",
+          "5872",
+          "6650",
+          "KC"
+        ],
+        "lineupHash": "4984.9221.5892.8137.11620.1466.9756.5872.6650.KC",
+        "projection": 90.52
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-04-final-abdd224152718eb2",
+    "predictionId": "farmhood-2026-week-04-late",
+    "predictionKind": "late_forecast",
+    "dataAsOf": "2026-10-06T19:26:25.111Z",
+    "promptVersion": "farmhood-press-v3-late-outlook",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_006043f2d5d97cf9016ac54b62eff487d0a44827b1a645f9d4",
+    "usage": {
+      "inputTokens": 7401,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1934,
+      "reasoningTokens": 0,
+      "totalTokens": 9335,
+      "estimatedCostUsd": 0.03801,
+      "pricingAsOf": "2026-09-08",
+      "preflight": {
+        "requestCharacters": 25493,
+        "localInputTokenEstimate": 7530,
+        "exactInputTokens": 7401,
+        "maxOutputTokens": 2600,
+        "maximumEstimatedCostUsd": 0.046002,
+        "configuredCostLimitUsd": 0.07,
+        "policyMaximumCostUsd": 0.07
+      },
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-04-final-abdd224152718eb2",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Recap",
+    "Week 4",
+    "Lineup Watch"
+  ]
+}

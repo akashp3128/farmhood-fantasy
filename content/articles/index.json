@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-04-late-preview",
-  "updatedAt": "2026-10-02T19:07:51.613Z",
+  "featuredArticleId": "2026-week-04-recap",
+  "updatedAt": "2026-10-06T19:26:25.111Z",
   "articles": [
+    {
+      "articleId": "2026-week-04-recap",
+      "path": "content/articles/2026/week-04-recap.json",
+      "type": "week_recap",
+      "edition": "Postgame Edition",
+      "season": 2026,
+      "week": 4,
+      "status": "published",
+      "title": "Week 4 Recap: maco71 Detonates, martin94 Defends the Belt With a Flamethrower",
+      "dek": "Six finals, one 170-point masterpiece, and a few projected point totals left face-down in the group chat.",
+      "publishedAt": "2026-10-06T19:26:25.111Z",
+      "dataAsOf": "2026-10-06T19:26:25.111Z",
+      "storylines": [
+        "The points king is being extremely unsubtle",
+        "The title defense has its first big statement",
+        "The close one belonged to pgorny"
+      ],
+      "tags": [
+        "Recap",
+        "Week 4",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-04-late-preview",
       "path": "content/articles/2026/week-04-late-preview.json",
