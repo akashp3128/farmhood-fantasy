@@ -1,0 +1,445 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-05-waiver-recap",
+  "type": "week_waiver_recap",
+  "season": 2026,
+  "week": 5,
+  "status": "published",
+  "edition": "Waiver Wire",
+  "title": "Week 5 Waiver Wire: 9 Free-Agent Moves",
+  "dek": "Sleeper recorded 9 completed transactions: 0 waiver claims and 9 free-agent moves, covering 8 adds and 8 drops.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-10-07T23:32:44.852Z",
+  "updatedAt": "2026-10-07T23:32:44.852Z",
+  "dataAsOf": "2026-10-07T23:32:44.852Z",
+  "tone": "verified transaction report",
+  "lead": {
+    "body": [
+      "This report includes only completed Sleeper waiver and free-agent transactions assigned to Week 5. Trades and failed or pending claims are excluded.",
+      "3 managers participated in 9 verified moves. Every player and manager name below comes from the frozen transaction record."
+    ],
+    "pullQuote": "9 completed moves appeared on the Week 5 transaction wire.",
+    "keyStat": {
+      "label": "Completed moves",
+      "value": "9",
+      "note": "8 adds · 8 drops"
+    }
+  },
+  "transactions": [
+    {
+      "transactionId": "1413654285270478848",
+      "sleeperTransactionId": "1413654285270478848",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T20:12:35.337Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "7567",
+          "name": "Kenny Gainwell",
+          "position": "RB",
+          "team": "TB"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "8129",
+          "name": "Dameon Pierce",
+          "position": "RB",
+          "team": "PHI"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413654285270478848"
+      ]
+    },
+    {
+      "transactionId": "1413639372040892416",
+      "sleeperTransactionId": "1413639372040892416",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T19:13:19.745Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "8129",
+          "name": "Dameon Pierce",
+          "position": "RB",
+          "team": "PHI"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "11625",
+          "name": "Adonai Mitchell",
+          "position": "WR",
+          "team": "NYJ"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413639372040892416"
+      ]
+    },
+    {
+      "transactionId": "1413620690589851648",
+      "sleeperTransactionId": "1413620690589851648",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T17:59:05.741Z",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "adds": [
+        {
+          "playerId": "9502",
+          "name": "Tank Dell",
+          "position": "WR",
+          "team": "HOU"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "12542",
+          "name": "Efton Chism",
+          "position": "WR",
+          "team": "NE"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413620690589851648"
+      ]
+    },
+    {
+      "transactionId": "1413542004465356800",
+      "sleeperTransactionId": "1413542004465356800",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T12:46:25.506Z",
+      "rosterId": 3,
+      "manager": "Archibaldo",
+      "adds": [
+        {
+          "playerId": "13833",
+          "name": "Dominic Zvada",
+          "position": "K",
+          "team": "NYG"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "2747",
+          "name": "Jason Myers",
+          "position": "K",
+          "team": "SEA"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413542004465356800"
+      ]
+    },
+    {
+      "transactionId": "1413482535463260160",
+      "sleeperTransactionId": "1413482535463260160",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T08:50:06.991Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "1166",
+          "name": "Kirk Cousins",
+          "position": "QB",
+          "team": "LV"
+        }
+      ],
+      "drops": [],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413482535463260160"
+      ]
+    },
+    {
+      "transactionId": "1413482205035913216",
+      "sleeperTransactionId": "1413482205035913216",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T08:48:48.212Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [],
+      "drops": [
+        {
+          "playerId": "4018",
+          "name": "Joe Mixon",
+          "position": "RB",
+          "team": null
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413482205035913216"
+      ]
+    },
+    {
+      "transactionId": "1413479539517956096",
+      "sleeperTransactionId": "1413479539517956096",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T08:38:12.703Z",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "adds": [
+        {
+          "playerId": "13264",
+          "name": "Dohnte Meyers",
+          "position": "WR",
+          "team": "CIN"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "12536",
+          "name": "Jaylin Noel",
+          "position": "WR",
+          "team": "HOU"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413479539517956096"
+      ]
+    },
+    {
+      "transactionId": "1413475799608111104",
+      "sleeperTransactionId": "1413475799608111104",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T08:23:21.038Z",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "adds": [
+        {
+          "playerId": "DEN",
+          "name": "Denver Broncos",
+          "position": "DEF",
+          "team": "DEN"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "CHI",
+          "name": "Chicago Bears",
+          "position": "DEF",
+          "team": "CHI"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413475799608111104"
+      ]
+    },
+    {
+      "transactionId": "1413473801450106880",
+      "sleeperTransactionId": "1413473801450106880",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 5,
+      "completedAt": "2026-10-07T08:15:24.640Z",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "adds": [
+        {
+          "playerId": "12542",
+          "name": "Efton Chism",
+          "position": "WR",
+          "team": "NE"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "5844",
+          "name": "T.J. Hockenson",
+          "position": "TE",
+          "team": "MIN"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w5:transaction:1413473801450106880"
+      ]
+    }
+  ],
+  "managerSummaries": [
+    {
+      "manager": "akaaashh",
+      "rosterId": 2,
+      "transactionCount": 4,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 4,
+      "adds": 4,
+      "drops": 4,
+      "faabSpent": null
+    },
+    {
+      "manager": "martinch94",
+      "rosterId": 6,
+      "transactionCount": 4,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 4,
+      "adds": 3,
+      "drops": 3,
+      "faabSpent": null
+    },
+    {
+      "manager": "Archibaldo",
+      "rosterId": 3,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 1,
+      "drops": 1,
+      "faabSpent": null
+    }
+  ],
+  "transactionSummary": {
+    "completedTransactions": 9,
+    "waiverClaims": 0,
+    "freeAgentMoves": 9,
+    "adds": 8,
+    "drops": 8,
+    "managersActive": 3,
+    "waiverBidsReported": 0,
+    "faabSpent": null,
+    "highestBids": [],
+    "mostActiveManagers": [
+      "akaaashh",
+      "martinch94"
+    ],
+    "mostActiveCount": 4,
+    "topAddedPositions": [
+      "WR"
+    ],
+    "topAddedPositionCount": 3
+  },
+  "storylines": [
+    {
+      "title": "The activity lead was shared",
+      "body": "akaaashh and martinch94 recorded 4 completed transactions. This is an activity count, not a grade on the moves.",
+      "subjects": [
+        "akaaashh",
+        "martinch94"
+      ],
+      "factIds": [
+        "2026:w5:transaction:1413654285270478848",
+        "2026:w5:transaction:1413639372040892416",
+        "2026:w5:transaction:1413620690589851648",
+        "2026:w5:transaction:1413482535463260160",
+        "2026:w5:transaction:1413482205035913216",
+        "2026:w5:transaction:1413479539517956096",
+        "2026:w5:transaction:1413475799608111104",
+        "2026:w5:transaction:1413473801450106880"
+      ]
+    },
+    {
+      "title": "No successful waiver claims",
+      "body": "Week 5 contained completed free-agent activity but no completed waiver claims.",
+      "subjects": [],
+      "factIds": [
+        "2026:w5:transaction:1413654285270478848",
+        "2026:w5:transaction:1413639372040892416",
+        "2026:w5:transaction:1413620690589851648",
+        "2026:w5:transaction:1413542004465356800",
+        "2026:w5:transaction:1413482535463260160",
+        "2026:w5:transaction:1413482205035913216",
+        "2026:w5:transaction:1413479539517956096",
+        "2026:w5:transaction:1413475799608111104",
+        "2026:w5:transaction:1413473801450106880"
+      ]
+    },
+    {
+      "title": "WR led the add board",
+      "body": "WR accounted for 3 additions among 8 verified adds.",
+      "subjects": [],
+      "factIds": [
+        "2026:w5:transaction:1413620690589851648",
+        "2026:w5:transaction:1413479539517956096",
+        "2026:w5:transaction:1413473801450106880"
+      ]
+    }
+  ],
+  "transactionContext": {
+    "completedOnly": true,
+    "includedTypes": [
+      "waiver",
+      "free_agent"
+    ],
+    "tradesExcluded": true,
+    "timezone": "America/Chicago",
+    "sourceSnapshotId": "farmhood-2026-week-05-transactions-cbcf1acea0d83c05"
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-05-transactions-cbcf1acea0d83c05",
+    "dataAsOf": "2026-10-07T23:32:44.852Z",
+    "provider": "Sleeper API",
+    "endpoint": "https://api.sleeper.app/v1/league/1377086848295260160/transactions/5",
+    "model": "farmhood-transactions-v1",
+    "deterministic": true,
+    "openaiRequests": 0
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-05-transactions-cbcf1acea0d83c05",
+    "completedTransactions": 9,
+    "managersMapped": 3,
+    "playersResolved": 16
+  },
+  "tags": [
+    "Waiver Wire",
+    "Week 5",
+    "Transactions"
+  ]
+}
