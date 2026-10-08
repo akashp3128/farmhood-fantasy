@@ -1,0 +1,148 @@
+name: Farmhood Press V2 shadow lab
+run-name: Press V2 shadow · ${{ inputs.edition }} · 2026 Week ${{ inputs.week }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: Long-form edition to test (never publishes)
+        required: true
+        default: recap
+        type: choice
+        options:
+          - recap
+          - weekend_outlook
+      week:
+        description: 2026 fantasy week with the required frozen snapshots
+        required: true
+        default: "3"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+          - "7"
+          - "8"
+          - "9"
+          - "10"
+          - "11"
+          - "12"
+          - "13"
+          - "14"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: farmhood-press-v2-shadow-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  shadow-edition:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: farmhood-press-v2-paid
+    timeout-minutes: 25
+    steps:
+      - name: Check out reviewed main-branch code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "24"
+
+      - name: Refuse a duplicate paid edition
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUCCESS_ARTIFACT: farmhood-press-v2-${{ inputs.edition }}-week-${{ inputs.week }}
+          SPEND_ARTIFACT: farmhood-press-v2-spend-lock-${{ inputs.edition }}-week-${{ inputs.week }}
+        run: |
+          success_count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${SUCCESS_ARTIFACT}" --jq '.total_count')
+          spend_count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${SPEND_ARTIFACT}" --jq '.total_count')
+          if [ "$success_count" -gt 0 ] || [ "$spend_count" -gt 0 ]; then
+            echo "A successful or paid-attempt artifact already exists for this edition. No OpenAI request was sent."
+            exit 1
+          fi
+
+      - name: Test the isolated newsroom
+        run: node --test scripts/press-v2/**/*.test.mjs scripts/press-v2/*.test.mjs
+
+      - name: Create the spend reservation
+        run: |
+          mkdir -p "${RUNNER_TEMP}/farmhood-press-v2-spend-reservation"
+          printf '%s\n' '{"status":"reserved-before-paid-request","workflowRun":"${{ github.run_id }}","attempt":"${{ github.run_attempt }}","sha":"${{ github.sha }}"}' > "${RUNNER_TEMP}/farmhood-press-v2-spend-reservation/reservation.json"
+
+      - name: Persist the spend reservation
+        uses: actions/upload-artifact@615b319bd27bb32c3d64dca6b6ed6974d5fbe653 # v6.0.0
+        with:
+          name: farmhood-press-v2-spend-lock-${{ inputs.edition }}-week-${{ inputs.week }}
+          path: ${{ runner.temp }}/farmhood-press-v2-spend-reservation/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Generate one evidence-gated shadow edition
+        env:
+          OPENAI_API_KEY: ${{ secrets.PRESS_V2_OPENAI_API_KEY }}
+          PRESS_V2_RECOVERY_DIR: ${{ runner.temp }}/farmhood-press-v2-recovery
+        run: node scripts/press-v2/generate-shadow.mjs --mode generate --edition "${{ inputs.edition }}" --season 2026 --week "${{ inputs.week }}"
+
+      - name: Prove that production Press files were not touched
+        run: |
+          changed=$(git status --short | awk '{print $2}')
+          unexpected=$(printf '%s\n' "$changed" | sed '/^$/d' | grep -Ev '^content/press-v2/' || true)
+          if [ -n "$unexpected" ]; then
+            echo "Press V2 attempted to change files outside content/press-v2/:"
+            printf '%s\n' "$unexpected"
+            exit 1
+          fi
+
+      - name: Upload the review-only edition
+        if: success()
+        uses: actions/upload-artifact@615b319bd27bb32c3d64dca6b6ed6974d5fbe653 # v6.0.0
+        with:
+          name: farmhood-press-v2-${{ inputs.edition }}-week-${{ inputs.week }}
+          path: content/press-v2/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Detect whether a paid response exists
+        id: paid_attempt
+        if: always()
+        env:
+          RECOVERY_DIR: ${{ runner.temp }}/farmhood-press-v2-recovery
+        run: |
+          paid=$(node -e 'const fs=require("fs"),p=process.env.RECOVERY_DIR;let yes=false;if(fs.existsSync(p)){for(const f of fs.readdirSync(p)){if(!f.endsWith(".json"))continue;const j=JSON.parse(fs.readFileSync(`${p}/${f}`));if((j.paidStages||[]).length)yes=true}}process.stdout.write(String(yes))')
+          echo "paid=${paid}" >> "$GITHUB_OUTPUT"
+
+      - name: Sanitize recoverable paid output
+        if: failure() && steps.paid_attempt.outputs.paid == 'true'
+        run: node scripts/press-v2/sanitize-recovery.mjs --input "${{ runner.temp }}/farmhood-press-v2-recovery" --output "${{ runner.temp }}/farmhood-press-v2-safe-recovery"
+
+      - name: Preserve sanitized paid output if an editorial gate rejects it
+        if: failure() && steps.paid_attempt.outputs.paid == 'true'
+        uses: actions/upload-artifact@615b319bd27bb32c3d64dca6b6ed6974d5fbe653 # v6.0.0
+        with:
+          name: farmhood-press-v2-recovery-${{ inputs.edition }}-week-${{ inputs.week }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/farmhood-press-v2-safe-recovery/
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Record the safety boundary
+        if: always()
+        run: |
+          echo "### Farmhood Press V2 shadow lab" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Publication: disabled" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Paid code source: protected main branch only" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Production Press mutation: forbidden" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Research: unrestricted public web, evidence-gated" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Maximum web searches: 3" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Internal estimated spend stop: \$0.09 (owner-approved maximum: \$0.10)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Output: repository-readable workflow artifact only" >> "$GITHUB_STEP_SUMMARY"
