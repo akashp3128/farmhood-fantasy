@@ -4,8 +4,8 @@
   "leagueId": "1377086848295260160",
   "currency": "USD",
   "status": {
-    "currentWeek": 4,
-    "completedThroughWeek": 4,
+    "currentWeek": 5,
+    "completedThroughWeek": 5,
     "season": "pending",
     "nextRun": "Tuesday at 9:00 AM America/Chicago"
   },
@@ -15,8 +15,8 @@
     "weeklyHighPoolCents": 42000,
     "positionPoolCents": 14000,
     "rivalryPoolCents": 30000,
-    "awardedCents": 31000,
-    "reservedCents": 269000
+    "awardedCents": 40000,
+    "reservedCents": 260000
   },
   "rules": {
     "weeklyPositionEligibility": "Starting players only. QB, RB, WR, TE, K and DEF awards follow the player's listed position. FLEX awards follow the occupied starting FLEX slot.",
@@ -882,27 +882,70 @@
     },
     {
       "week": 5,
-      "status": "pending",
+      "status": "final",
       "position": "RB",
       "highScore": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 3000,
-        "leaders": [],
-        "allocations": []
+        "leaders": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash",
+            "score": 149.36
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash",
+            "shareCents": 3000
+          }
+        ]
       },
       "positionPrize": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 1000,
-        "leaders": [],
-        "allocations": [],
         "position": "RB",
-        "players": []
+        "players": [
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince",
+            "playerId": "9221",
+            "playerName": "Jahmyr Gibbs",
+            "position": "RB",
+            "slot": "RB",
+            "score": 35.2
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince"
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince",
+            "shareCents": 1000
+          }
+        ]
       },
       "rivalry": {
         "id": "jimmy-marco",
         "week": 5,
         "matchupId": 1,
-        "status": "pending",
+        "status": "final",
         "awardCents": 5000,
         "participants": [
           {
@@ -918,13 +961,142 @@
             "firstName": "Marco"
           }
         ],
-        "scores": [],
-        "leaders": [],
-        "allocations": []
+        "scores": [
+          {
+            "ownerId": "450707444838952960",
+            "rosterId": 4,
+            "manager": "jwislek_20",
+            "firstName": "Jimmy",
+            "score": 111.8
+          },
+          {
+            "ownerId": "450905805542125568",
+            "rosterId": 9,
+            "manager": "maco71",
+            "firstName": "Marco",
+            "score": 80.04
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "450707444838952960",
+            "rosterId": 4,
+            "manager": "jwislek_20",
+            "firstName": "Jimmy",
+            "score": 111.8
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "450707444838952960",
+            "rosterId": 4,
+            "manager": "jwislek_20",
+            "firstName": "Jimmy",
+            "shareCents": 5000
+          }
+        ]
       },
-      "finalizedAt": null,
+      "finalizedAt": "2026-10-13T20:05:00.610Z",
       "correctedAt": null,
-      "sourceDigest": null
+      "sourceDigest": "4a4e3e15eb1a7253a1f174b9f0a539ce519112746502c9377397e250460b9f0c",
+      "teamScores": [
+        {
+          "ownerId": "79220990290575360",
+          "rosterId": 1,
+          "manager": "Blumbo",
+          "firstName": "Albert",
+          "scoreUnits": 11592,
+          "score": 115.92
+        },
+        {
+          "ownerId": "89787120084205568",
+          "rosterId": 2,
+          "manager": "akaaashh",
+          "firstName": "Akash",
+          "scoreUnits": 14936,
+          "score": 149.36
+        },
+        {
+          "ownerId": "450705025862201344",
+          "rosterId": 3,
+          "manager": "Archibaldo",
+          "firstName": "Sasha",
+          "scoreUnits": 6664,
+          "score": 66.64
+        },
+        {
+          "ownerId": "450707444838952960",
+          "rosterId": 4,
+          "manager": "jwislek_20",
+          "firstName": "Jimmy",
+          "scoreUnits": 11180,
+          "score": 111.8
+        },
+        {
+          "ownerId": "92288423205158912",
+          "rosterId": 5,
+          "manager": "cuch",
+          "firstName": "Dom",
+          "scoreUnits": 11190,
+          "score": 111.9
+        },
+        {
+          "ownerId": "92391164216754176",
+          "rosterId": 6,
+          "manager": "martinch94",
+          "firstName": "Martin",
+          "scoreUnits": 7680,
+          "score": 76.8
+        },
+        {
+          "ownerId": "87253894098731008",
+          "rosterId": 7,
+          "manager": "turi70",
+          "firstName": "Sal",
+          "scoreUnits": 13700,
+          "score": 137
+        },
+        {
+          "ownerId": "450755017129848832",
+          "rosterId": 8,
+          "manager": "Siccboi",
+          "firstName": "Ian",
+          "scoreUnits": 14604,
+          "score": 146.04
+        },
+        {
+          "ownerId": "450905805542125568",
+          "rosterId": 9,
+          "manager": "maco71",
+          "firstName": "Marco",
+          "scoreUnits": 8004,
+          "score": 80.04
+        },
+        {
+          "ownerId": "450908261617496064",
+          "rosterId": 10,
+          "manager": "pgorny",
+          "firstName": "Pat",
+          "scoreUnits": 14368,
+          "score": 143.68
+        },
+        {
+          "ownerId": "463423832728793088",
+          "rosterId": 11,
+          "manager": "sidjunlee",
+          "firstName": "Sid",
+          "scoreUnits": 12336,
+          "score": 123.36
+        },
+        {
+          "ownerId": "464552386170449920",
+          "rosterId": 12,
+          "manager": "vpitello34",
+          "firstName": "Vince",
+          "scoreUnits": 11180,
+          "score": 111.8
+        }
+      ]
     },
     {
       "week": 6,
@@ -1182,6 +1354,17 @@
   ],
   "managerTotals": [
     {
+      "ownerId": "89787120084205568",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "firstName": "Akash",
+      "weeklyHighCents": 3000,
+      "positionCents": 0,
+      "rivalryCents": 5000,
+      "seasonCents": 0,
+      "totalCents": 8000
+    },
+    {
       "ownerId": "450705025862201344",
       "rosterId": 3,
       "manager": "Archibaldo",
@@ -1193,6 +1376,17 @@
       "totalCents": 8000
     },
     {
+      "ownerId": "450707444838952960",
+      "rosterId": 4,
+      "manager": "jwislek_20",
+      "firstName": "Jimmy",
+      "weeklyHighCents": 0,
+      "positionCents": 1000,
+      "rivalryCents": 5000,
+      "seasonCents": 0,
+      "totalCents": 6000
+    },
+    {
       "ownerId": "87253894098731008",
       "rosterId": 7,
       "manager": "turi70",
@@ -1202,17 +1396,6 @@
       "rivalryCents": 5000,
       "seasonCents": 0,
       "totalCents": 6000
-    },
-    {
-      "ownerId": "89787120084205568",
-      "rosterId": 2,
-      "manager": "akaaashh",
-      "firstName": "Akash",
-      "weeklyHighCents": 0,
-      "positionCents": 0,
-      "rivalryCents": 5000,
-      "seasonCents": 0,
-      "totalCents": 5000
     },
     {
       "ownerId": "92288423205158912",
@@ -1248,10 +1431,10 @@
       "totalCents": 3000
     },
     {
-      "ownerId": "450707444838952960",
-      "rosterId": 4,
-      "manager": "jwislek_20",
-      "firstName": "Jimmy",
+      "ownerId": "450908261617496064",
+      "rosterId": 10,
+      "manager": "pgorny",
+      "firstName": "Pat",
       "weeklyHighCents": 0,
       "positionCents": 1000,
       "rivalryCents": 0,
@@ -1259,10 +1442,10 @@
       "totalCents": 1000
     },
     {
-      "ownerId": "450908261617496064",
-      "rosterId": 10,
-      "manager": "pgorny",
-      "firstName": "Pat",
+      "ownerId": "464552386170449920",
+      "rosterId": 12,
+      "manager": "vpitello34",
+      "firstName": "Vince",
       "weeklyHighCents": 0,
       "positionCents": 1000,
       "rivalryCents": 0,
@@ -1301,17 +1484,6 @@
       "rivalryCents": 0,
       "seasonCents": 0,
       "totalCents": 0
-    },
-    {
-      "ownerId": "464552386170449920",
-      "rosterId": 12,
-      "manager": "vpitello34",
-      "firstName": "Vince",
-      "weeklyHighCents": 0,
-      "positionCents": 0,
-      "rivalryCents": 0,
-      "seasonCents": 0,
-      "totalCents": 0
     }
   ],
   "audit": {
@@ -1321,10 +1493,10 @@
   "source": {
     "provider": "Sleeper",
     "leagueId": "1377086848295260160",
-    "completedThroughWeek": 4,
+    "completedThroughWeek": 5,
     "teamScorePolicy": "custom_points when present, otherwise points",
     "playerScorePolicy": "players_points cross-checked against starters_points"
   },
-  "revision": "d47aaf788272e2f0a126cd104af27f6919eade46937ceca3c97f4528de3e89ee",
-  "updatedAt": "2026-10-06T19:18:11.535Z"
+  "revision": "43d1cbfecd74b1628d5492a921e31b770a25fe07776a99c8e8a7cee862fce019",
+  "updatedAt": "2026-10-13T20:05:00.610Z"
 }
