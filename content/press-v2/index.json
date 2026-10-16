@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "farmhood_press_v2_shadow_index",
+  "shadowOnly": true,
+  "featuredArticleId": "2026-week-03-recap-v2-layout-preview",
+  "articles": [
+    {
+      "articleId": "2026-week-03-recap-v2-layout-preview",
+      "status": "format_preview",
+      "sampleType": "manually_authored_review",
+      "paidGeneratorRepresentative": false,
+      "season": 2026,
+      "week": 3,
+      "edition": "recap",
+      "title": "Week 3: cuch sets the pace, and the champions have to answer",
+      "dek": "The commissioner is the lone unbeaten manager. Behind him, six teams share a record, the reigning champion is searching for points, and each Week 3 result adds a different chapter.",
+      "generatedAt": "2026-10-04T15:00:00.000Z",
+      "publishedAt": "2026-10-04T15:00:00.000Z",
+      "dataAsOf": "2026-09-29T19:17:52.706Z",
+      "storylines": [
+        "cuch’s unbeaten start leads a six-manager pursuit",
+        "jwislek_20’s rise challenges martinch94’s title defense",
+        "Archibaldo’s narrow wins meet Blumbo’s falling weekly totals"
+      ],
+      "path": "content/press-v2/fixtures/week-03-layout-preview.json"
+    }
+  ]
+}

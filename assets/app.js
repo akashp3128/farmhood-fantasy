@@ -462,7 +462,7 @@ function showToast(msg){
 function renderPower(){
   const app=$('#app');
   app.appendChild(header('2026 Live Power Rankings','Power Rankings',
-    'A live, explainable power board built from the official Sleeper feed — current form, lineup strength, luck, movement and just enough league-approved disrespect.'));
+    'Follow the power race, see who is moving, and open any manager’s ranking for the math. Updated from Sleeper.'));
   const mount=el('section','live-power');
   mount.appendChild(liveLoading('Calculating the live power table…'));app.appendChild(mount);
   if(window.FarmhoodLive)mountLivePower(mount);
@@ -471,7 +471,8 @@ function renderPower(){
 }
 
 function mountLivePower(node){
-  let request=0,hasRendered=false,trendChart=null,insightsOpen=false;
+  let request=0,hasRendered=false,insightsOpen=false;
+  const trendState={scope:'top6',focus:null,checkpoint:null,tableOpen:false};
   const openManagers=new Set();
   const update=async force=>{
     const token=++request;
@@ -487,30 +488,28 @@ function mountLivePower(node){
       const focusedControl=liveFocusKey(node);
       const focused=document.activeElement&&node.contains(document.activeElement)&&document.activeElement.closest&&document.activeElement.closest('.power-rank-item');
       const focusedManager=focused&&focused.dataset.manager;
-      if(trendChart&&typeof trendChart.destroy==='function'){trendChart.destroy();trendChart=null;}
       node.innerHTML='';node.appendChild(liveStatusBar(snapshot,()=>update(true)));
+      if(window.FarmhoodPowerTrend&&typeof window.FarmhoodPowerTrend.render==='function'){
+        node.appendChild(window.FarmhoodPowerTrend.render(ranking,trendState));
+      }else{
+        const fallback=el('section','power-trend-empty');
+        fallback.appendChild(el('h2','h','Rank movement'));
+        fallback.appendChild(el('p','sub','The visual timeline is temporarily unavailable. Exact weekly ranks are still shown inside each manager’s ranking below.'));
+        node.appendChild(fallback);
+      }
       if(players.source==='unavailable')node.appendChild(liveError('Starter projections are temporarily unavailable, so lineup strength is neutral and the remaining live signals stay unchanged.'));
       node.appendChild(renderPowerPodium(ranking));
       if(ranking.provisional)node.appendChild(el('div','note live-provisional','● Provisional: the current week is still in progress, so scores and matchup leaders can move this table until Sleeper finalizes the results.'));
       node.appendChild(renderPowerRankList(ranking,openManagers));
       const insights=el('div','power-insights');insights.appendChild(renderPowerStorylines(ranking));
-      let trendCanvas=null;
-      if(ranking.trendLabels.length>1){
-        trendCanvas=chartCanvas(insights,'Rank Movement <span class="badge muted">weekly checkpoints · current top 6</span>',340);
-      }else{
-        const trend=el('section','section power-trend-empty');
-        trend.appendChild(el('h2','h','<span class="bar"></span>Rank Movement'));
-        trend.appendChild(el('div','note','The first trend line appears when Week 1 scoring begins. Every checkpoint after that compares against the previous cumulative ranking.'));
-        insights.appendChild(trend);
-      }
       if(!ranking.scoredWeeks){
         insights.appendChild(el('div','note','Preseason model: <b>80% all-time foundation + 20% current starting-lineup strength.</b> Results gain another 20 points of weight after each finalized week and fully take over after Week 4.'));
       }
       insights.appendChild(el('div','note live-formula','2026 formula: <b>30% all-play · 25% scoring · 20% record · 15% starting-lineup strength · 10% recent form.</b> Historical weight fades completely by Week 4.'));
-      const disclosure=clarityDisclosure('Movement & Method','Storylines, checkpoint chart and the complete scoring formula',insights,{className:'power-insights-disclosure',open:insightsOpen});
+      const disclosure=clarityDisclosure('Behind the rankings','Storylines and the complete scoring formula',insights,{className:'power-insights-disclosure',open:insightsOpen});
       disclosure.querySelector(':scope>summary').dataset.liveFocusKey='power-insights';
-      disclosure.addEventListener('toggle',()=>{insightsOpen=disclosure.open;if(disclosure.open&&trendCanvas&&!trendChart)trendChart=drawPowerTrend(trendCanvas,ranking);});
-      node.appendChild(disclosure);if(disclosure.open&&trendCanvas)trendChart=drawPowerTrend(trendCanvas,ranking);
+      disclosure.addEventListener('toggle',()=>{insightsOpen=disclosure.open;});
+      node.appendChild(disclosure);
       if(focusedManager){
         const focusedItem=[...node.querySelectorAll('.power-rank-item')].find(item=>item.dataset.manager===focusedManager);
         const summary=focusedItem&&focusedItem.querySelector('summary');if(summary)summary.focus({preventScroll:true});
@@ -621,19 +620,6 @@ function renderPowerExplanation(row,ranking){
   const history=el('div','power-rank-history');
   history.textContent='Rank checkpoints: '+ranking.trendLabels.map((label,index)=>`${label} #${ranking.trend[row.name][index]}`).join(' · ');
   panel.appendChild(history);return panel;
-}
-
-function drawPowerTrend(canvas,ranking){
-  describeChart(canvas,ranking.rows.slice(0,6).map(row=>`${row.name}: ${ranking.trendLabels.map((label,index)=>`${label} rank ${ranking.trend[row.name][index]}`).join(', ')}`).join('. '));
-  if(typeof Chart==='undefined'||!canvas||!canvas.getContext)return null;
-  const colors=['#7D5F1A','#1E5A38','#A0432E','#5C6E5F','#856519','#2B764A'];
-  return new Chart(canvas,{type:'line',data:{labels:ranking.trendLabels,datasets:ranking.rows.slice(0,6).map((row,index)=>({
-    label:row.name,data:ranking.trend[row.name],borderColor:colors[index],backgroundColor:colors[index],borderWidth:2,pointRadius:3,tension:.28
-  }))},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'nearest',intersect:false},
-    plugins:{legend:{display:true,labels:{color:'#173B27',boxWidth:12,padding:12,font:{size:10}}},
-      tooltip:{backgroundColor:'#F8F5EB',borderColor:'rgba(23,59,39,.3)',borderWidth:1,titleColor:'#173B27',bodyColor:'#173B27',padding:10}},
-    scales:{x:{grid:{color:'rgba(23,59,39,.1)'},ticks:{color:'#736A50'}},
-      y:{reverse:true,min:1,max:12,grid:{color:'rgba(23,59,39,.1)'},ticks:{stepSize:1,color:'#736A50',callback:value=>'#'+value}}}}});
 }
 
 function renderAllTimePower(app){

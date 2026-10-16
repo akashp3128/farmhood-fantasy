@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "articleId": "canon-2026-storylines",
+      "season": 2026,
+      "week": 1,
+      "edition": "feature",
+      "angles": [
+        "2026-title-defense-martin",
+        "2026-maco-finish-the-job",
+        "2026-lineup-watch"
+      ],
+      "cooldownPhrases": [],
+      "historyFactIds": [],
+      "storyArcs": [
+        {
+          "id": "2026-title-defense-martin",
+          "status": "active",
+          "summary": "martinch94 begins 2026 trying to defend a third championship.",
+          "subjects": ["manager:92391164216754176"]
+        },
+        {
+          "id": "2026-maco-finish-the-job",
+          "status": "active",
+          "summary": "maco71 enters 2026 after setting the 2025 scoring record without winning the title.",
+          "subjects": ["manager:450905805542125568"]
+        },
+        {
+          "id": "2026-lineup-watch",
+          "status": "active",
+          "summary": "Availability and late lineup changes remain a continuing 2026 beat.",
+          "subjects": [
+            "manager:89787120084205568",
+            "manager:450707444838952960",
+            "manager:450755017129848832"
+          ]
+        }
+      ]
+    }
+  ]
+}
