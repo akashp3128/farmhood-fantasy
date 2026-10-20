@@ -4,8 +4,8 @@
   "leagueId": "1377086848295260160",
   "currency": "USD",
   "status": {
-    "currentWeek": 5,
-    "completedThroughWeek": 5,
+    "currentWeek": 6,
+    "completedThroughWeek": 6,
     "season": "pending",
     "nextRun": "Tuesday at 9:00 AM America/Chicago"
   },
@@ -15,8 +15,8 @@
     "weeklyHighPoolCents": 42000,
     "positionPoolCents": 14000,
     "rivalryPoolCents": 30000,
-    "awardedCents": 40000,
-    "reservedCents": 260000
+    "awardedCents": 44000,
+    "reservedCents": 256000
   },
   "rules": {
     "weeklyPositionEligibility": "Starting players only. QB, RB, WR, TE, K and DEF awards follow the player's listed position. FLEX awards follow the occupied starting FLEX slot.",
@@ -1100,26 +1100,167 @@
     },
     {
       "week": 6,
-      "status": "pending",
+      "status": "final",
       "position": "TE",
       "highScore": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 3000,
-        "leaders": [],
-        "allocations": []
+        "leaders": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash",
+            "score": 144.1
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash",
+            "shareCents": 3000
+          }
+        ]
       },
       "positionPrize": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 1000,
-        "leaders": [],
-        "allocations": [],
         "position": "TE",
-        "players": []
+        "players": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash",
+            "playerId": "8131",
+            "playerName": "Isaiah Likely",
+            "position": "TE",
+            "slot": "TE",
+            "score": 20.9
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash"
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "89787120084205568",
+            "rosterId": 2,
+            "manager": "akaaashh",
+            "firstName": "Akash",
+            "shareCents": 1000
+          }
+        ]
       },
       "rivalry": null,
-      "finalizedAt": null,
+      "finalizedAt": "2026-10-20T18:20:56.143Z",
       "correctedAt": null,
-      "sourceDigest": null
+      "sourceDigest": "e195285fdc4b1d71af9eef645b9a04c1d5570a252954b7e8c5ed266e362088f2",
+      "teamScores": [
+        {
+          "ownerId": "79220990290575360",
+          "rosterId": 1,
+          "manager": "Blumbo",
+          "firstName": "Albert",
+          "scoreUnits": 9618,
+          "score": 96.18
+        },
+        {
+          "ownerId": "89787120084205568",
+          "rosterId": 2,
+          "manager": "akaaashh",
+          "firstName": "Akash",
+          "scoreUnits": 14410,
+          "score": 144.1
+        },
+        {
+          "ownerId": "450705025862201344",
+          "rosterId": 3,
+          "manager": "Archibaldo",
+          "firstName": "Sasha",
+          "scoreUnits": 8952,
+          "score": 89.52
+        },
+        {
+          "ownerId": "450707444838952960",
+          "rosterId": 4,
+          "manager": "jwislek_20",
+          "firstName": "Jimmy",
+          "scoreUnits": 10564,
+          "score": 105.64
+        },
+        {
+          "ownerId": "92288423205158912",
+          "rosterId": 5,
+          "manager": "cuch",
+          "firstName": "Dom",
+          "scoreUnits": 12842,
+          "score": 128.42
+        },
+        {
+          "ownerId": "92391164216754176",
+          "rosterId": 6,
+          "manager": "martinch94",
+          "firstName": "Martin",
+          "scoreUnits": 11984,
+          "score": 119.84
+        },
+        {
+          "ownerId": "87253894098731008",
+          "rosterId": 7,
+          "manager": "turi70",
+          "firstName": "Sal",
+          "scoreUnits": 9342,
+          "score": 93.42
+        },
+        {
+          "ownerId": "450755017129848832",
+          "rosterId": 8,
+          "manager": "Siccboi",
+          "firstName": "Ian",
+          "scoreUnits": 8258,
+          "score": 82.58
+        },
+        {
+          "ownerId": "450905805542125568",
+          "rosterId": 9,
+          "manager": "maco71",
+          "firstName": "Marco",
+          "scoreUnits": 8638,
+          "score": 86.38
+        },
+        {
+          "ownerId": "450908261617496064",
+          "rosterId": 10,
+          "manager": "pgorny",
+          "firstName": "Pat",
+          "scoreUnits": 11720,
+          "score": 117.2
+        },
+        {
+          "ownerId": "463423832728793088",
+          "rosterId": 11,
+          "manager": "sidjunlee",
+          "firstName": "Sid",
+          "scoreUnits": 8546,
+          "score": 85.46
+        },
+        {
+          "ownerId": "464552386170449920",
+          "rosterId": 12,
+          "manager": "vpitello34",
+          "firstName": "Vince",
+          "scoreUnits": 9280,
+          "score": 92.8
+        }
+      ]
     },
     {
       "week": 7,
@@ -1358,11 +1499,11 @@
       "rosterId": 2,
       "manager": "akaaashh",
       "firstName": "Akash",
-      "weeklyHighCents": 3000,
-      "positionCents": 0,
+      "weeklyHighCents": 6000,
+      "positionCents": 1000,
       "rivalryCents": 5000,
       "seasonCents": 0,
-      "totalCents": 8000
+      "totalCents": 12000
     },
     {
       "ownerId": "450705025862201344",
@@ -1493,10 +1634,10 @@
   "source": {
     "provider": "Sleeper",
     "leagueId": "1377086848295260160",
-    "completedThroughWeek": 5,
+    "completedThroughWeek": 6,
     "teamScorePolicy": "custom_points when present, otherwise points",
     "playerScorePolicy": "players_points cross-checked against starters_points"
   },
-  "revision": "43d1cbfecd74b1628d5492a921e31b770a25fe07776a99c8e8a7cee862fce019",
-  "updatedAt": "2026-10-13T20:05:00.610Z"
+  "revision": "668cf5624d1418a578fd43fcddd3d161e12f8ffb3922d2429c900afb5bb94dae",
+  "updatedAt": "2026-10-20T18:20:56.143Z"
 }
