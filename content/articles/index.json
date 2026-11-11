@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-09-recap",
-  "updatedAt": "2026-11-11T07:21:32.409Z",
+  "featuredArticleId": "2026-week-09-waiver-recap",
+  "updatedAt": "2026-11-11T07:25:32.839Z",
   "articles": [
+    {
+      "articleId": "2026-week-09-waiver-recap",
+      "path": "content/articles/2026/week-09-waiver-recap.json",
+      "type": "week_waiver_recap",
+      "edition": "Waiver Wire",
+      "season": 2026,
+      "week": 9,
+      "status": "published",
+      "title": "Week 9 Waiver Wire: 1 Claim, 31 Free-Agent Moves",
+      "dek": "Sleeper recorded 32 completed transactions: 1 waiver claim and 31 free-agent moves, covering 21 adds and 27 drops.",
+      "publishedAt": "2026-11-11T07:25:32.839Z",
+      "dataAsOf": "2026-11-11T07:25:32.839Z",
+      "storylines": [
+        "martinch94 led the transaction count",
+        "1 successful waiver claim",
+        "RB led the add board"
+      ],
+      "tags": [
+        "Waiver Wire",
+        "Week 9",
+        "Transactions"
+      ]
+    },
     {
       "articleId": "2026-week-09-recap",
       "path": "content/articles/2026/week-09-recap.json",
