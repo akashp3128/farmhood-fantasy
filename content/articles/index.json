@@ -1,8 +1,37 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-05-waiver-recap",
-  "updatedAt": "2026-10-07T23:32:44.852Z",
+  "featuredArticleId": "2026-week-09-recap",
+  "updatedAt": "2026-11-11T07:21:32.409Z",
   "articles": [
+    {
+      "articleId": "2026-week-09-recap",
+      "path": "content/articles/2026/week-09-recap.json",
+      "type": "week_recap",
+      "edition": "Postgame Edition",
+      "season": 2026,
+      "week": 9,
+      "status": "published",
+      "title": "Week 9 Recap: Blumbo Brings the Flamethrower",
+      "dek": "Six final scores, one 147.86-point demolition, and enough near-misses to keep the group chat medically unnecessary.",
+      "publishedAt": "2026-11-11T07:21:32.409Z",
+      "dataAsOf": "2026-11-11T07:21:32.409Z",
+      "forecastContext": {
+        "mode": "results_only",
+        "receiptEligible": false,
+        "publishedForecastExists": false,
+        "description": "No published Preview or Weekend Outlook forecast exists for this week. This recap reports final results only, with no prediction grade."
+      },
+      "storylines": [
+        "Blumbo sets the pace",
+        "The close-game department stays busy",
+        "Big production, wrong opponent"
+      ],
+      "tags": [
+        "Recap",
+        "Week 9",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-05-waiver-recap",
       "path": "content/articles/2026/week-05-waiver-recap.json",

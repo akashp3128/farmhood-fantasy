@@ -1,17 +1,44 @@
 {
   "schemaVersion": 1,
-  "pricingAsOf": "2026-09-08",
-  "updatedAt": "2026-11-11T07:18:05.423Z",
+  "pricingAsOf": "2026-11-10",
+  "updatedAt": "2026-11-11T07:21:32.409Z",
   "totals": {
-    "requests": 9,
-    "inputTokens": 65300,
+    "requests": 10,
+    "inputTokens": 68936,
     "cachedInputTokens": 0,
     "cacheWriteInputTokens": 0,
-    "outputTokens": 18007,
-    "totalTokens": 83307,
-    "estimatedCostUsd": 0.346684
+    "outputTokens": 19644,
+    "totalTokens": 88580,
+    "estimatedCostUsd": 0.3736
   },
   "entries": [
+    {
+      "id": "resp_0db6cfd258708d41016af4177da20887d0b7c33d8f7e1bfb84",
+      "articleId": "2026-week-09-recap",
+      "type": "week_recap",
+      "season": 2026,
+      "week": 9,
+      "generatedAt": "2026-11-11T07:21:32.409Z",
+      "model": "gpt-5.6-terra",
+      "outcome": "draft_created",
+      "inputTokens": 3636,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1637,
+      "reasoningTokens": 0,
+      "totalTokens": 5273,
+      "estimatedCostUsd": 0.026916,
+      "pricingAsOf": "2026-11-10",
+      "preflight": {
+        "requestCharacters": 13488,
+        "localInputTokenEstimate": 4078,
+        "exactInputTokens": 3636,
+        "maxOutputTokens": 2600,
+        "maximumEstimatedCostUsd": 0.04029,
+        "configuredCostLimitUsd": 0.07,
+        "policyMaximumCostUsd": 0.07
+      }
+    },
     {
       "id": "resp_079145630f3d87dd016ac93f48df7487d19cac613b20f92e2d",
       "articleId": "2026-week-05-late-preview",
