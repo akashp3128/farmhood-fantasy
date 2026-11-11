@@ -1,0 +1,74 @@
+/* Model-checkpoint chart: scoped styles keep the existing Almanac theme intact. */
+.power-trend-section{min-width:0;margin:24px 0 30px;padding:20px;background:var(--surface,#F8F5EB);border:1px solid var(--line,rgba(30,90,56,.28));border-top:3px double var(--text,#173B27)}
+.power-trend-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.power-trend-head .h{margin:0;padding:0;border:0;font-size:24px}
+.power-trend-latest{font-size:11px;font-weight:800;color:var(--blue,#1E5A38);white-space:nowrap}
+.power-trend-description{max-width:80ch;color:var(--muted,#6B6448);font-size:12px;line-height:1.6;margin-bottom:17px}
+.power-trend-controls{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;min-width:0;margin:17px 0 13px;padding-top:14px;border-top:1px solid var(--line,rgba(30,90,56,.28))}
+.power-trend-controls fieldset{min-width:0;border:0;margin:0;padding:0}
+.power-trend-controls legend,.power-trend-select>span{display:block;margin-bottom:5px;padding:0;font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--muted-2,#736A50)}
+.power-trend-scope-buttons,.power-trend-checkpoint-nav{display:flex;gap:4px;flex-wrap:wrap}
+.power-trend-controls button,.power-trend-controls select{min-height:44px;max-width:100%;border:1px solid #687762;border-radius:2px;background:var(--surface,#F8F5EB);color:var(--text,#173B27);font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.power-trend-controls button{padding:9px 11px;white-space:nowrap}
+.power-trend-controls select{width:100%;padding:8px 30px 8px 10px}
+.power-trend-select{display:flex;flex-direction:column;min-width:160px;max-width:100%;flex:1 1 170px}
+.power-trend-checkpoint-select{min-width:138px;flex:0 1 150px}
+.power-trend-controls button[aria-pressed='true']{border-color:var(--blue,#1E5A38);background:var(--blue,#1E5A38);color:var(--surface,#F8F5EB)}
+.power-trend-controls button:hover:not(:disabled),.power-trend-controls select:hover:not(:disabled){box-shadow:inset 0 0 0 1px var(--blue,#1E5A38)}
+.power-trend-controls button:disabled,.power-trend-controls select:disabled{opacity:.46;cursor:not-allowed}
+.power-trend-section button:focus-visible,.power-trend-section select:focus-visible,.power-trend-section summary:focus-visible,.power-trend-chart-scroll:focus-visible,.power-trend-table-scroll:focus-visible{outline:3px solid var(--blue,#1E5A38);outline-offset:3px}
+.power-trend-context{display:flex;justify-content:space-between;align-items:baseline;gap:8px 16px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--line,rgba(30,90,56,.28));font-size:11px}
+.power-trend-context strong{color:var(--text,#173B27);font-weight:800}.power-trend-context>span{color:var(--muted,#6B6448)}
+.power-trend-figure{min-width:0;margin:0;padding:7px 0 0}
+.power-trend-caption{display:flex;justify-content:space-between;align-items:baseline;gap:8px 16px;flex-wrap:wrap;font-size:10px;color:var(--muted,#6B6448)}
+.power-trend-caption strong{color:var(--text,#173B27)}
+.power-trend-scroll-hint{display:none;margin:6px 0;color:var(--muted,#6B6448);font-size:10px}
+.power-trend-scroll-hint.is-long-history{display:block}
+.power-trend-chart-scroll{width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;padding:2px 0 7px;overscroll-behavior-x:contain;scrollbar-color:var(--blue,#1E5A38) var(--bg2,#EDE8D8);scrollbar-width:thin}
+.power-trend-svg{display:block;width:100%;min-width:var(--power-trend-min-width,960px);height:auto;font-family:'Public Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.power-trend-grid{stroke:#173B27;stroke-opacity:.12;stroke-width:1;vector-effect:non-scaling-stroke}
+.power-trend-checkpoint-guide{stroke:#173B27;stroke-opacity:.08;stroke-width:1;vector-effect:non-scaling-stroke}
+.power-trend-selected-band{fill:#1E5A38;fill-opacity:.08}.power-trend-latest-band{fill:#7D5F1A;fill-opacity:.06}
+.power-trend-axis-rank,.power-trend-axis-checkpoint{font-size:11px;fill:#5B604B;font-variant-numeric:tabular-nums}
+.power-trend-axis-checkpoint.is-selected{font-weight:800;fill:#173B27;text-decoration:underline;text-underline-offset:4px}
+.power-trend-axis-note,.power-trend-current-note{font-size:9px;font-weight:800;letter-spacing:.7px;fill:#5B604B}
+.power-trend-current-note{fill:#173B27}
+.power-trend-line{stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.power-trend-point{stroke:var(--surface,#F8F5EB);stroke-width:1.4}.power-trend-point.is-selected-checkpoint{stroke-width:2}
+.power-trend-label-leader{stroke-width:2}.power-trend-end-label{font-size:12px;fill:#173B27;font-weight:700;dominant-baseline:alphabetic}
+.power-trend-team.is-muted .power-trend-line{opacity:.75}.power-trend-team.is-muted .power-trend-point,.power-trend-team.is-muted .power-trend-label-leader{opacity:.75}
+.power-trend-team.is-muted .power-trend-end-label{font-weight:500;fill:#4D594C}.power-trend-team.is-focused .power-trend-line{stroke-width:4}.power-trend-team.is-focused .power-trend-end-label{font-weight:800}
+.power-trend-missing{margin:6px 0 10px;font-size:11px;color:var(--muted,#6B6448)}
+.power-trend-inspector{margin-top:10px;padding:13px 15px;background:var(--bg,#F3EFE3);border:1px solid var(--line,rgba(30,90,56,.28));border-left:3px solid var(--blue,#1E5A38)}
+.power-trend-inspector-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.power-trend-kicker{display:block;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted-2,#736A50)}
+.power-trend-inspector h3{font-family:var(--serif,Georgia,serif);font-size:17px;line-height:1.5;overflow-wrap:anywhere}
+.power-trend-inspector-rank{display:flex;align-items:baseline;justify-content:flex-end;gap:8px;flex-shrink:0}
+.power-trend-inspector-rank strong{font-family:var(--serif,Georgia,serif);font-size:24px;line-height:1.2;color:var(--blue,#1E5A38)}
+.power-trend-inspector-rank span{font-size:11px;font-weight:700;color:var(--muted,#6B6448)}
+.power-trend-inspector-move{margin-top:5px;font-size:11px;line-height:1.7;color:var(--text,#173B27)}
+.power-trend-inspector-history{display:flex;gap:5px;flex-wrap:wrap;list-style:none;margin-top:9px;padding:0}
+.power-trend-inspector-history li{display:flex;align-items:baseline;gap:7px;min-width:65px;padding:4px 7px;border:1px solid var(--line,rgba(30,90,56,.28));font-size:10px;color:var(--muted,#6B6448)}
+.power-trend-inspector-history li strong{color:var(--text,#173B27)}
+.power-trend-inspector-history li.is-selected{border-color:var(--blue,#1E5A38);background:var(--surface,#F8F5EB);box-shadow:inset 0 -2px 0 var(--blue,#1E5A38)}
+.power-trend-inspector-help{margin-top:8px;font-size:10px;color:var(--muted,#6B6448)}
+.power-trend-empty-state,.power-trend-first-checkpoint{margin:8px 0 12px;padding:10px 12px;border-left:3px solid var(--gold,#7D5F1A);background:var(--gold-dim,rgba(184,145,46,.13));font-size:12px;line-height:1.6;color:var(--text,#173B27)}
+.power-trend-data{margin-top:12px;border-top:1px solid var(--line,rgba(30,90,56,.28));min-width:0}
+.power-trend-data>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:9px 1px;cursor:pointer;list-style:none;font-size:11px;font-weight:800;color:var(--blue,#1E5A38)}
+.power-trend-data>summary::-webkit-details-marker{display:none}.power-trend-data>summary::after{content:'+';font-size:20px}.power-trend-data[open]>summary::after{content:'−'}
+.power-trend-table-scroll{min-width:0;width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.power-trend-table{border-collapse:collapse;width:100%;font-size:11px;text-align:left;font-variant-numeric:tabular-nums}
+.power-trend-table caption{text-align:left;color:var(--muted,#6B6448);font-size:10px;padding:3px 0 9px}
+.power-trend-table th,.power-trend-table td{padding:9px 10px;border-bottom:1px solid var(--line,rgba(30,90,56,.28));white-space:nowrap}
+.power-trend-table thead th{font-size:10px;font-weight:800;background:var(--bg2,#EDE8D8);color:var(--text,#173B27)}
+.power-trend-table tbody th{font-weight:700}.power-trend-table .is-selected{background:var(--blue-dim,rgba(30,90,56,.09))}.power-trend-table tr.is-focused{box-shadow:inset 3px 0 0 var(--blue,#1E5A38)}
+@media(max-width:1000px){.power-trend-scroll-hint{display:block}}
+@media(max-width:600px){
+  .power-trend-section{padding:15px 12px;margin:18px 0 24px}.power-trend-head .h{font-size:21px}.power-trend-latest{font-size:10px}
+  .power-trend-description{font-size:11px;margin-bottom:14px}.power-trend-controls{gap:10px 8px}.power-trend-scope{flex-basis:100%}
+  .power-trend-scope-buttons button{flex:1}.power-trend-select{min-width:0;flex:1 1 155px}.power-trend-checkpoint-select{flex:1 1 128px}
+  .power-trend-checkpoint-nav{flex-basis:100%}.power-trend-checkpoint-nav button{flex:1}.power-trend-caption{font-size:10px}
+  .power-trend-inspector{padding:11px}.power-trend-inspector-head{align-items:flex-start}.power-trend-inspector-rank{flex-direction:column;align-items:flex-end;gap:2px}
+  .power-trend-context{font-size:10px}.power-trend-inspector-history li{flex:1 0 auto;justify-content:space-between}.power-trend-scroll-hint{font-size:10px;line-height:1.5}
+}
+@media(forced-colors:active){.power-trend-line,.power-trend-point,.power-trend-label-leader{stroke:CanvasText!important}.power-trend-point{fill:Canvas!important}.power-trend-team.is-focused .power-trend-line{stroke-width:5}.power-trend-team.is-muted .power-trend-line{stroke-dasharray:4 3;opacity:1}.power-trend-end-label,.power-trend-axis-rank,.power-trend-axis-checkpoint,.power-trend-current-note,.power-trend-axis-note{fill:CanvasText}.power-trend-grid,.power-trend-checkpoint-guide{stroke:GrayText}.power-trend-selected-band{fill:Highlight;fill-opacity:.15}}
