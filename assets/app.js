@@ -796,6 +796,11 @@ function renderHistory(){
     sec.appendChild(c);
   });
   app.appendChild(sec);
+  if(window.FarmhoodDesk){
+    const deskMount=el('div','desk-history');
+    window.FarmhoodDesk.mountHistory(deskMount);
+    app.appendChild(deskMount);
+  }
 
   // Founders Era — champions only
   const fsec=el('section','section');
@@ -1054,6 +1059,8 @@ function renderLiveMatchups(node,snapshot,selectedWeek,rows,playerFeed,openMatch
   const board=el('div','live-board');node.appendChild(board);
   drawLiveWeek(selectedWeek,rows,snapshot,board,weekState,playerFeed,openMatchups,forecast);
   if(window.FarmhoodPayouts)window.FarmhoodPayouts.mountMatchupContext(payoutMount,board,selectedWeek);
+  const deskHost=el('div','desk-matchup-host');node.appendChild(deskHost);
+  if(window.FarmhoodDesk)window.FarmhoodDesk.mountMatchup(deskHost,{snapshot,selectedWeek,rows,playerFeed,weekState,forecast});
 
   const standings=window.FarmhoodLive.standings(snapshot);
   const completed=Math.max(0,...standings.map(row=>row.games));
@@ -1364,6 +1371,7 @@ function renderManagers(){
   });
   directory.appendChild(grid);
   directory.appendChild(el('div','note manager-directory-note','Profiles include each manager\'s full résumé and head-to-head rivalries. Avatars come from Sleeper.'));
+  if(window.FarmhoodDesk)window.FarmhoodDesk.mountManagers(directory);
   layout.appendChild(directory);
   const moneyBoard=renderMoneyBoard();if(moneyBoard)layout.appendChild(moneyBoard);
   app.appendChild(layout);
@@ -1405,7 +1413,17 @@ function openProfile(name){
      </div>
      ${badges?`<div class="prof-badges">${badges}</div>`:''}
      ${rivs.length?`<div class="prof-sec">All-Time Rivalries</div><div class="tablecard"><table class="tbl"><tbody>${rivRows}</tbody></table></div>`:''}`;
-  dialog.appendChild(box);document.body.appendChild(dialog);
+  dialog.appendChild(box);
+  if(window.FarmhoodDesk&&typeof window.FarmhoodDesk.fingerprintFor==='function'){
+    const shape=window.FarmhoodDesk.fingerprintFor(name);
+    if(shape){
+      const section=el('div','prof-sec','Season shape');
+      const line=el('p','desk-fp-line');
+      line.textContent=shape.summary;
+      box.append(section,line);
+    }
+  }
+  document.body.appendChild(dialog);
 
   const closeButton=box.querySelector('.modal-x');
   const previousOverflow=document.body.style.overflow;
@@ -1460,6 +1478,7 @@ function renderDraftOrder(app){
   sec.appendChild(el('div','note',d.status==='complete'
     ? `All ${d.rounds*d.teams} picks are in${completed?' · completed '+completed:''}. The 2026 rosters now feed the live scoreboard and power rankings.`
     : `Snake format — the order reverses each round, so <b>${d.order[d.order.length-1]}</b> picks 1.${d.teams} and 2.01 back to back.`)).style.marginTop='14px';
+  if(window.FarmhoodDesk)window.FarmhoodDesk.mountDraft(sec);
   app.appendChild(sec);
 }
 function renderDraft(){

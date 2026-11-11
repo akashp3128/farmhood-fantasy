@@ -732,7 +732,7 @@
     const list = node('div', 'clarity-tabs sched-tabs');
     list.setAttribute('role', 'tablist');
     list.setAttribute('aria-label', 'Schedule desk views');
-    [['heat', 'Heatmap'], ['h2h', 'Head-to-Head'], ['bye', 'Bye Radar']].forEach(item => {
+    [['heat', 'Heatmap'], ['h2h', 'Head-to-Head'], ['bye', 'Bye Radar'], ['odds', 'Playoff Odds'], ['fair', 'Fair Slate']].forEach(item => {
       const button = node('button', 'clarity-tab' + (state.view === item[0] ? ' active' : ''), item[1]);
       button.type = 'button';
       button.setAttribute('role', 'tab');
@@ -1178,7 +1178,7 @@
       if (right) params.set('b', right.name);
       if (bye) params.set('bye', bye.name);
       const query = params.toString();
-      const hash = state.view === 'h2h' || state.view === 'bye' ? state.view : 'heat';
+      const hash = state.view === 'heat' ? 'heat' : state.view;
       root.history.replaceState(null, '', root.location.pathname + (query ? '?' + query : '') + '#' + hash);
     } catch (_err) {}
   }
@@ -1190,7 +1190,7 @@
       state.pendingB = params.get('b');
       state.pendingBye = params.get('bye');
       const hash = String(root.location.hash || '').replace('#', '');
-      if (hash === 'h2h' || hash === 'bye' || hash === 'heat') state.view = hash;
+      if (hash === 'h2h' || hash === 'bye' || hash === 'heat' || hash === 'odds' || hash === 'fair') state.view = hash;
     } catch (_err) {}
   }
 
@@ -1298,7 +1298,7 @@
       host.appendChild(root.header(
         'Schedule Desk',
         'The Gauntlet',
-        'Compare the road left: who has the soft slate, who is walking into a meat grinder, and which rosters go dark on a bye.'
+        'The season desk: remaining slates, bye weeks, playoff odds, and what the schedule has been worth.'
       ));
     }
     const status = node('div', 'sched-status');
@@ -1366,6 +1366,10 @@
           state.focus = side === 'a' ? 'select-a' : 'select-b';
           paint();
         }));
+      } else if (state.view === 'odds' && root.FarmhoodDesk) {
+        panel.appendChild(root.FarmhoodDesk.renderOdds(bundle));
+      } else if (state.view === 'fair' && root.FarmhoodDesk) {
+        panel.appendChild(root.FarmhoodDesk.renderFair(bundle));
       } else if (state.view === 'bye') {
         panel.appendChild(renderBye(bundle, state, id => {
           state.byeId = id;

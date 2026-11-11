@@ -1,0 +1,42 @@
+/* Season desk surfaces. Shared by matchups, the schedule desk, draft, history, and managers. */
+.desk-panel,.desk-live-body{min-width:0}
+.desk-kicker,.desk-note{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:13px;max-width:72ch}
+.desk-kicker{margin:0 0 12px}
+.desk-note{margin:8px 0 0}
+.desk-money-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.desk-prize{background:var(--surface);border:1px solid var(--line);padding:12px;min-width:0}
+.desk-prize h3{font-family:var(--serif);font-size:16px;margin:0}
+.desk-prize-amount{font-family:var(--serif);font-size:28px;color:var(--blue);line-height:1;margin:4px 0 8px}
+.desk-prize-lead{font-family:var(--serif);font-size:18px;margin:6px 0}
+.desk-prize-row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px dotted rgba(23,59,39,.28);font-size:13px}
+.desk-prize-row b{font-family:var(--serif);white-space:nowrap}
+.desk-prize-row.is-leading span{font-weight:700}
+.desk-exposure-row,.desk-fair-row,.desk-odd{display:grid;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dotted rgba(23,59,39,.28)}
+.desk-exposure-row{grid-template-columns:minmax(90px,140px) minmax(0,1fr)}
+.desk-exposure-row span,.desk-fair-row span{font-size:13px;color:#3E4A3F}
+.desk-fair-row{grid-template-columns:minmax(90px,1.2fr) minmax(70px,.8fr) minmax(70px,.8fr) auto}
+.desk-fp{grid-template-columns:minmax(96px,1.1fr) 92px minmax(70px,.7fr) minmax(78px,.7fr) 48px}
+.desk-fair-row strong,.desk-odd strong,.desk-exposure-row strong,.desk-rival h3{font-family:var(--serif)}
+.desk-label{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--gold)}
+.desk-odd{grid-template-columns:minmax(140px,1.1fr) minmax(80px,1.4fr) 48px}
+.desk-odd-copy{display:flex;flex-direction:column;min-width:0}
+.desk-odd-copy span{font-size:12px;color:var(--muted)}
+.desk-bar{height:10px;background:rgba(23,59,39,.08);overflow:hidden}
+.desk-bar-fill{display:block;height:100%;background:var(--blue)}
+.desk-odd b,.desk-fair-row b{font-family:var(--serif);text-align:right}
+.desk-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);background:var(--surface);margin-bottom:12px}
+.desk-strip-item{padding:10px 12px;border-right:1px dotted rgba(23,59,39,.28)}
+.desk-strip-item:last-child{border-right:0}
+.desk-strip-item b{display:block;font-family:var(--serif);font-size:26px;line-height:1;color:var(--blue)}
+.desk-strip-item span{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.desk-sub{font-family:var(--serif);font-size:16px;margin:14px 0 4px}
+.desk-callout{background:var(--surface);border-left:4px solid var(--gold-solid);padding:10px 12px;margin:0 0 10px;font-family:var(--serif)}
+.desk-rival{background:var(--surface);border:1px solid var(--line);padding:12px;margin-bottom:8px}
+.desk-rival h3{font-size:18px;margin:0 0 4px}
+.desk-rival p{margin:0;font-size:13px}
+.desk-fp-line{font-family:var(--serif);font-style:italic;color:var(--muted);margin:4px 0 0}
+@media(max-width:720px){
+  .desk-money-grid,.desk-fair-row,.desk-odd{grid-template-columns:1fr}
+  .desk-exposure-row{grid-template-columns:1fr}
+  .desk-odd b,.desk-fair-row b{text-align:left}
+}
