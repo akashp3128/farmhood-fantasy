@@ -21,7 +21,7 @@ export const PRESS_CONFIG = Object.freeze({
     'late-preview': Object.freeze({ maxOutputTokens: 2300, maxEstimatedCostUsd: 0.065 }),
     recap: Object.freeze({ maxOutputTokens: 2600, maxEstimatedCostUsd: 0.07 })
   }),
-  pricingAsOf: '2026-09-08',
+  pricingAsOf: '2026-11-10',
   modelPricingPerMillionTokens: Object.freeze({
     'gpt-6-astra': Object.freeze({ input: 10, cachedInput: 1, cacheWriteInput: 12.5, output: 50 }),
     'gpt-5.6-terra': Object.freeze({ input: 2, cachedInput: 0.2, cacheWriteInput: 2.5, output: 12 }),

@@ -75,37 +75,15 @@ jobs:
         if: steps.plan.outputs.should_run == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          EDITION: ${{ steps.intent.outputs.edition }}
+          WEEK: ${{ steps.plan.outputs.week }}
         run: |
-          set -o pipefail
-          git fetch --prune origin '+refs/heads/press/*:refs/remotes/origin/press/*'
-          blocking_review=$(gh pr list --state open --limit 100 --json headRefName,url --jq '.[] | select(.headRefName | startswith("press/")) | "\(.headRefName)|\(.url)"' | sed -n '1p')
-          orphan_branch=""
-          while IFS= read -r remote_ref; do
-            if ! git merge-base --is-ancestor "$remote_ref" origin/main; then
-              candidate_branch=${remote_ref#refs/remotes/origin/}
-              disposition=$(gh pr list --state all --head "$candidate_branch" --limit 1 --json state,mergedAt --jq 'if length == 0 then "ORPHAN" elif .[0].mergedAt != null then "MERGED" else .[0].state end')
-              if [ "$disposition" = "ORPHAN" ] || [ "$disposition" = "OPEN" ]; then
-                orphan_branch=$candidate_branch
-                break
-              fi
-            fi
-          done < <(git for-each-ref --format='%(refname)' refs/remotes/origin/press/)
-          if [ -n "$blocking_review" ] || [ -n "$orphan_branch" ]; then
-            echo "blocked=true" >> "$GITHUB_OUTPUT"
-            reason="An existing Farmhood Press review must finish before automatic publication."
-            echo "### Automatic edition deferred safely" >> "$GITHUB_STEP_SUMMARY"
-            echo "- $reason" >> "$GITHUB_STEP_SUMMARY"
-            echo "- OpenAI requests: 0" >> "$GITHUB_STEP_SUMMARY"
-            echo "- The next scheduled retry will check again." >> "$GITHUB_STEP_SUMMARY"
-            echo "::warning title=Farmhood Press deferred::$reason"
-          else
-            echo "blocked=false" >> "$GITHUB_OUTPUT"
-          fi
+          node scripts/press/review-guard.mjs --edition "$EDITION" --season 2026 --week "$WEEK"
 
       - name: Test deterministic newsroom logic
         if: steps.plan.outputs.should_run == 'true' && steps.review_guard.outputs.blocked != 'true'
         run: |
-          node --test scripts/press/*.test.mjs assets/live.test.cjs
+          node --test scripts/press/*.test.mjs assets/*.test.cjs
           node scripts/press/validate.mjs
           node scripts/payouts/test.mjs
           node scripts/payouts/validate.mjs
@@ -155,6 +133,18 @@ jobs:
           node scripts/payouts/validate.mjs
           git diff --check
 
+      - name: Require the planned edition to produce a publication
+        if: steps.plan.outputs.should_run == 'true' && steps.review_guard.outputs.blocked != 'true' && steps.generate_ai.outputs.changed != 'true' && steps.generate_waiver.outputs.changed != 'true'
+        env:
+          GENERATION_MESSAGE: ${{ steps.generate_ai.outputs.message || steps.generate_waiver.outputs.message }}
+        run: |
+          message=${GENERATION_MESSAGE:-"The planned edition completed without creating an article."}
+          echo "::error title=Farmhood Press not published::${message}"
+          echo "### Farmhood Press publication needs attention" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ${message}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- No new edition was published. Inspect this run before authorizing another paid attempt." >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
       - name: Publish the verified edition to main
         id: publish
         if: steps.generate_waiver.outputs.changed == 'true' || steps.generate_ai.outputs.changed == 'true'
@@ -177,18 +167,15 @@ jobs:
           echo "- Week: ${WEEK}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Commit: $(git rev-parse --short HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Release the published AI reservation
-        if: steps.ai_reservation.outputs.branch != '' && steps.publish.outputs.sha != ''
-        env:
-          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
-        run: git push origin --delete "$MARKER_BRANCH"
-
       - name: Ensure the automatic edition is live on GitHub Pages
-        if: steps.publish.outputs.sha != ''
+        if: steps.publish.outputs.sha != '' || steps.plan.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REQUIRED_SHA: ${{ steps.publish.outputs.sha }}
         run: |
+          if [ -z "$REQUIRED_SHA" ]; then
+            REQUIRED_SHA=$(git rev-parse HEAD)
+          fi
           gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" >/dev/null
           echo "- Pages build: requested for ${REQUIRED_SHA:0:7}" >> "$GITHUB_STEP_SUMMARY"
           for attempt in {1..30}; do
@@ -209,14 +196,20 @@ jobs:
           echo "Timed out waiting for Pages to publish $REQUIRED_SHA." >&2
           exit 1
 
+      - name: Release the published AI reservation
+        if: steps.ai_reservation.outputs.branch != '' && steps.publish.outputs.sha != ''
+        env:
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: git push origin --delete "$MARKER_BRANCH"
+
       - name: Release an unused AI reservation
-        if: steps.ai_reservation.outputs.branch != '' && steps.generate_ai.outcome == 'success' && steps.generate_ai.outputs.changed != 'true'
+        if: always() && steps.ai_reservation.outputs.branch != '' && steps.generate_ai.outcome != 'skipped' && steps.generate_ai.outputs.request_started != 'true' && steps.generate_ai.outputs.paid_request != 'true' && steps.generate_ai.outputs.changed != 'true'
         env:
           MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
         run: git push origin --delete "$MARKER_BRANCH"
 
       - name: Preserve a paid attempt that did not publish
-        if: failure() && steps.generate_ai.outputs.paid_request == 'true'
+        if: failure() && steps.generate_ai.outputs.paid_request == 'true' && steps.publish.outputs.sha == ''
         id: preserve_paid
         env:
           GH_TOKEN: ${{ github.token }}
@@ -250,7 +243,7 @@ jobs:
           fi
 
       - name: Upload paid recovery files
-        if: failure() && steps.generate_ai.outputs.paid_request == 'true'
+        if: failure() && steps.generate_ai.outputs.paid_request == 'true' && steps.publish.outputs.sha == ''
         uses: actions/upload-artifact@v6
         with:
           name: farmhood-press-auto-recovery-${{ github.run_id }}-${{ github.run_attempt }}

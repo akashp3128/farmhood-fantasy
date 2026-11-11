@@ -60,6 +60,11 @@ function compactTeam(team) {
 }
 
 function factIdsForMatchup(season, week, matchup, edition) {
+  if (edition === 'recap') return [
+    `${season}:w${week}:m${matchup.matchupId}:final-score:${matchup.managerA}`,
+    `${season}:w${week}:m${matchup.matchupId}:final-score:${matchup.managerB}`,
+    `${season}:w${week}:m${matchup.matchupId}:starter-scoring`
+  ];
   if (edition === 'late-preview') {
     return [
       `${season}:w${week}:m${matchup.matchupId}:live-score:${matchup.managerA}`,
@@ -92,7 +97,9 @@ export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now
     live.loadSeasonWeeks(scoped)
   ]);
   const watch = live.lineupWatch(scoped, playerFeed);
-  assert(watch.projectionCoverage >= PRESS_CONFIG.minimumProjectionCoverage, `Projection coverage ${(watch.projectionCoverage * 100).toFixed(0)}% is below the newsroom gate.`);
+  // Final results do not need a usable projection feed. Forecast editions still
+  // require the existing coverage gate, including when a recap is requested early.
+  if (edition !== 'recap' || watch.phase.key !== 'final') assert(watch.projectionCoverage >= PRESS_CONFIG.minimumProjectionCoverage, `Projection coverage ${(watch.projectionCoverage * 100).toFixed(0)}% is below the newsroom gate.`);
   const power = live.buildPower(scoped, seasonWeeks, league.managers, titleCounts(league), playerFeed);
   const generatedAt = isoNow(now);
   const scoreByRoster = new Map(scoped.matchups.map((row) => [row.rosterId, round(row.points || 0)]));

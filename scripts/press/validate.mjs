@@ -1,13 +1,12 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { PRESS_CONFIG } from './config.mjs';
 import { assertPredictionLineage, isLateForecastLedger } from './lineage.mjs';
 import { buildLateMatchupOutlook, buildLateTeamOutlook } from './outlook.mjs';
+import { validateArticleCopy } from './schema.mjs';
 import { validateWaiverArticle, WAIVER_ARTICLE_TYPE } from './waivers.mjs';
 import { assert, readJsonIfExists, repoRoot } from './utils.mjs';
-
-const root = repoRoot(import.meta.url);
-const indexPath = path.join(root, 'content', 'articles', 'index.json');
 
 function closeEnough(a, b) {
   return Number.isFinite(Number(a)) && Number.isFinite(Number(b)) && Math.abs(Number(a) - Number(b)) <= 0.02;
@@ -64,14 +63,21 @@ function walkText(value, label) {
   else if (value && typeof value === 'object') Object.entries(value).forEach(([key, item]) => walkText(item, `${label}.${key}`));
 }
 
-async function main() {
+function articleCopy(article) {
+  return {
+    title: article.title, dek: article.dek, lead: article.lead?.body || [], pullQuote: article.lead?.pullQuote,
+    keyStat: article.lead?.keyStat, matchups: article.matchups, storylines: article.storylines, awards: article.awards
+  };
+}
+
+export async function validatePress({ root = repoRoot(import.meta.url) } = {}) {
   const recoveryDirectory = path.join(root, '.github', 'press-recovery');
   const recoveryFiles = await readdir(recoveryDirectory).catch((error) => {
     if (error?.code === 'ENOENT') return [];
     throw error;
   });
   assert(recoveryFiles.length === 0, `Unresolved paid-copy recovery checkpoint(s) cannot be published: ${recoveryFiles.join(', ')}. Repair and validate the article, then remove the checkpoint.`);
-  const index = await readJsonIfExists(indexPath);
+  const index = await readJsonIfExists(path.join(root, 'content', 'articles', 'index.json'));
   assert(index?.schemaVersion === 1, 'Article index schemaVersion must be 1.');
   assert(Array.isArray(index.articles) && index.articles.length > 0, 'Article index must contain at least one published article.');
   const canon = await readJsonIfExists(path.join(root, 'content', 'canon', 'managers.json'));
@@ -143,6 +149,43 @@ async function main() {
 
     const predictionPath = path.join(root, 'content', 'predictions', `${article.season}-week-${String(article.week).padStart(2, '0')}.json`);
     const ledger = await readJsonIfExists(predictionPath);
+    const resultsOnly = article.source?.predictionKind === 'results_only' || article.forecastContext?.mode === 'results_only';
+    if (resultsOnly) {
+      const [originalArticle, lateArticle] = await Promise.all([
+        readJsonIfExists(path.join(root, 'content', 'articles', String(article.season), `week-${String(article.week).padStart(2, '0')}-preview.json`)),
+        readJsonIfExists(path.join(root, 'content', 'articles', String(article.season), `week-${String(article.week).padStart(2, '0')}-late-preview.json`))
+      ]);
+      assertPredictionLineage({ articleType: article.type, publishedSnapshot: snapshot, ledger, resultsOnly: true, hasPublishedForecast: Boolean(originalArticle || lateArticle), label: meta.articleId });
+      assert(article.source?.predictionKind === 'results_only' && article.source?.predictionId === null, `${meta.articleId} results-only source must not reference a prediction.`);
+      assert(article.forecastContext?.mode === 'results_only' && article.forecastContext?.receiptEligible === false && article.forecastContext?.publishedForecastExists === false, `${meta.articleId} results-only context is invalid.`);
+      assert(JSON.stringify(meta.forecastContext) === JSON.stringify(article.forecastContext), `${meta.articleId} results-only archive disclosure must match the article.`);
+      assert(article.receipts === null, `${meta.articleId} results-only recap cannot have prediction receipts.`);
+      const factsById = new Map(snapshot.matchups.map((row) => [Number(row.matchupId), row]));
+      assert(factsById.size === 6, `${meta.articleId} final snapshot must contain six unique matchups.`);
+      const seen = new Set();
+      article.matchups.forEach((matchup) => {
+        const id = Number(matchup.matchupId), facts = factsById.get(id);
+        assert(facts && !seen.has(id), `${meta.articleId} has an unknown or duplicate final matchup ${id}.`);
+        seen.add(id);
+        assert(matchup.managerA === facts.managerA && matchup.managerB === facts.managerB && managers.has(matchup.managerA) && managers.has(matchup.managerB), `${meta.articleId} final matchup ${id} manager mismatch.`);
+        ['currentScoreA', 'currentScoreB'].forEach((field) => assertFiniteNumber(facts[field], `${meta.articleId} final source ${id} ${field}`));
+        ['currentScoreA', 'currentScoreB', 'finalScoreA', 'finalScoreB'].forEach((field) => assertFiniteNumber(matchup[field], `${meta.articleId} final matchup ${id} ${field}`));
+        assert(closeEnough(matchup.currentScoreA, facts.currentScoreA) && closeEnough(matchup.currentScoreB, facts.currentScoreB) && closeEnough(matchup.finalScoreA, facts.currentScoreA) && closeEnough(matchup.finalScoreB, facts.currentScoreB), `${meta.articleId} final matchup ${id} score mismatch.`);
+        const winner = facts.currentScoreA === facts.currentScoreB ? 'Tie' : facts.currentScoreA > facts.currentScoreB ? facts.managerA : facts.managerB;
+        assert(matchup.winner === winner && matchup.receiptEligible === false, `${meta.articleId} final matchup ${id} result or receipt eligibility mismatch.`);
+        ['predictedWinner', 'predictionCorrect', 'projectedScoreA', 'projectedScoreB', 'winProbability', 'forecastWinner', 'forecastProbability', 'forecastScoreA', 'forecastScoreB', 'remainingProjectionA', 'remainingProjectionB', 'outlookCurrentScoreA', 'outlookCurrentScoreB']
+          .forEach((field) => assert(!Object.hasOwn(matchup, field), `${meta.articleId} results-only matchup must omit ${field}.`));
+      });
+      article.lineupSnapshot.teams.forEach((team) => assert(!Object.hasOwn(team, 'projection'), `${meta.articleId} results-only lineup must omit projection comparisons.`));
+      const sourceTeams = new Map(snapshot.teams.map((team) => [team.manager, team]));
+      article.lineupSnapshot.teams.forEach((team) => {
+        const frozen = sourceTeams.get(team.name);
+        assert(frozen && team.rosterId === frozen.rosterId && team.lineupHash === frozen.lineupHash && JSON.stringify(team.starterIds) === JSON.stringify(frozen.starters.map((player) => player.id)), `${meta.articleId} results-only lineup must match the frozen final snapshot.`);
+      });
+      validateArticleCopy(articleCopy(article), snapshot, 'recap', { resultsOnly: true });
+      walkText(article, meta.articleId);
+      continue;
+    }
     assert(ledger?.predictions?.length === 6, `Prediction ledger missing for ${meta.articleId}.`);
     assert(article.source?.predictionId === ledger.predictionSetId, `Prediction source mismatch for ${meta.articleId}.`);
     const originalSnapshot = isRecap || isLatePreview
@@ -209,13 +252,16 @@ async function main() {
       assert(managers.has(matchup.managerA) && managers.has(matchup.managerB), `Unknown manager in matchup ${id}.`);
       (matchup.factIds || []).forEach((factId) => assert(allowedFactIds.has(factId), `Unknown fact ID ${factId} in matchup ${id}.`));
     });
+    if (isRecap) validateArticleCopy(articleCopy(article), snapshot, 'recap', { lateForecast, prediction: ledger });
     walkText(article, meta.articleId);
   }
   assert(ids.has(index.featuredArticleId), 'featuredArticleId does not resolve to a published article.');
-  console.log(JSON.stringify({ status: 'passed', articles: ids.size, featuredArticleId: index.featuredArticleId, managers: managers.size }, null, 2));
+  return { status: 'passed', articles: ids.size, featuredArticleId: index.featuredArticleId, managers: managers.size };
 }
 
-main().catch((error) => {
-  console.error(`Farmhood Press validation failed: ${error.message}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  validatePress().then((result) => console.log(JSON.stringify(result, null, 2))).catch((error) => {
+    console.error(`Farmhood Press validation failed: ${error.message}`);
+    process.exitCode = 1;
+  });
+}

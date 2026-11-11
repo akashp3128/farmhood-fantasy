@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { assertPredictionLineage, expectedPredictionSnapshot, isLateForecastLedger } from './lineage.mjs';
+import { assertPredictionLineage, expectedPredictionSnapshot, hasPublishedForecastLedger, isLateForecastLedger } from './lineage.mjs';
 
 test('recaps grade the immutable pregame prediction against the final snapshot', () => {
   const pregame = { id: 'week-01-pre' };
@@ -45,4 +45,31 @@ test('a recap cannot silently treat a final snapshot as a prediction source', ()
     lateSnapshot: null,
     ledger: { state: 'graded', sourceSnapshotId: final.id }
   }), /missing the prediction source snapshot/);
+});
+
+const resultOnlyLineage = () => ({
+  articleType: 'week_recap',
+  publishedSnapshot: { id: 'week-05-final', kind: 'final', phase: { key: 'final' }, immutable: true },
+  ledger: null,
+  resultsOnly: true
+});
+
+test('explicit results-only recap uses final facts without creating prediction lineage', () => {
+  assert.equal(assertPredictionLineage(resultOnlyLineage()), 'week-05-final');
+  assert.equal(assertPredictionLineage({ ...resultOnlyLineage(), ledger: { state: 'published_prelock', sourceSnapshotId: 'unpublished-snapshot' } }), 'week-05-final');
+});
+
+test('results-only mode cannot discard any published forecast ledger or article', () => {
+  for (const state of ['locked_original', 'locked_late', 'graded']) {
+    assert.equal(hasPublishedForecastLedger({ state }), true);
+    assert.throws(() => assertPredictionLineage({ ...resultOnlyLineage(), ledger: { state } }), /cannot discard a published forecast/);
+  }
+  assert.throws(() => assertPredictionLineage({ ...resultOnlyLineage(), hasPublishedForecast: true }), /cannot discard a published forecast/);
+});
+
+test('results-only mode is never available for previews, live or mutable snapshots', () => {
+  assert.throws(() => assertPredictionLineage({ ...resultOnlyLineage(), articleType: 'week_preview' }), /only for a recap/);
+  for (const override of [{ kind: 'live' }, { phase: { key: 'live' } }, { immutable: false }, { id: null }]) {
+    assert.throws(() => assertPredictionLineage({ ...resultOnlyLineage(), publishedSnapshot: { ...resultOnlyLineage().publishedSnapshot, ...override } }), /immutable final snapshot/);
+  }
 });
