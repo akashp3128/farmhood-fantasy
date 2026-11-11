@@ -34,6 +34,7 @@ const PRIMARY_PAGES = [
 ];
 const NAV_GROUPS = [
   {label:'League',pages:[
+    ['schedule.html','Schedule','schedule'],
     ['managers.html','Managers','managers'],
     ['draft.html','Draft','draft'],
     ['trades.html','Trades','trades']
@@ -401,7 +402,7 @@ function mountHomeLive(node){
       });
       node.appendChild(grid);
       const actions=el('div','live-actions');
-      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['power-rankings.html','View live power rankings'],['payouts.html','View weekly payouts']].forEach(([href,label])=>{
+      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['schedule.html','Compare schedules'],['power-rankings.html','View live power rankings'],['payouts.html','View weekly payouts']].forEach(([href,label])=>{
         const a=el('a','live-link',label+' →');a.href=href;actions.appendChild(a);
       });
       node.appendChild(actions);hasRendered=true;

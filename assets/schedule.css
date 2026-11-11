@@ -1,0 +1,112 @@
+/* Schedule desk — heatmap, head-to-head slate, bye radar. */
+.sched-status{margin-bottom:var(--space-4,16px)}
+.sched-summary-meta{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--muted)}
+.sched-tabs{margin-top:var(--space-4,16px)}
+.sched-panel{min-width:0}
+.sched-notes{display:flex;flex-direction:column;gap:8px;margin:4px 0 16px}
+.sched-note{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--blue);padding:10px 12px}
+.sched-note.easy{border-left-color:var(--win)}
+.sched-note.hard{border-left-color:var(--loss)}
+.sched-note.gold{border-left-color:var(--gold-solid)}
+.sched-note strong{display:block;font-family:var(--serif);font-size:16px;line-height:1.2}
+.sched-note p{margin:3px 0 0;font-size:13px;color:#3E4A3F}
+.sched-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:0 0 14px}
+.sched-field{display:flex;flex-direction:column;gap:3px;min-width:min(100%,220px);flex:1}
+.sched-field span{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.sched-field select{min-height:44px;border:1px solid var(--clarity-control-border,rgba(23,59,39,.62));background:var(--surface);color:var(--text);font:inherit;font-size:14px;padding:8px 10px}
+.sched-legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 10px;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2)}
+.sched-legend-item{display:inline-flex;align-items:center}
+.sched-swatch{width:14px;height:14px;display:inline-block;margin-right:6px;border:1px solid var(--line)}
+.sched-swatch.easy{background:rgba(43,118,74,.28)}
+.sched-swatch.mid{background:rgba(23,59,39,.08)}
+.sched-swatch.hard{background:rgba(160,67,46,.24)}
+.sched-swatch.mark{background:var(--surface);box-shadow:inset 0 -3px 0 var(--win)}
+.sched-scroll{overflow-x:auto;padding-bottom:4px}
+.sched-scroll-hint{margin-top:8px;font-family:var(--serif);font-style:italic;font-size:12px;color:var(--muted)}
+.sched-heat{border-collapse:separate;border-spacing:2px;min-width:860px;width:100%}
+.sched-bye{min-width:640px}
+.sched-heat caption{caption-side:bottom;text-align:left;font-family:var(--serif);font-style:italic;color:var(--muted);font-size:12px;padding-top:8px}
+.sched-heat th,.sched-heat td{padding:0;vertical-align:middle}
+.sched-heat thead th{background:var(--bg);font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2);text-align:center;padding:6px 2px}
+.sched-heat thead th.sched-group{text-align:left;padding-left:6px;color:var(--blue);letter-spacing:1.4px}
+.sched-heat thead th.sched-playoff-group,.sched-heat .sched-playoff-col{box-shadow:inset 2px 0 0 var(--gold-solid)}
+.sched-heat thead th.is-now,.sched-heat td.is-now{box-shadow:inset 0 -2px 0 var(--blue)}
+.sched-heat th.is-danger,.sched-heat td.is-danger{background:rgba(160,67,46,.08)}
+.sched-sticky{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left}
+.sched-heat thead th.sched-sticky{z-index:4;text-align:left;background:var(--bg)}
+.sched-manager{display:flex;align-items:center;gap:8px;min-width:210px;padding:4px 6px 4px 0}
+.sched-av{width:28px;height:28px}
+.sched-manager-copy{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.15}
+.sched-manager-copy strong{font-family:var(--serif);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sched-manager-copy small{color:var(--muted-2);font-size:11px}
+.sched-compare{min-height:44px;min-width:44px;border:1px solid rgba(23,59,39,.45);background:transparent;color:var(--blue);font:inherit;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:6px;cursor:pointer}
+.sched-compare:hover{background:var(--blue);color:var(--surface)}
+tr.in-field .sched-sticky{box-shadow:inset 3px 0 0 var(--gold-solid)}
+.sched-slate{text-align:center;min-width:58px;padding:4px 2px}
+.sched-slate b{display:block;font-family:var(--serif);font-size:18px;line-height:1;color:var(--blue)}
+.sched-slate span{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.sched-slate.soft b{color:var(--win)}
+.sched-slate.brutal b{color:var(--loss)}
+.sched-cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:42px;min-height:44px;padding:8px 2px;font-family:var(--serif);font-weight:700;font-size:12px;color:var(--text);text-align:center;background:rgba(23,59,39,.05)}
+a.sched-cell:hover{outline:2px solid var(--blue);outline-offset:-2px}
+.sched-cell.easy{background:rgba(43,118,74,.24)}
+.sched-cell.mid{background:rgba(23,59,39,.06)}
+.sched-cell.hard{background:rgba(160,67,46,.22)}
+.sched-cell.bye,.sched-cell.play{background:var(--bg2)}
+.sched-cell.bye{background:var(--gold-dim);color:var(--gold)}
+.sched-cell.missing{background:transparent;color:var(--muted-2)}
+.sched-cell.in-soft{box-shadow:inset 0 -3px 0 var(--win)}
+.sched-cell.in-brutal{box-shadow:inset 0 -3px 0 var(--loss)}
+.sched-cell.is-edge{outline:2px solid var(--win);outline-offset:-2px}
+.sched-mark{position:absolute;top:1px;right:3px;font-style:normal;font-family:'Public Sans',sans-serif;font-size:8px;font-weight:800}
+.sched-mark.w{color:var(--win)}
+.sched-mark.l{color:var(--loss)}
+.sched-mark.t{color:var(--gold)}
+.sched-duel-head,.sched-scorecard{display:grid;gap:12px}
+.sched-duel-head{grid-template-columns:1fr 1fr;margin-bottom:12px}
+.sched-scorecard{grid-template-columns:32px minmax(0,1fr) auto;align-items:center;background:var(--surface);border:1px solid var(--line);padding:12px;min-height:84px}
+.sched-scorecard.soft{border-top:3px solid var(--win)}
+.sched-scorecard.brutal{border-top:3px solid var(--loss)}
+.sched-scorecard.even,.sched-scorecard.done{border-top:3px solid var(--gold-solid)}
+.sched-scorecard strong{display:block;font-family:var(--serif);font-size:18px}
+.sched-scorecard span{display:block;color:var(--muted);font-size:12px}
+.sched-manager-score{text-align:right}
+.sched-manager-score b{display:block;font-family:var(--serif);font-size:34px;line-height:.9;color:var(--blue)}
+.sched-manager-score small{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.sched-week{display:grid;grid-template-columns:72px 1fr 1fr;gap:8px;align-items:stretch;margin-bottom:8px}
+.sched-week.is-now .sched-week-label{color:var(--blue)}
+.sched-week.is-playoff .sched-week-label{color:var(--gold)}
+.sched-week-label{display:flex;flex-direction:column;justify-content:center;font-family:var(--serif);font-weight:700;font-size:16px}
+.sched-week-label small{font-family:'Public Sans',sans-serif;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
+.sched-opp{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:64px;padding:8px 12px;border:1px solid var(--line);background:rgba(23,59,39,.04);color:inherit}
+.sched-opp b{font-family:var(--serif);font-size:16px}
+.sched-opp span,.sched-opp em{font-size:12px;color:var(--muted);font-style:normal}
+.sched-opp.easy{background:rgba(43,118,74,.18)}
+.sched-opp.hard{background:rgba(160,67,46,.16)}
+.sched-opp.mid{background:rgba(23,59,39,.05)}
+.sched-opp.is-meet{outline:2px solid var(--gold-solid);outline-offset:-2px}
+.sched-result.w{color:var(--win)}
+.sched-result.l{color:var(--loss)}
+.sched-callout{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;margin:0 0 14px;padding:12px 14px;border:2px solid var(--text);background:var(--surface);color:inherit;font:inherit;cursor:pointer}
+.sched-callout.static{cursor:default}
+.sched-callout strong{font-family:var(--serif);font-size:16px}
+.sched-callout span,.sched-callout.static{font-size:13px;color:#3E4A3F}
+button.sched-callout:hover{background:var(--blue-dim)}
+.sched-bye-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.sched-bye-card{background:var(--surface);border:1px solid var(--line);padding:12px}
+.sched-bye-card.is-collision{border-top:3px solid var(--loss)}
+.sched-bye-card h3{font-family:var(--serif);font-size:16px;margin-bottom:8px}
+.sched-bye-line{padding:8px 0;border-top:1px dotted rgba(23,59,39,.3)}
+.sched-bye-line strong{font-size:13px}
+.sched-bye-line p{margin:2px 0 0;font-size:13px;color:#3E4A3F}
+.sched-pickups{margin:6px 0 0 18px;font-size:13px}
+.sched-pickups li{margin:2px 0}
+.sched-duel-block{margin-top:22px;padding-top:8px;border-top:3px double var(--blue)}
+.sched-duel-title{font-family:var(--serif);font-size:22px;margin:8px 0}
+.sched-duel-copy{font-family:var(--serif);font-style:italic;color:var(--muted);margin:-4px 0 12px;max-width:68ch}
+.sched-method{font-size:13px;color:#3E4A3F;max-width:78ch}
+@media(max-width:720px){
+  .sched-duel-head,.sched-bye-cards{grid-template-columns:1fr}
+  .sched-week{grid-template-columns:1fr 1fr}
+  .sched-week-label{grid-column:1 / -1;flex-direction:row;align-items:baseline;gap:8px}
+}

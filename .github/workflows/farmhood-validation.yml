@@ -39,7 +39,7 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          for file in assets/app.js assets/live.js assets/payouts.js assets/press.js scripts/press/*.mjs; do
+          for file in assets/app.js assets/live.js assets/payouts.js assets/press.js assets/schedule.js scripts/press/*.mjs; do
             node --check "$file"
           done
 
