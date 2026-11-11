@@ -28,7 +28,9 @@ The generator uses the Responses API with strict Structured Outputs. Generated p
 - A Weekend Outlook also uses one model request, but only as a recovery path when kickoff has already happened and no original Preview exists.
 - Every article response that reports usage is written to `content/usage/ledger.json` immediately. Successful drafts are summarized in the workflow; an automatic paid response that fails before publication is pushed to a recovery branch and preserved as an artifact so scheduled retries cannot buy the same draft again.
 - Re-running an existing edition exits successfully without contacting OpenAI. A locked original Preview can never be overwritten; its live follow-up belongs in Lineup Watch.
-- Press reviews are serialized because every edition updates the shared article index and usage ledger. If any Press pull request or unpublished Press branch still needs review, a new generation run stops at $0 with a visible error and the blocking review URL. Merge, close, or resolve that review, then rerun. Once the guard clears, the workflow fast-forwards to the newest `main` before generation so a just-published edition cannot be dropped from the next index.
+- Publication writes remain serialized because every edition updates the shared article index and usage ledger. Review locks are scoped to the same season, week and edition; Preview and Weekend Outlook conflict with each other for the same week. A failed Outlook cannot block another week, its results-only Recap, or unrelated deterministic waivers. Exact paid-attempt reservations remain protected even if their recovery PR was closed or branch removed. Recover that saved attempt rather than deleting a lock to buy it again. Blocked or unverifiable reviews fail visibly before any AI request.
+- Only whitespace/case variations of an exact canonical manager handle are normalized in narrative fields before validation. Spelling changes, factual claims, IDs, structured subjects and award recipients are not repaired by guesswork. Corrections are logged in the saved checkpoint.
+- Manual and automatic AI jobs reserve the exact edition before spending. Proven pre-request failures can release the unused reservation; requests that started but timed out keep the lock because their billing outcome is uncertain.
 
 Use `--force` only to intentionally replace an existing unlocked draft. It does not override a locked original Preview, an immutable Weekend Outlook, an open Press review, or an unpublished Press branch.
 
@@ -84,7 +86,11 @@ node scripts/press/validate.mjs
 
 Every schedule uses the IANA timezone `America/Chicago`, so GitHub handles CST/CDT automatically. The off-minute attempts avoid the busiest top-of-hour scheduling window. Deterministic article IDs, immutable snapshots and pre-request planning make repeated attempts cost $0 after the first success.
 
-The planner derives week numbers from Sleeper rather than calendar arithmetic. Tuesday selects the earliest finalized week that still needs a Recap and has legitimate prediction lineage; Wednesday and Friday use the current Sleeper leg. Friday never replaces an original Preview. An open manual Press review safely defers automatic publication before any AI request.
+The planner derives week numbers from Sleeper rather than calendar arithmetic. Tuesday targets the latest finalized week only; retries cannot silently buy a backlog of historical recaps. Older backfills require an explicit week. Wednesday and Friday use the current Sleeper leg. Friday never replaces an original Preview. An open review blocks only the conflicting edition, before any AI request.
+
+If a finalized week never had a published forecast, its Recap uses explicit **results-only** mode: final scores and starter performances, no reconstructed predictions, no projection comparisons and no accuracy grades. A broken published forecast must still be repaired; it cannot be silently discarded. Existing locked original/late forecasts retain their strict source lineage.
+
+An already-published edition is a zero-generation retry, but the automatic workflow still verifies GitHub Pages. This lets a later retry repair a failed deployment without purchasing another draft. If planning calls for a new article but generation produces none, the run fails visibly instead of reporting a successful empty publication.
 
 Scheduled Recaps and Weekend Outlooks use at most one AI request each. The Waiver Wire is deterministic and uses zero AI tokens. Manual or forced generation remains review-only. A paid automatic failure creates a recovery branch before later retries, protecting the token spend from accidental duplication.
 

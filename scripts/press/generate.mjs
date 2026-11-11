@@ -4,7 +4,8 @@ import { pathToFileURL } from 'node:url';
 import { PRESS_CONFIG, PRESS_SCHEMA_VERSION, PROMPT_VERSION } from './config.mjs';
 import { buildWeeklyFacts } from './facts.mjs';
 import { gradePredictions } from './grading.mjs';
-import { assertPredictionLineage, isLateForecastLedger } from './lineage.mjs';
+import { normalizeArticleCopy } from './copy-normalization.mjs';
+import { assertPredictionLineage, hasPublishedForecastLedger, isLateForecastLedger } from './lineage.mjs';
 import { articleCopySchema, validateArticleCopy } from './schema.mjs';
 import {
   assert,
@@ -31,8 +32,9 @@ function outputText(response) {
   throw new Error('The OpenAI response did not contain article text.');
 }
 
-function promptStarters(team, type) {
+function promptStarters(team, type, { resultsOnly = false } = {}) {
   const rankedStarters = team.starters.filter((player) => player.id !== '0');
+  if (resultsOnly) return rankedStarters.sort((left, right) => Number(right.points || 0) - Number(left.points || 0)).slice(0, 2);
   const featuredIds = type === 'recap'
     ? [
         ...rankedStarters.sort((left, right) => Number(right.points || 0) - Number(left.points || 0)).slice(0, 2).map((player) => player.id),
@@ -52,8 +54,8 @@ function promptStarters(team, type) {
   return team.starters.filter((player) => priorityIds.has(player.id));
 }
 
-export function compactSnapshot(snapshot, type) {
-  const selectedByRoster = new Map(snapshot.teams.map((team) => [team.rosterId, promptStarters(team, type)]));
+export function compactSnapshot(snapshot, type, { resultsOnly = false } = {}) {
+  const selectedByRoster = new Map(snapshot.teams.map((team) => [team.rosterId, promptStarters(team, type, { resultsOnly })]));
   return {
     id: snapshot.id,
     season: snapshot.season,
@@ -61,8 +63,8 @@ export function compactSnapshot(snapshot, type) {
     phase: snapshot.phase,
     factsAsOf: snapshot.factsAsOf,
     validation: snapshot.validation,
-    powerBoard: type === 'late-preview' ? snapshot.powerBoard.slice(0, 5) : snapshot.powerBoard,
-    ...(snapshot.forecastContext ? { forecastContext: snapshot.forecastContext } : {}),
+    ...(!resultsOnly ? { powerBoard: type === 'late-preview' ? snapshot.powerBoard.slice(0, 5) : snapshot.powerBoard } : {}),
+    ...(snapshot.forecastContext && !resultsOnly ? { forecastContext: snapshot.forecastContext } : {}),
     matchups: snapshot.matchups.map((matchup) => type === 'late-preview' ? {
       matchupId: matchup.matchupId,
       status: matchup.status,
@@ -82,6 +84,14 @@ export function compactSnapshot(snapshot, type) {
       missingProjectionPlayers: matchup.missingProjectionPlayers,
       receiptEligible: false,
       factIds: matchup.factIds
+    } : resultsOnly ? {
+      matchupId: matchup.matchupId,
+      status: matchup.status,
+      managerA: matchup.managerA,
+      managerB: matchup.managerB,
+      currentScoreA: matchup.currentScoreA,
+      currentScoreB: matchup.currentScoreB,
+      factIds: matchup.factIds
     } : {
       matchupId: matchup.matchupId,
       status: matchup.status,
@@ -98,7 +108,7 @@ export function compactSnapshot(snapshot, type) {
     teams: snapshot.teams.map((team) => ({
       rosterId: team.rosterId,
       manager: team.manager,
-      ...(type !== 'late-preview' ? { projectedScore: team.projectedScore } : {}),
+      ...(type !== 'late-preview' && !resultsOnly ? { projectedScore: team.projectedScore } : {}),
       ...(type === 'late-preview' ? {
         currentScore: team.currentScore,
         remainingProjection: team.remainingProjection,
@@ -111,9 +121,8 @@ export function compactSnapshot(snapshot, type) {
       } : {}),
       featuredStarters: selectedByRoster.get(team.rosterId).map(({ id, slot, name, position, team: nflTeam, projection, points, injuryStatus, locked }) => type === 'late-preview'
         ? { name, projection, points, injuryStatus, locked }
-        : { id, slot, name, position, team: nflTeam, projection, ...(type === 'recap' ? { points } : {}), injuryStatus, locked }),
-      emptySlots: team.emptySlots,
-      suggestedSwaps: team.suggestedSwaps
+        : { id, slot, name, position, team: nflTeam, ...(!resultsOnly ? { projection, injuryStatus, locked } : {}), ...(type === 'recap' ? { points } : {}) }),
+      ...(!resultsOnly ? { emptySlots: team.emptySlots, suggestedSwaps: team.suggestedSwaps } : {})
     }))
   };
 }
@@ -215,21 +224,25 @@ async function reportPaidFailure({ articleId, message, usage }) {
   }
 }
 
-export async function validateArticleCopyRecoverably({ copy, snapshot, prediction, type, lateForecast, recoveryPath, recoveryMetadata }) {
+export async function validateArticleCopyRecoverably({ copy, snapshot, prediction, type, lateForecast, resultsOnly = false, recoveryPath, recoveryMetadata }) {
   assert(recoveryPath, 'A recovery path is required before validating paid article copy.');
+  const normalized = normalizeArticleCopy(copy, snapshot.teams.map((team) => team.manager));
   const checkpoint = {
     schemaVersion: 1,
     ...recoveryMetadata,
     kind: 'farmhood_press_copy_recovery',
     publicationStatus: 'not_published',
     semanticValidation: { status: 'pending' },
-    structuredCopy: copy
+    structuredCopy: normalized.copy,
+    normalization: { corrections: normalized.corrections },
+    ...(normalized.corrections.length ? { originalStructuredCopy: copy } : {})
   };
   await writeJsonAtomic(recoveryPath, checkpoint);
+  if (normalized.corrections.length) console.log(JSON.stringify({ canonicalManagerCorrections: normalized.corrections }));
 
   let accepted;
   try {
-    accepted = validateArticleCopy(copy, snapshot, type, { lateForecast, prediction });
+    accepted = validateArticleCopy(normalized.copy, snapshot, type, { lateForecast, resultsOnly, prediction });
   } catch (error) {
     try {
       await writeJsonAtomic(recoveryPath, {
@@ -260,7 +273,7 @@ export async function removeCopyRecoveryCheckpoint(recoveryPath) {
   }
 }
 
-export function promptInstructions(type, tone, { lateForecast = false } = {}) {
+export function promptInstructions(type, tone, { lateForecast = false, resultsOnly = false } = {}) {
   const assignment = type === 'recap'
     ? 'postgame recap'
     : type === 'late-preview'
@@ -268,6 +281,8 @@ export function promptInstructions(type, tone, { lateForecast = false } = {}) {
       : 'pregame preview';
   const timingRules = type === 'late-preview'
     ? `Thursday scoring is already known and is included in the supplied current scores. Treat it as known game state, never as something the desk predicted. This is a late outlook, not an original pregame preview. Never use "original pick", "original prediction", "original forecast" or similar hindsight language, and never imply the edition existed before kickoff.`
+    : type === 'recap' && resultsOnly
+      ? 'This is a results-only recap. No published Preview or Weekend Outlook forecast exists for this week. Report the supplied final results and player scoring only. Do not invent predictions, projected-score comparisons, favorites, upset claims, prediction accuracy, receipts or a desk grade. Do not treat a final result as a forecast.'
     : type === 'recap' && lateForecast
       ? 'No original pregame prediction was published for this week. The supplied late forecast was captured only after scoring had begun, is not receipt-eligible and must not be graded or described as an original pick.'
       : 'The original prediction is permanent. Describe live or pregame information provisionally.';
@@ -280,16 +295,16 @@ Voice: sportswriter credibility with ${tone} group-chat energy. Be specific, con
 ${timingRules} Do not call a matchup final unless the supplied phase is final.`;
 }
 
-async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, editorial, storylines, corrections, previous, type, tone, model, apiKey, onAttempt, recoveryPath, recoveryMetadata }) {
+async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, editorial, storylines, corrections, previous, type, tone, model, apiKey, onAttempt, resultsOnly = false, recoveryPath, recoveryMetadata }) {
   const knownFactIds = unique([
-    ...(snapshot.factIds || []),
+    ...(!resultsOnly ? snapshot.factIds || [] : []),
     ...snapshot.matchups.flatMap((matchup) => matchup.factIds),
-    ...(canon?.managers || []).flatMap((manager) => (manager.approvedLore || []).flatMap((item) => item.factIds || [])),
-    ...(storylines?.storylines || []).flatMap((item) => [...(item.supportingFactIds || []), ...(item.counterFactIds || [])])
+    ...(!resultsOnly ? (canon?.managers || []).flatMap((manager) => (manager.approvedLore || []).flatMap((item) => item.factIds || [])) : []),
+    ...(!resultsOnly ? (storylines?.storylines || []).flatMap((item) => [...(item.supportingFactIds || []), ...(item.counterFactIds || [])]) : [])
   ]);
-  snapshot.factIds = knownFactIds;
-  const promptSnapshot = compactSnapshot(snapshot, type);
-  const schema = articleCopySchema(snapshot, type);
+  const copySnapshot = { ...snapshot, factIds: knownFactIds };
+  const promptSnapshot = compactSnapshot(snapshot, type, { resultsOnly });
+  const schema = articleCopySchema(copySnapshot, type);
   const lateForecast = type === 'late-preview' || isLateForecastLedger(prediction);
   const compactLateForecast = type === 'recap' && lateForecast ? {
     predictionSetId: prediction.predictionSetId,
@@ -314,12 +329,13 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
     task: type,
     tone,
     leagueCanon,
-    managerCanon: canon,
+    managerCanon: resultsOnly ? { managers: (canon?.managers || []).map(({ displayName }) => ({ displayName })) } : canon,
     editorialPolicy: editorial,
     corrections,
-    activeStorylines: storylines,
-    recentPublishedArticles: (previous?.articles || []).slice(0, lateForecast ? 1 : 4).map(({ articleId, type: articleType, title, season, week, storylines: usedStorylines }) => ({ articleId, type: articleType, title, season, week, storylines: usedStorylines || [] })),
-    ...(type === 'recap' && !lateForecast ? { originalPrediction: prediction } : {}),
+    activeStorylines: resultsOnly ? { storylines: [] } : storylines,
+    recentPublishedArticles: resultsOnly ? [] : (previous?.articles || []).slice(0, lateForecast ? 1 : 4).map(({ articleId, type: articleType, title, season, week, storylines: usedStorylines }) => ({ articleId, type: articleType, title, season, week, storylines: usedStorylines || [] })),
+    ...(type === 'recap' && !lateForecast && !resultsOnly ? { originalPrediction: prediction } : {}),
+    ...(resultsOnly ? { forecastContext: { mode: 'results_only', receiptEligible: false, publishedForecastExists: false } } : {}),
     ...(lateForecast ? {
       forecastContext: {
         mode: type === 'late-preview' ? 'late_outlook' : 'late_outlook_baseline',
@@ -330,7 +346,7 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
     } : {}),
     snapshot: promptSnapshot
   };
-  const instructions = promptInstructions(type, tone, { lateForecast });
+  const instructions = promptInstructions(type, tone, { lateForecast, resultsOnly });
   const input = JSON.stringify(context);
   const reasoning = { effort: model.startsWith('gpt-5.6-terra') || model.startsWith('gpt-5.6-luna') ? 'none' : 'low' };
   const text = { verbosity: 'low', format: { type: 'json_schema', name: 'farmhood_press_article', strict: true, schema } };
@@ -355,7 +371,10 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
   });
   const exactInputTokens = Number(tokenCount?.input_tokens);
   assert(Number.isInteger(exactInputTokens) && exactInputTokens >= 0, 'OpenAI input token count returned an invalid result.');
-  const worstCaseCost = estimateCost({ model, inputTokens: exactInputTokens, outputTokens: budget.maxOutputTokens });
+  const worstCaseCost = Math.max(
+    estimateCost({ model, inputTokens: exactInputTokens, outputTokens: budget.maxOutputTokens }),
+    estimateCost({ model, inputTokens: exactInputTokens, cacheWriteInputTokens: exactInputTokens, outputTokens: budget.maxOutputTokens })
+  );
   assert(worstCaseCost <= maxCost, `The worst-case ${model} request is estimated at $${worstCaseCost.toFixed(4)}, above the $${maxCost.toFixed(2)} per-article limit.`);
   const preflight = {
     requestCharacters,
@@ -366,6 +385,9 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
     configuredCostLimitUsd: maxCost,
     policyMaximumCostUsd: budget.policyMaximumCostUsd
   };
+  // A transport failure after this marker may still have incurred a charge.
+  // Workflows must preserve the reservation unless no paid request was started.
+  await appendWorkflowValue(process.env.GITHUB_OUTPUT, 'request_started', 'true');
   const response = await fetchJson(`${PRESS_CONFIG.openaiApiRoot}/responses`, {
     method: 'POST',
     timeoutMs: 120_000,
@@ -402,10 +424,11 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
       ...attempt,
       copy: await validateArticleCopyRecoverably({
         copy,
-        snapshot,
+        snapshot: copySnapshot,
         prediction,
         type,
         lateForecast,
+        resultsOnly,
         recoveryPath,
         recoveryMetadata: {
           ...recoveryMetadata,
@@ -421,11 +444,12 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
   }
 }
 
-export function mergeArticle({ copy, snapshot, prediction, type, tone, model, responseId, usage }) {
+export function mergeArticle({ copy, snapshot, prediction, type, tone, model, responseId, usage, resultsOnly = false }) {
+  if (resultsOnly) assertPredictionLineage({ articleType: type === 'recap' ? 'week_recap' : type, publishedSnapshot: snapshot, ledger: prediction, resultsOnly: true });
   const matchupById = new Map(snapshot.matchups.map((matchup) => [matchup.matchupId, matchup]));
-  const predictionById = new Map(prediction.predictions.map((item) => [Number(item.matchupId), item]));
+  const predictionById = new Map((prediction?.predictions || []).map((item) => [Number(item.matchupId), item]));
   const teamByManager = new Map(snapshot.teams.map((team) => [team.manager, team]));
-  const lateForecast = type === 'late-preview' || isLateForecastLedger(prediction);
+  const lateForecast = !resultsOnly && (type === 'late-preview' || isLateForecastLedger(prediction));
   const articleId = `${snapshot.season}-${weekSlug(snapshot.week)}-${type}`;
   const matchups = copy.matchups.map((written) => {
     const facts = matchupById.get(written.matchupId);
@@ -437,7 +461,7 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
         ? Number(right.points || 0) - Number(left.points || 0) || Number(right.projection || 0) - Number(left.projection || 0)
         : Number(right.projection || 0) - Number(left.projection || 0))[0];
     const winner = type === 'recap' ? (facts.currentScoreA === facts.currentScoreB ? 'Tie' : facts.currentScoreA > facts.currentScoreB ? facts.managerA : facts.managerB) : null;
-    const normalPrediction = !lateForecast ? {
+    const normalPrediction = !lateForecast && !resultsOnly ? {
       projectedScoreA: locked.projectedScoreA,
       projectedScoreB: locked.projectedScoreB,
       predictedWinner: locked.predictedWinner,
@@ -465,6 +489,7 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
       managerB: facts.managerB,
       ...normalPrediction,
       ...lateOutlook,
+      ...(resultsOnly ? { receiptEligible: false } : {}),
       currentScoreA: facts.currentScoreA,
       currentScoreB: facts.currentScoreB,
       finalScoreA: type === 'recap' ? facts.currentScoreA : null,
@@ -476,12 +501,12 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
       keyPlayerId: keyPlayer?.id || '',
       upsetPath: written.upsetPath,
       historyNote: written.historyNote,
-      injuryWatch: facts.injuries.map((injury) => `${injury.name} — listed ${injury.status}`),
-      suggestedSwaps: facts.suggestedSwaps,
+      injuryWatch: resultsOnly ? [] : facts.injuries.map((injury) => `${injury.name} — listed ${injury.status}`),
+      suggestedSwaps: resultsOnly ? [] : facts.suggestedSwaps,
       factIds: written.factIds
     };
   });
-  const receipts = type === 'recap' && !lateForecast ? gradePredictions(matchups) : null;
+  const receipts = type === 'recap' && !lateForecast && !resultsOnly ? gradePredictions(matchups) : null;
   const articleType = type === 'recap' ? 'week_recap' : type === 'late-preview' ? 'week_late_preview' : 'week_preview';
   const edition = type === 'recap' ? 'Postgame Edition' : type === 'late-preview' ? 'Weekend Outlook' : 'Pregame Edition';
   return {
@@ -504,6 +529,14 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
     storylines: copy.storylines,
     awards: copy.awards,
     receipts,
+    ...(resultsOnly ? {
+      forecastContext: {
+        mode: 'results_only',
+        receiptEligible: false,
+        publishedForecastExists: false,
+        description: 'No published Preview or Weekend Outlook forecast exists for this week. This recap reports final results only, with no prediction grade.'
+      }
+    } : {}),
     ...(lateForecast ? {
       forecastContext: {
         mode: type === 'late-preview' ? 'late_outlook' : 'late_outlook_baseline',
@@ -520,7 +553,7 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
         rosterId: team.rosterId,
         starterIds: team.starters.map((player) => player.id),
         lineupHash: team.lineupHash,
-        projection: team.projectedScore,
+        ...(!resultsOnly ? { projection: team.projectedScore } : {}),
         ...(type === 'late-preview' ? {
           currentScore: team.currentScore,
           remainingProjection: team.remainingProjection,
@@ -535,8 +568,8 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
     },
     source: {
       snapshotId: snapshot.id,
-      predictionId: prediction.predictionSetId,
-      predictionKind: lateForecast ? 'late_forecast' : 'original_prediction',
+      predictionId: resultsOnly ? null : prediction.predictionSetId,
+      predictionKind: resultsOnly ? 'results_only' : lateForecast ? 'late_forecast' : 'original_prediction',
       dataAsOf: snapshot.factsAsOf,
       promptVersion: PROMPT_VERSION,
       model,
@@ -590,9 +623,7 @@ async function recordUsage(root, edition, generated, outcome = 'draft_created', 
   });
 }
 
-async function main() {
-  const options = parseCli(process.argv.slice(2));
-  const root = repoRoot(import.meta.url);
+export async function generatePress({ options = parseCli(process.argv.slice(2)), root = repoRoot(import.meta.url), buildFacts = buildWeeklyFacts } = {}) {
   const type = String(options.type || 'preview').toLowerCase();
   assert(['preview', 'late-preview', 'recap'].includes(type), '--type must be preview, late-preview or recap.');
   const { season, week } = parseSeasonWeek(options, { season: PRESS_CONFIG.season, week: 1 });
@@ -604,16 +635,20 @@ async function main() {
   const articleId = `${season}-${weekSlug(week)}-${type}`;
   const articlePath = path.join(root, 'content', 'articles', String(season), `${weekSlug(week)}-${type}.json`);
   const copyRecoveryPath = path.join(root, '.github', 'press-recovery', `${articleId}.json`);
-  const [existingPrediction, existingArticle, originalSnapshot, liveSnapshot, existingOriginalArticle] = await Promise.all([
+  const [existingPrediction, existingArticle, originalSnapshot, liveSnapshot, existingOriginalArticle, existingLateArticle, finalSnapshot] = await Promise.all([
     readJsonIfExists(predictionPath),
     readJsonIfExists(articlePath),
     readJsonIfExists(path.join(weekDirectory, 'pre.json')),
     readJsonIfExists(path.join(weekDirectory, 'live.json')),
-    readJsonIfExists(path.join(root, 'content', 'articles', String(season), `${weekSlug(week)}-preview.json`))
+    readJsonIfExists(path.join(root, 'content', 'articles', String(season), `${weekSlug(week)}-preview.json`)),
+    readJsonIfExists(path.join(root, 'content', 'articles', String(season), `${weekSlug(week)}-late-preview.json`)),
+    readJsonIfExists(path.join(weekDirectory, 'final.json'))
   ]);
   const originalLocked = Boolean(existingPrediction && ['locked', 'locked_original', 'graded'].includes(existingPrediction.state));
   const publishedOriginal = Boolean(existingPrediction && ['locked_original', 'graded'].includes(existingPrediction.state));
   const lateLocked = Boolean(existingPrediction && isLateForecastLedger(existingPrediction) && existingPrediction.state === 'locked_late');
+  const resultsOnly = type === 'recap' && !hasPublishedForecastLedger(existingPrediction);
+  if (resultsOnly) assert(!existingOriginalArticle && !existingLateArticle, `Week ${week} has a published forecast but its locked ledger is missing or invalid. Repair that lineage before generating a Recap.`);
 
   if (type === 'late-preview' && (existingArticle || liveSnapshot || originalSnapshot || existingOriginalArticle || existingPrediction)) {
     const reason = existingArticle || liveSnapshot || lateLocked
@@ -639,7 +674,7 @@ async function main() {
   }
 
   const [{ snapshot, prediction }, leagueCanon, managerCanon, editorial, storylines, corrections, index] = await Promise.all([
-    buildWeeklyFacts({ season, week, now: options.now, edition: type }),
+    type === 'recap' && finalSnapshot ? { snapshot: finalSnapshot, prediction: null } : buildFacts({ season, week, now: options.now, edition: type }),
     readJsonIfExists(path.join(root, 'content', 'canon', 'league.json')),
     readJsonIfExists(path.join(root, 'content', 'canon', 'managers.json')),
     readJsonIfExists(path.join(root, 'content', 'canon', 'editorial-policy.json')),
@@ -647,10 +682,12 @@ async function main() {
     readJsonIfExists(path.join(root, 'content', 'corrections.json')),
     readJsonIfExists(path.join(root, 'content', 'articles', 'index.json'))
   ]);
-  snapshot.factIds = unique([
+  if (type === 'recap' && finalSnapshot) {
+    assert(finalSnapshot.season === season && finalSnapshot.week === week && finalSnapshot.kind === 'final' && finalSnapshot.phase?.key === 'final' && finalSnapshot.immutable === true, `Week ${week} has an invalid frozen final snapshot; repair it before generating a recap.`);
+  } else snapshot.factIds = unique([
     ...snapshot.matchups.flatMap((matchup) => matchup.factIds),
-    ...(managerCanon?.managers || []).flatMap((manager) => (manager.approvedLore || []).flatMap((item) => item.factIds || [])),
-    ...(storylines?.storylines || []).flatMap((item) => [...(item.supportingFactIds || []), ...(item.counterFactIds || [])])
+    ...(!resultsOnly ? (managerCanon?.managers || []).flatMap((manager) => (manager.approvedLore || []).flatMap((item) => item.factIds || [])) : []),
+    ...(!resultsOnly ? (storylines?.storylines || []).flatMap((item) => [...(item.supportingFactIds || []), ...(item.counterFactIds || [])]) : [])
   ]);
   const snapshotName = type === 'recap'
     ? 'final.json'
@@ -661,8 +698,8 @@ async function main() {
   const preservePrediction = Boolean(existingPrediction && (type === 'recap' || originalLocked || lateLocked || snapshot.phase.key !== 'scheduled'));
 
   if (snapshotOnly) {
-    await writeJsonAtomic(snapshotPath, snapshot);
-    if (!preservePrediction) await writeJsonAtomic(predictionPath, prediction);
+    if (!(type === 'recap' && finalSnapshot)) await writeJsonAtomic(snapshotPath, snapshot);
+    if (!preservePrediction && !resultsOnly) await writeJsonAtomic(predictionPath, prediction);
     console.log(JSON.stringify({ snapshotPath: path.relative(root, snapshotPath), predictionPath: path.relative(root, predictionPath), validation: snapshot.validation }, null, 2));
     return;
   }
@@ -685,28 +722,30 @@ async function main() {
     console.log(JSON.stringify({ status: 'skipped', articleId, reason: message, openaiRequests: 0, estimatedCostUsd: 0 }, null, 2));
     return;
   }
-  if (type === 'recap' && !publishedOriginal && !lateLocked) {
+  if (type === 'recap' && !resultsOnly && !publishedOriginal && !lateLocked) {
     const message = `Week ${week} has neither a locked original prediction nor an immutable late-outlook ledger. No AI request was sent because a Recap cannot create hindsight predictions.`;
     await reportGeneration({ changed: false, articleId, message });
     console.log(JSON.stringify({ status: 'skipped', articleId, reason: message, openaiRequests: 0, estimatedCostUsd: 0 }, null, 2));
     return;
   }
 
-  await writeJsonAtomic(snapshotPath, snapshot);
-  if (!preservePrediction) await writeJsonAtomic(predictionPath, prediction);
+  if (!(type === 'recap' && finalSnapshot)) await writeJsonAtomic(snapshotPath, snapshot);
+  if (!preservePrediction && !resultsOnly) await writeJsonAtomic(predictionPath, prediction);
 
   const apiKey = process.env.OPENAI_API_KEY;
   assert(apiKey, 'OPENAI_API_KEY is required for article generation. Add it as a GitHub Actions repository secret.');
   const model = process.env.OPENAI_MODEL || PRESS_CONFIG.openaiModel;
   assert(leagueCanon && managerCanon && editorial && corrections, 'League canon, editorial policy and corrections are required.');
-  const sourcePrediction = preservePrediction ? existingPrediction : prediction;
-  assert(sourcePrediction, 'A locked original prediction or immutable late-outlook ledger is required before generating a recap.');
+  const sourcePrediction = resultsOnly ? null : preservePrediction ? existingPrediction : prediction;
+  assert(resultsOnly || sourcePrediction, 'A locked original prediction or immutable late-outlook ledger is required before generating a recap.');
   if (type === 'recap') assertPredictionLineage({
     articleType: 'week_recap',
     publishedSnapshot: snapshot,
     originalSnapshot,
     lateSnapshot: liveSnapshot,
     ledger: sourcePrediction,
+    resultsOnly,
+    hasPublishedForecast: Boolean(existingOriginalArticle || existingLateArticle),
     label: `Week ${week} Recap`
   });
   const usageEdition = {
@@ -738,6 +777,7 @@ async function main() {
     model,
     apiKey,
     onAttempt,
+    resultsOnly,
     recoveryPath: copyRecoveryPath,
     recoveryMetadata: {
       articleId,
@@ -748,7 +788,7 @@ async function main() {
       dataAsOf: snapshot.factsAsOf
     }
   });
-  const article = mergeArticle({ copy: generated.copy, snapshot, prediction: sourcePrediction, type, tone, model: generated.model, responseId: generated.responseId, usage: generated.usage });
+  const article = mergeArticle({ copy: generated.copy, snapshot, prediction: sourcePrediction, type, tone, model: generated.model, responseId: generated.responseId, usage: generated.usage, resultsOnly });
   await writeJsonAtomic(articlePath, article);
   await recordUsage(root, article, generated, 'draft_created');
   const relativeArticlePath = path.relative(root, articlePath).split(path.sep).join('/');
@@ -764,6 +804,7 @@ async function main() {
     dek: article.dek,
     publishedAt: article.publishedAt,
     dataAsOf: article.dataAsOf,
+    ...(article.forecastContext ? { forecastContext: article.forecastContext } : {}),
     storylines: article.storylines.map((item) => item.title),
     tags: article.tags
   };
@@ -795,7 +836,7 @@ async function main() {
       lockReason: 'Weekend Outlook captured after scoring began; it is immutable and ineligible for original-prediction receipts.'
     });
   }
-  if (type === 'recap') {
+  if (type === 'recap' && !resultsOnly) {
     await writeJsonAtomic(predictionPath, isLateForecastLedger(sourcePrediction)
       ? { ...sourcePrediction, state: 'locked_late', receiptEligible: false, grading: null, recapRecordedAt: article.updatedAt }
       : { ...sourcePrediction, state: 'graded', grading: article.receipts, gradedAt: article.updatedAt });
@@ -806,7 +847,7 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  main().catch((error) => {
+  generatePress().catch((error) => {
     console.error(`Farmhood Press generation failed: ${error.message}`);
     process.exitCode = 1;
   });

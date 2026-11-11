@@ -34,10 +34,6 @@ function hasPublished(publishedIds, edition, season, week) {
   return publishedIds.has(automaticArticleId(edition, season, week));
 }
 
-function recapLineageReady(prediction) {
-  return Boolean(prediction && ['locked_original', 'locked_late'].includes(prediction.state));
-}
-
 export function planAutomaticEdition({
   edition,
   league,
@@ -56,34 +52,30 @@ export function planAutomaticEdition({
 
   if (edition === 'recap') {
     const completed = completedThroughWeek(rosters);
-    const candidates = manualWeek === null
-      ? Array.from({ length: Math.max(0, completed - startWeek + 1) }, (_, index) => startWeek + index)
-      : [manualWeek];
-    const missing = candidates.filter((week) => week <= completed && !hasPublished(publishedIds, edition, season, week));
-    const week = missing.find((candidate) => recapLineageReady(predictionsByWeek.get(candidate)));
-    if (!week) {
-      const reason = missing.length
-        ? `No unpublished finalized week has a locked Preview or Weekend Outlook ledger; skipped before any AI request.`
-        : `Every finalized week through Week ${completed} already has a Recap.`;
-      return { shouldRun: false, edition, season, week: null, completedThroughWeek: completed, reason };
+    // Retries all target the same latest final. Backfilling a backlog must be an
+    // explicit choice, never a side effect of three scheduled retry triggers.
+    const week = manualWeek ?? completed;
+    if (week < startWeek || week > completed || week > PRESS_CONFIG.regularSeasonWeeks) {
+      return { shouldRun: false, published: false, edition, season, week: week || null, completedThroughWeek: completed, reason: `Week ${week} is not an eligible finalized week; no AI request is needed.` };
     }
-    return { shouldRun: true, edition, season, week, articleId: automaticArticleId(edition, season, week), completedThroughWeek: completed, reason: `Week ${week} is final and ready for its Recap.` };
+    if (hasPublished(publishedIds, edition, season, week)) return { shouldRun: false, published: true, edition, season, week, articleId: automaticArticleId(edition, season, week), completedThroughWeek: completed, reason: `Week ${week}${manualWeek === null ? ', the latest finalized week,' : ''} already has a Recap. Historical backfills require an explicit week.` };
+    return { shouldRun: true, published: false, edition, season, week, articleId: automaticArticleId(edition, season, week), completedThroughWeek: completed, reason: `Week ${week} is final and ready for its Recap.` };
   }
 
   const week = manualWeek ?? liveWeek;
   if (week > PRESS_CONFIG.regularSeasonWeeks) {
-    return { shouldRun: false, edition, season, week, reason: `Week ${week} is outside the configured ${PRESS_CONFIG.regularSeasonWeeks}-week regular season.` };
+    return { shouldRun: false, published: false, edition, season, week, reason: `Week ${week} is outside the configured ${PRESS_CONFIG.regularSeasonWeeks}-week regular season.` };
   }
   if (edition === 'waiver') {
-    if (hasPublished(publishedIds, edition, season, week)) return { shouldRun: false, edition, season, week, reason: `Week ${week} already has a Waiver Wire report.` };
-    return { shouldRun: true, edition, season, week, articleId: automaticArticleId(edition, season, week), reason: `Week ${week} is ready for its deterministic Waiver Wire report.` };
+    if (hasPublished(publishedIds, edition, season, week)) return { shouldRun: false, published: true, edition, season, week, articleId: automaticArticleId(edition, season, week), reason: `Week ${week} already has a Waiver Wire report.` };
+    return { shouldRun: true, published: false, edition, season, week, articleId: automaticArticleId(edition, season, week), reason: `Week ${week} is ready for its deterministic Waiver Wire report.` };
   }
 
   const originalId = `${season}-${weekSlug(week)}-preview`;
-  if (publishedIds.has(originalId)) return { shouldRun: false, edition, season, week, reason: `Week ${week} already has an original pregame Preview.` };
-  if (hasPublished(publishedIds, edition, season, week)) return { shouldRun: false, edition, season, week, reason: `Week ${week} already has a Weekend Outlook.` };
-  if (predictionsByWeek.has(week)) return { shouldRun: false, edition, season, week, reason: `Week ${week} already has a prediction ledger, so a late outlook cannot replace it.` };
-  return { shouldRun: true, edition, season, week, articleId: automaticArticleId(edition, season, week), reason: `Week ${week} is eligible for a post-Thursday Weekend Outlook timing check.` };
+  if (publishedIds.has(originalId)) return { shouldRun: false, published: true, edition, season, week, articleId: originalId, reason: `Week ${week} already has an original pregame Preview.` };
+  if (hasPublished(publishedIds, edition, season, week)) return { shouldRun: false, published: true, edition, season, week, articleId: automaticArticleId(edition, season, week), reason: `Week ${week} already has a Weekend Outlook.` };
+  if (predictionsByWeek.has(week)) return { shouldRun: false, published: false, edition, season, week, reason: `Week ${week} already has a prediction ledger, so a late outlook cannot replace it.` };
+  return { shouldRun: true, published: false, edition, season, week, articleId: automaticArticleId(edition, season, week), reason: `Week ${week} is eligible for a post-Thursday Weekend Outlook timing check.` };
 }
 
 async function workflowOutput(name, value) {
@@ -92,6 +84,7 @@ async function workflowOutput(name, value) {
 
 async function reportPlan(plan) {
   await workflowOutput('should_run', String(plan.shouldRun));
+  await workflowOutput('published', String(plan.published === true));
   await workflowOutput('edition', plan.edition);
   await workflowOutput('season', plan.season);
   await workflowOutput('week', plan.week ?? '');

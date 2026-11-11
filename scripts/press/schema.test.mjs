@@ -25,6 +25,16 @@ function copyWith(analysis) {
   };
 }
 
+function resultsCopy(analysis) {
+  const copy = copyWith(analysis);
+  copy.title = 'Final scores settle the weekly table';
+  copy.dek = 'The completed week in scoring.';
+  copy.lead = ['All six matchups are final.', 'Blumbo won on the final score.'];
+  copy.keyStat = { label: 'Final matchups', value: '6', note: 'Official scoring.' };
+  copy.storylines.forEach((item) => { item.body = 'The final score is on the record.'; });
+  return copy;
+}
+
 test('accepts explicit post-kickoff late-outlook language', () => {
   const copy = copyWith('Blumbo leads on known Thursday points; the remaining projection still favors a close finish.');
   assert.equal(validateArticleCopy(copy, snapshot, 'late-preview'), copy);
@@ -74,4 +84,52 @@ test('rejects a weekly-high award for anyone other than the verified scoring lea
   };
   const prediction = { predictions: [{ matchupId: 1, predictedWinner: 'Blumbo', projectedScoreA: 95, projectedScoreB: 90 }] };
   assert.throws(() => validateArticleCopy(recap, finalSnapshot, 'recap', { prediction }), /verified leader is Blumbo/);
+});
+
+test('weekly-high fact checks also protect late-ledger and results-only recaps', () => {
+  const recap = copyWith('Blumbo finished on top.');
+  recap.awards = [{ title: 'Weekly high scorer', recipient: 'maco71', body: 'The highest team score of the week.', factIds: ['late:1'] }];
+  const finalSnapshot = { ...snapshot, matchups: [{ ...snapshot.matchups[0], currentScoreA: 100, currentScoreB: 90 }] };
+  for (const options of [{ resultsOnly: true }, { lateForecast: true }]) {
+    assert.throws(() => validateArticleCopy(recap, finalSnapshot, 'recap', options), /verified leader is Blumbo/);
+  }
+});
+
+test('results-only recap permits a transparent missing-preview disclosure but rejects invented receipts', () => {
+  const results = resultsCopy('No original pregame prediction exists; Blumbo won on the final score.');
+  assert.equal(validateArticleCopy(results, snapshot, 'recap', { resultsOnly: true }), results);
+  for (const claim of ['Our forecast called Blumbo.', 'The original pick was Blumbo.', 'Prediction accuracy hit 100%.', 'The desk grade was 95/100.', 'Blumbo beat the projected score.', 'The favorite won.', 'An upset for the underdog.', 'We went 6-for-6 on picks.', 'The outlook had a 75% chance.', 'Our accuracy was perfect.']) {
+    assert.throws(() => validateArticleCopy(resultsCopy(claim), snapshot, 'recap', { resultsOnly: true }), /Results-only recap/);
+  }
+});
+
+test('results-only disclosure may deny a missing Preview, Outlook, comparisons and receipts', () => {
+  for (const disclosure of ['No Preview or Weekend Outlook forecast was published.', 'No forecast comparisons or prediction receipts exist.', 'This final report is without a prediction grade.', 'There was not an original pre-kickoff pick.']) {
+    const copy = resultsCopy(disclosure);
+    assert.equal(validateArticleCopy(copy, snapshot, 'recap', { resultsOnly: true }), copy);
+  }
+});
+
+test('results-only guards every narrative location and never repairs structured identities', () => {
+  for (const location of ['title', 'dek', 'pullQuote', 'keyStat', 'storylines', 'awards', 'upsetPath']) {
+    const copy = resultsCopy('Blumbo scored 100 points.');
+    if (location === 'keyStat') copy.keyStat.note = 'Projected score: 110';
+    else if (location === 'storylines') copy.storylines[0].body = 'Blumbo was the favorite.';
+    else if (location === 'awards') copy.awards = [{ title: 'Perfect picks', body: 'Six correct predictions.', recipient: 'Blumbo', factIds: ['late:1'] }];
+    else if (location === 'upsetPath') copy.matchups[0].upsetPath = 'The underdog won.';
+    else copy[location] = 'Our original pick won the week';
+    assert.throws(() => validateArticleCopy(copy, snapshot, 'recap', { resultsOnly: true }), /Results-only recap/);
+  }
+  const copy = resultsCopy('Blumbo scored 100 points.');
+  copy.storylines[0].subjects = ['bl umbo'];
+  assert.throws(() => validateArticleCopy(copy, snapshot, 'recap', { resultsOnly: true }), /Unknown storyline manager/);
+});
+
+test('top-scorer awards allow tied leaders but reject other recipients in every recap mode', () => {
+  const finalSnapshot = { ...snapshot, matchups: [{ ...snapshot.matchups[0], currentScoreA: 100, currentScoreB: 100 }] };
+  for (const recipient of ['Blumbo', 'maco71']) {
+    const copy = resultsCopy('Both teams scored 100 points.');
+    copy.awards = [{ title: 'Top scorer', recipient, body: 'The highest score of the week.', factIds: ['late:1'] }];
+    assert.equal(validateArticleCopy(copy, finalSnapshot, 'recap', { resultsOnly: true }), copy);
+  }
 });

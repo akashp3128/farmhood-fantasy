@@ -87,7 +87,7 @@ jobs:
           node-version: "24"
 
       - name: Test deterministic newsroom logic
-        run: node --test scripts/press/*.test.mjs assets/live.test.cjs
+        run: node --test scripts/press/*.test.mjs assets/*.test.cjs
 
       - name: Test the credential without generating tokens
         if: inputs.operation == 'credential-test'
@@ -110,61 +110,33 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EDITION: ${{ inputs.edition }}
           WEEK: ${{ inputs.week }}
-          FORCE_REGENERATION: ${{ inputs.force_regeneration }}
         run: |
-          set -o pipefail
-          git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
-          existing_ref=""
-          if [ "$FORCE_REGENERATION" != "true" ]; then
-            existing_ref=$(git ls-remote --heads origin "refs/heads/press/${EDITION}-2026-week-${WEEK}-*" | sed -n '1p')
-          fi
-          existing_review=$(gh pr list --state open --limit 100 --json headRefName,url --jq '.[] | select(.headRefName | startswith("press/")) | "\(.headRefName)|\(.url)"' | sed -n '1p')
-          orphan_branch=""
-          while IFS= read -r remote_ref; do
-            if ! git merge-base --is-ancestor "$remote_ref" origin/main; then
-              candidate_branch=${remote_ref#refs/remotes/origin/}
-              review_disposition=$(gh pr list --state all --head "$candidate_branch" --limit 1 --json state,mergedAt --jq 'if length == 0 then "" elif .[0].mergedAt != null then "MERGED" else .[0].state end')
-              if [ "$review_disposition" != "MERGED" ] && [ "$review_disposition" != "CLOSED" ]; then
-                orphan_branch=$candidate_branch
-                break
-              fi
-            fi
-          done < <(git for-each-ref --format='%(refname)' refs/remotes/origin/press/)
-          if [ -n "$existing_ref" ] || [ -n "$existing_review" ] || [ -n "$orphan_branch" ]; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-            if [ -n "$existing_review" ]; then
-              review_branch=${existing_review%%|*}
-              review_url=${existing_review#*|}
-              reason="Finish the open Farmhood Press review (${review_branch}) before generating another edition: ${review_url}"
-            elif [ -n "$orphan_branch" ]; then
-              review_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${orphan_branch}?expand=1"
-              reason="An unpublished Farmhood Press branch still needs review (${orphan_branch}): ${review_url}"
-            else
-              existing_branch=$(printf '%s\n' "$existing_ref" | awk '{sub("refs/heads/", "", $2); print $2}')
-              review_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${existing_branch}?expand=1"
-              reason="A review branch for ${EDITION} Week ${WEEK} already exists: ${review_url}"
-            fi
-            echo "reason=${reason}" >> "$GITHUB_OUTPUT"
-            echo "### Farmhood Press did not generate a draft" >> "$GITHUB_STEP_SUMMARY"
-            echo "- ${reason}" >> "$GITHUB_STEP_SUMMARY"
-            echo "- OpenAI requests: 0" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Estimated API cost: \$0.0000" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Merge or close the blocking review, then run this workflow again." >> "$GITHUB_STEP_SUMMARY"
-            echo "::error title=Farmhood Press not generated::${reason} No OpenAI request was sent. Merge or close that review, then rerun this workflow."
-            exit 1
-          else
-            echo "found=false" >> "$GITHUB_OUTPUT"
-          fi
+          node scripts/press/review-guard.mjs --edition "$EDITION" --season 2026 --week "$WEEK"
 
       - name: Refresh main before generation
-        if: inputs.operation == 'generate'
+        if: inputs.operation == 'generate' && steps.existing_draft.outputs.blocked != 'true'
         run: |
           git fetch origin main
           git merge --ff-only origin/main
 
+      - name: Reserve this AI edition before spending tokens
+        id: ai_reservation
+        if: inputs.operation == 'generate' && steps.existing_draft.outputs.blocked != 'true' && inputs.edition != 'waiver'
+        env:
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+        run: |
+          marker_branch="press/attempt-${EDITION}-2026-week-${WEEK}"
+          git config user.name "farmhood-press[bot]"
+          git config user.email "farmhood-press[bot]@users.noreply.github.com"
+          git switch -c "$marker_branch"
+          git commit --allow-empty -m "Reserve manual ${EDITION} attempt for 2026 Week ${WEEK}"
+          git push --set-upstream origin "$marker_branch"
+          echo "branch=$marker_branch" >> "$GITHUB_OUTPUT"
+
       - name: Generate the edition
         id: generate
-        if: inputs.operation == 'generate' && (inputs.force_regeneration == true || steps.existing_draft.outputs.found != 'true')
+        if: inputs.operation == 'generate' && steps.existing_draft.outputs.blocked != 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
@@ -197,7 +169,7 @@ jobs:
           exit 1
 
       - name: Create the review branch
-        if: inputs.operation == 'generate' && steps.generate.outputs.changed == 'true'
+        if: inputs.operation == 'generate' && inputs.edition == 'waiver' && steps.generate.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           EDITION: ${{ inputs.edition }}
@@ -254,11 +226,64 @@ jobs:
 
       - name: Preserve a paid attempt that did not finish
         if: failure() && steps.generate.outputs.paid_request == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EDITION: ${{ inputs.edition }}
+          WEEK: ${{ inputs.week }}
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: |
+          git config user.name "farmhood-press[bot]"
+          git config user.email "farmhood-press[bot]@users.noreply.github.com"
+          if [ -z "$MARKER_BRANCH" ] || [ "$(git branch --show-current)" != "$MARKER_BRANCH" ]; then
+            echo "The paid attempt is not on its reservation branch; refusing to lose its recovery lineage." >&2
+            exit 1
+          fi
+          git add content/
+          if [ -d .github/press-recovery ]; then
+            git add .github/press-recovery/
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Preserve paid ${EDITION} attempt for 2026 Week ${WEEK}"
+          elif git diff --quiet origin/main...HEAD -- content/ .github/press-recovery/; then
+            echo "A paid response was reported but no recovery files were available. The reservation remains protected." >&2
+            exit 1
+          fi
+          git push origin "HEAD:${MARKER_BRANCH}"
+          compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/main...${MARKER_BRANCH}?expand=1"
+          existing_pr=$(gh pr list --state open --head "$MARKER_BRANCH" --json url --jq '.[0].url // ""')
+          if [ -n "$existing_pr" ]; then
+            echo "- Recovery review: ${existing_pr}" >> "$GITHUB_STEP_SUMMARY"
+          elif pr_url=$(gh pr create --draft --base main --head "$MARKER_BRANCH" --title "Farmhood Press recovery: ${EDITION} Week ${WEEK}" --body "A paid manual generation attempt did not finish. This reserved branch preserves the non-public structured-copy checkpoint, generated fact files, and usage record so the response can be repaired without buying the same draft again. Do not merge this recovery pull request as-is: repair and validate the article first, then remove the .github/press-recovery checkpoint." 2>/dev/null); then
+            echo "- Recovery review: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Recovery branch: ${compare_url}" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Keep an ambiguous AI reservation protected
+        if: failure() && steps.ai_reservation.outputs.branch != '' && steps.generate.outputs.request_started == 'true' && steps.generate.outputs.paid_request != 'true'
+        env:
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: |
+          echo "### Farmhood Press request needs investigation" >> "$GITHUB_STEP_SUMMARY"
+          echo "- The AI request started, but no complete response was confirmed. Do not retry by deleting the reservation." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Protected reservation: ${MARKER_BRANCH}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Release a proven unused AI reservation
+        if: always() && steps.ai_reservation.outputs.branch != '' && steps.generate.outputs.request_started != 'true' && steps.generate.outputs.paid_request != 'true' && (steps.generate.outcome != 'success' || steps.generate.outputs.changed != 'true')
+        env:
+          MARKER_BRANCH: ${{ steps.ai_reservation.outputs.branch }}
+        run: git push origin --delete "$MARKER_BRANCH"
+
+      - name: Upload paid recovery files
+        if: failure() && steps.generate.outputs.paid_request == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: farmhood-press-usage-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             .github/press-recovery/
+            content/articles/
+            content/predictions/
+            content/snapshots/
             content/usage/ledger.json
           include-hidden-files: true
           retention-days: 30

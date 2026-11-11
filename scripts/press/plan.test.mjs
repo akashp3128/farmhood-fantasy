@@ -5,25 +5,52 @@ import { automaticArticleId, completedThroughWeek, planAutomaticEdition } from '
 const league = (week = 3) => ({ league_id: '1377086848295260160', season: '2026', settings: { leg: week } });
 const rosters = (games) => Array.from({ length: 12 }, (_, index) => ({ roster_id: index + 1, settings: { wins: games, losses: 0, ties: 0 } }));
 
-test('plans the earliest missing finalized recap with valid immutable lineage', () => {
+test('plans only the latest finalized recap, even with a historical backlog', () => {
   const plan = planAutomaticEdition({
     edition: 'recap', league: league(4), rosters: rosters(3),
     publishedIds: new Set(['2026-week-01-recap']),
     predictionsByWeek: new Map([[2, { state: 'locked_original' }], [3, { state: 'locked_late' }]])
   });
   assert.equal(plan.shouldRun, true);
-  assert.equal(plan.week, 2);
-  assert.equal(plan.articleId, '2026-week-02-recap');
+  assert.equal(plan.week, 3);
+  assert.equal(plan.articleId, '2026-week-03-recap');
 });
 
-test('does not let missing recap lineage starve a later eligible finalized week', () => {
+test('plans a results-only recap for the latest final without inventing forecast lineage', () => {
   const plan = planAutomaticEdition({
     edition: 'recap', league: league(5), rosters: rosters(4),
     publishedIds: new Set(['2026-week-01-recap', '2026-week-02-recap']),
-    predictionsByWeek: new Map([[4, { state: 'locked_original' }]])
+    predictionsByWeek: new Map([[3, { state: 'locked_original' }]])
   });
   assert.equal(plan.shouldRun, true);
   assert.equal(plan.week, 4);
+});
+
+test('scheduled retries skip a published latest recap rather than buying historical articles', () => {
+  const input = { edition: 'recap', league: league(10), rosters: rosters(9), publishedIds: new Set(['2026-week-09-recap']) };
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const plan = planAutomaticEdition(input);
+    assert.equal(plan.shouldRun, false);
+    assert.equal(plan.week, 9);
+    assert.match(plan.reason, /latest finalized week.*already has a Recap/);
+  }
+  const backfill = planAutomaticEdition({ ...input, requestedWeek: '5' });
+  assert.equal(backfill.shouldRun, true);
+  assert.equal(backfill.week, 5);
+});
+
+test('never plans an unfinished or nonexistent first-week recap', () => {
+  for (const input of [
+    { league: league(1), rosters: rosters(0) },
+    { league: league(5), rosters: rosters(4), requestedWeek: '5' },
+    { league: league(2), rosters: rosters(1), startWeek: 2 }
+  ]) assert.equal(planAutomaticEdition({ edition: 'recap', ...input }).shouldRun, false);
+});
+
+test('plans a finalized recap even when no Preview or Weekend Outlook ledger exists', () => {
+  const plan = planAutomaticEdition({ edition: 'recap', league: league(6), rosters: rosters(5), publishedIds: new Set(), requestedWeek: '5' });
+  assert.equal(plan.shouldRun, true);
+  assert.equal(plan.week, 5);
 });
 
 test('skips recap planning before any paid request when every final is published', () => {

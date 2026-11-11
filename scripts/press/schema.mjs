@@ -71,6 +71,9 @@ function assertRecapClaims(copy, snapshot, prediction) {
     }
   });
 
+}
+
+function assertRecapAwards(copy, snapshot) {
   const highScore = Math.max(...snapshot.matchups.flatMap((row) => [Number(row.currentScoreA), Number(row.currentScoreB)]));
   const highManagers = new Set(snapshot.matchups.flatMap((row) => [
     Number(row.currentScoreA) === highScore ? row.managerA : null,
@@ -78,9 +81,20 @@ function assertRecapClaims(copy, snapshot, prediction) {
   ]).filter(Boolean));
   (copy.awards || []).forEach((award) => {
     const claim = `${award.title || ''} ${award.body || ''}`;
-    if (/\b(?:weekly|week\s+\d+|week's)\s+(?:high|high scorer|scoring leader)|\bhighest team score\b|\bled the week in scoring\b/i.test(claim)) {
+    if (/\b(?:weekly|week\s+\d+|week[’']s|league[’']s)\s+(?:high|high scorer|scoring leader)|\bhighest\s+(?:team\s+)?score\b|\btop\s+(?:scorer|scoring team)\b|\bled the (?:week|league) in scoring\b|\boutscored the (?:entire )?league\b/i.test(claim)) {
       assert(highManagers.has(award.recipient), `Generated weekly-high award names ${award.recipient}, but the verified leader is ${[...highManagers].join(' or ')}.`);
     }
+  });
+}
+
+function assertResultsOnlyClaims(copy) {
+  // Only a clear denial may mention a missing forecast. Strip those noun phrases
+  // before rejecting all affirmative forecast, comparison and accuracy language.
+  const noun = '(?:(?:original|published|pregame|pre-kickoff|weekend)\\s+)*(?:(?:preview|outlook)s?(?:\\s+forecasts?)?|(?:pick|prediction|forecast)s?)(?:\\s+(?:comparisons?|receipts?|grades?|accuracy))?|desk\\s+grade';
+  const disclosure = new RegExp(`\\b(?:no|without|neither|not)\\s+(?:an?\\s+)?(?:${noun})(?:\\s*(?:,|or|nor|and)\\s*(?:${noun}))*`, 'gi');
+  generatedProse(copy).forEach((text) => {
+    const claims = text.replace(disclosure, '');
+    assert(!/\b(?:predict(?:ed|ion|ions)?|forecast(?:s|ed|ing)?|project(?:ed|ion|ions)?|picks?|previews?|outlooks?|favou?r(?:ite|ites|ed|s)?|underdogs?|upsets?|receipts?|accuracy|correct\s+picks?|hit\s+rate|desk\s+grade)\b/i.test(claims), 'Results-only recap cannot invent predictions, projection comparisons, favorites, upsets, prediction receipts or a desk grade.');
   });
 }
 
@@ -151,6 +165,7 @@ export function validateArticleCopy(copy, snapshot, type = 'preview', options = 
   const actualIds = (copy.matchups || []).map((matchup) => matchup.matchupId).sort((a, b) => a - b);
   assert(JSON.stringify(actualIds) === JSON.stringify(expectedIds), 'Generated matchup IDs do not match the snapshot.');
   const factIds = new Set([...(snapshot.factIds || []), ...snapshot.matchups.flatMap((matchup) => matchup.factIds)]);
+  const managerNames = new Set(snapshot.teams.map((team) => team.manager));
   const matchupById = new Map(snapshot.matchups.map((matchup) => [matchup.matchupId, matchup]));
   copy.matchups.forEach((item) => {
     const matchup = matchupById.get(item.matchupId);
@@ -159,14 +174,23 @@ export function validateArticleCopy(copy, snapshot, type = 'preview', options = 
   });
   (copy.storylines || []).flatMap((item) => item.factIds || []).forEach((id) => assert(factIds.has(id), `Unknown storyline fact ID: ${id}`));
   (copy.awards || []).flatMap((item) => item.factIds || []).forEach((id) => assert(factIds.has(id), `Unknown award fact ID: ${id}`));
+  (copy.storylines || []).flatMap((item) => item.subjects || []).forEach((name) => assert(managerNames.has(name), `Unknown storyline manager: ${name}`));
+  (copy.awards || []).forEach((item) => assert(managerNames.has(item.recipient), `Unknown award manager: ${item.recipient}`));
   const text = JSON.stringify(copy);
   assert(!/<\/?[a-z][^>]*>/i.test(text), 'Generated copy contains raw HTML.');
   assert(!/\b(?:nigger|faggot|retard)\b/i.test(text), 'Generated copy failed the editorial language gate.');
   assert(safeText(copy.title, 140).length >= 12, 'Generated headline is too short.');
   assertCanonicalManagerSpellings(copy, snapshot.teams.map((team) => team.manager));
-  if (type === 'recap' && options.lateForecast !== true) assertRecapClaims(copy, snapshot, options.prediction);
+  if (type === 'recap') {
+    assertRecapAwards(copy, snapshot);
+    if (options.lateForecast !== true && options.resultsOnly !== true) assertRecapClaims(copy, snapshot, options.prediction);
+  }
+  if (options.resultsOnly === true) {
+    assert(type === 'recap', 'Results-only copy must be a recap.');
+    assertResultsOnlyClaims(copy);
+  }
   if (type === 'late-preview' || options.lateForecast === true) {
-    const hindsightClaims=text.replace(/\b(?:no|not\s+(?:an?\s+)?|without\s+(?:an?\s+)?)\s*(?:original\s+)?(?:pregame\s+)?(?:pick|prediction|forecast|preview)s?\b/gi,'');
+    const hindsightClaims=generatedProse(copy).join('\n').replace(/\b(?:no|not\s+(?:an?\s+)?|without\s+(?:an?\s+)?|never\s+had\s+(?:an?\s+)?|rather\s+than\s+(?:an?\s+)?)\s*(?:original\s+)?(?:pregame\s+)?(?:pick|prediction|forecast|preview)s?\b/gi,'');
     assert(!/\boriginal\s+(?:pregame\s+)?(?:pick|prediction|forecast|preview)s?\b/i.test(hindsightClaims), 'Late-outlook copy must not describe an original pick or prediction.');
     assert(!/\bpregame\s+(?:pick|prediction|forecast|preview)s?\b/i.test(hindsightClaims), 'Late-outlook copy must not imply it was published before kickoff.');
   }
