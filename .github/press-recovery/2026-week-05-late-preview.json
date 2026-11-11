@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-05-late-preview",
+  "type": "week_late_preview",
+  "season": 2026,
+  "week": 5,
+  "generatedAt": "2026-10-09T19:23:51.660Z",
+  "dataAsOf": "2026-10-09T19:23:51.660Z",
+  "responseId": "resp_079145630f3d87dd016ac93f48df7487d19cac613b20f92e2d",
+  "model": "gpt-5.6-terra",
+  "usage": {
+    "inputTokens": 7672,
+    "cachedInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "outputTokens": 1866,
+    "reasoningTokens": 0,
+    "totalTokens": 9538,
+    "estimatedCostUsd": 0.037736,
+    "pricingAsOf": "2026-09-08",
+    "preflight": {
+      "requestCharacters": 27726,
+      "localInputTokenEstimate": 8172,
+      "exactInputTokens": 7672,
+      "maxOutputTokens": 2300,
+      "maximumEstimatedCostUsd": 0.042944,
+      "configuredCostLimitUsd": 0.065,
+      "policyMaximumCostUsd": 0.065
+    },
+    "model": "gpt-5.6-terra"
+  },
+  "kind": "farmhood_press_copy_recovery",
+  "publicationStatus": "not_published",
+  "semanticValidation": {
+    "status": "rejected",
+    "error": "Generated copy misspells canonical manager akaaashh as \"ak aaashh\"."
+  },
+  "structuredCopy": {
+    "title": "Week 5 Weekend Outlook: Thursday Already Threw the First Punch",
+    "dek": "Known Thursday scoring is on the board; the remaining projections point to two routs, a couple of coin flips, and one commissioner-shaped problem.",
+    "lead": [
+      "This is a live Week 5 outlook, not a pregame prediction: Thursday points are known, and only unstarted starters supply the remaining projection.",
+      "Siccboi and vpitello34 have already built 30.5-point leads, while maco71 still projects as the week’s top side despite jwislek_20’s early five points."
+    ],
+    "pullQuote": "Thursday did not settle the week. It did, however, put a few group-chat alibis on injured reserve.",
+    "keyStat": {
+      "label": "Largest current projected margin",
+      "value": "Siccboi by 57.44",
+      "note": "Siccboi leads Archibaldo 30.5–14.54 and is projected to finish 137.46–80.02."
+    },
+    "matchups": [
+      {
+        "matchupId": 1,
+        "headline": "maco71 has the bigger remaining engine",
+        "analysis": "jwislek_20 leads 5–0 after Thursday, but maco71 carries 121.04 in remaining projection to jwislek_20’s 107.21. The current outlook lands 121.04–112.21 for maco71, with a 62.02% win probability. The points king is again bringing a flamethrower; now comes the annual question of whether it burns the opponent or the postseason résumé.",
+        "upsetPath": "jwislek_20 needs the early edge to survive the remaining-projection gap and turn this into a Monday-night stress test.",
+        "historyNote": "maco71 set the single-season scoring record in 2025 but remains without a championship.",
+        "factIds": [
+          "2026:w5:m1:live-score:jwislek_20",
+          "2026:w5:m1:live-score:maco71",
+          "2026:w5:m1:remaining:jwislek_20",
+          "2026:w5:m1:remaining:maco71",
+          "2026:w5:m1:late-forecast",
+          "points:2025:maco71"
+        ]
+      },
+      {
+        "matchupId": 2,
+        "headline": "Siccboi’s Thursday lead is already rude",
+        "analysis": "Siccboi leads 30.5–14.54 and projects for 137.46 against Archibaldo’s 80.02, the widest projected result on the board. Bucky Irving’s 30.5 has made the rest of this matchup look less like a contest and more like a customer-service escalation.",
+        "upsetPath": "Archibaldo needs his 65.48 remaining projection to wildly outperform expectation while Siccboi’s 106.96 remaining points evaporate.",
+        "historyNote": "Archibaldo has long been on the wrong end of the expected-wins ledger; this is not currently helping the appeal.",
+        "factIds": [
+          "2026:w5:m2:live-score:Archibaldo",
+          "2026:w5:m2:live-score:Siccboi",
+          "2026:w5:m2:remaining:Archibaldo",
+          "2026:w5:m2:remaining:Siccboi",
+          "2026:w5:m2:late-forecast",
+          "alltime:luck:Archibaldo"
+        ]
+      },
+      {
+        "matchupId": 3,
+        "headline": "pgorny clings to a very small Thursday cushion",
+        "analysis": "pgorny leads 15.2–0, but turi70 owns 106.26 in remaining projection against pgorny’s 94.11. The live outlook still narrowly favors pgorny, 109.31–106.26, at 54.23%. This is a three-point projection gap wearing a trench coat and pretending to be certainty.",
+        "upsetPath": "turi70 has the larger remaining projection and needs it to behave normally.",
+        "historyNote": "",
+        "factIds": [
+          "2026:w5:m3:live-score:turi70",
+          "2026:w5:m3:live-score:pgorny",
+          "2026:w5:m3:remaining:turi70",
+          "2026:w5:m3:remaining:pgorny",
+          "2026:w5:m3:late-forecast"
+        ]
+      },
+      {
+        "matchupId": 4,
+        "headline": "cuch has the lead; Blumbo has the cleaner chase",
+        "analysis": "cuch leads 13.2–0 behind Javonte Williams, yet Blumbo holds a slight 105.47–103.37 edge in remaining projection. The current outlook still favors cuch 116.57–105.47, at 64.95%, because Thursday already deposited the commissioner’s opening fee.",
+        "upsetPath": "Blumbo needs the remaining-projection edge to erase the 13.2-point head start. Filling the open kicker slot would also be an extremely commissioner-proof concept.",
+        "historyNote": "cuch is the current commissioner.",
+        "factIds": [
+          "2026:w5:m4:live-score:Blumbo",
+          "2026:w5:m4:live-score:cuch",
+          "2026:w5:m4:remaining:Blumbo",
+          "2026:w5:m4:remaining:cuch",
+          "2026:w5:m4:late-forecast",
+          "role:commissioner"
+        ]
+      },
+      {
+        "matchupId": 5,
+        "headline": "vpitello34 has the reigning champ in a hole",
+        "analysis": "vpitello34 leads 30.5–4.3 and projects to win 116.21–92.4, with a 78.96% probability. George Pickens supplied 23.5 already, leaving martinch94’s title defense staring at an early Week 5 invoice.",
+        "upsetPath": "martinch94 needs the 88.1 remaining projection to beat vpitello34’s 85.71 by enough to erase the 26.2-point deficit.",
+        "historyNote": "martinch94 is the reigning 2025 champion and a three-time winner.",
+        "factIds": [
+          "2026:w5:m5:live-score:martinch94",
+          "2026:w5:m5:live-score:vpitello34",
+          "2026:w5:m5:remaining:martinch94",
+          "2026:w5:m5:remaining:vpitello34",
+          "2026:w5:m5:late-forecast",
+          "champion:2025"
+        ]
+      },
+      {
+        "matchupId": 6,
+        "headline": "The only matchup still waiting for kickoff",
+        "analysis": "akaaashh and sidjunlee are tied 0–0 with no locked starters at capture. ak aaashh is projected for 117–110.44 and has a 59.01% win probability, so this remains a proper weekend game rather than a Thursday evidence exhibit.",
+        "upsetPath": "sidjunlee needs the modest projected deficit to flip; the slate has not yet supplied either manager a point or an excuse.",
+        "historyNote": "",
+        "factIds": [
+          "2026:w5:m6:live-score:akaaashh",
+          "2026:w5:m6:live-score:sidjunlee",
+          "2026:w5:m6:remaining:akaaashh",
+          "2026:w5:m6:remaining:sidjunlee",
+          "2026:w5:m6:late-forecast"
+        ]
+      }
+    ],
+    "storylines": [
+      {
+        "title": "Thursday has created two real chasms",
+        "body": "Siccboi and vpitello34 each sit at 30.5 points, setting up projected wins of 57.44 and 23.81 points, respectively. Everyone else is still entitled to optimism; those two opponents are entitled to a calculator and some deep breathing.",
+        "subjects": [
+          "Siccboi",
+          "vpitello34",
+          "Archibaldo",
+          "martinch94"
+        ],
+        "factIds": [
+          "2026:w5:m2:live-score:Siccboi",
+          "2026:w5:m2:late-forecast",
+          "2026:w5:m5:live-score:vpitello34",
+          "2026:w5:m5:late-forecast"
+        ]
+      },
+      {
+        "title": "Lineup work is still sitting in plain sight",
+        "body": "Archibaldo, jwislek_20, turi70, maco71, sidjunlee and vpitello34 each have a supplied higher-projection alternative available. vpitello34 also has an empty TE slot, which is less a strategic philosophy than an unfinished sentence.",
+        "subjects": [
+          "Archibaldo",
+          "jwislek_20",
+          "turi70",
+          "maco71"
+        ],
+        "factIds": [
+          "2026:w5:m1:late-forecast",
+          "2026:w5:m2:late-forecast",
+          "2026:w5:m3:late-forecast",
+          "2026:w5:m5:late-forecast"
+        ]
+      },
+      {
+        "title": "Questionable tags remain part of the weekend texture",
+        "body": "Multiple starters are listed Questionable as of the snapshot, including players on the rosters of ak aaashh, turi70, jwislek_20, and others. The points already scored are settled; the availability picture is not.",
+        "subjects": [
+          "akaaashh",
+          "turi70",
+          "jwislek_20",
+          "Siccboi"
+        ],
+        "factIds": [
+          "2026:w1:projection-coverage"
+        ]
+      }
+    ],
+    "awards": []
+  }
+}

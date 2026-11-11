@@ -1,17 +1,45 @@
 {
   "schemaVersion": 1,
   "pricingAsOf": "2026-09-08",
-  "updatedAt": "2026-10-06T19:26:25.111Z",
+  "updatedAt": "2026-10-09T19:23:51.660Z",
   "totals": {
-    "requests": 8,
-    "inputTokens": 57628,
+    "requests": 9,
+    "inputTokens": 65300,
     "cachedInputTokens": 0,
     "cacheWriteInputTokens": 0,
-    "outputTokens": 16141,
-    "totalTokens": 73769,
-    "estimatedCostUsd": 0.308948
+    "outputTokens": 18007,
+    "totalTokens": 83307,
+    "estimatedCostUsd": 0.346684
   },
   "entries": [
+    {
+      "id": "resp_079145630f3d87dd016ac93f48df7487d19cac613b20f92e2d",
+      "articleId": "2026-week-05-late-preview",
+      "type": "week_late_preview",
+      "season": 2026,
+      "week": 5,
+      "generatedAt": "2026-10-09T19:23:51.660Z",
+      "model": "gpt-5.6-terra",
+      "outcome": "rejected",
+      "failure": "Generated copy misspells canonical manager akaaashh as \"ak aaashh\".",
+      "inputTokens": 7672,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1866,
+      "reasoningTokens": 0,
+      "totalTokens": 9538,
+      "estimatedCostUsd": 0.037736,
+      "pricingAsOf": "2026-09-08",
+      "preflight": {
+        "requestCharacters": 27726,
+        "localInputTokenEstimate": 8172,
+        "exactInputTokens": 7672,
+        "maxOutputTokens": 2300,
+        "maximumEstimatedCostUsd": 0.042944,
+        "configuredCostLimitUsd": 0.065,
+        "policyMaximumCostUsd": 0.065
+      }
+    },
     {
       "id": "resp_006043f2d5d97cf9016ac54b62eff487d0a44827b1a645f9d4",
       "articleId": "2026-week-04-recap",
