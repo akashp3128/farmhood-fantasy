@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-09-waiver-recap",
-  "updatedAt": "2026-11-11T07:25:32.839Z",
+  "featuredArticleId": "2026-week-10-waiver-recap",
+  "updatedAt": "2026-11-12T01:52:33.704Z",
   "articles": [
+    {
+      "articleId": "2026-week-10-waiver-recap",
+      "path": "content/articles/2026/week-10-waiver-recap.json",
+      "type": "week_waiver_recap",
+      "edition": "Waiver Wire",
+      "season": 2026,
+      "week": 10,
+      "status": "published",
+      "title": "Week 10 Waiver Wire: 7 Free-Agent Moves",
+      "dek": "Sleeper recorded 7 completed transactions: 0 waiver claims and 7 free-agent moves, covering 7 adds and 7 drops.",
+      "publishedAt": "2026-11-12T01:52:33.704Z",
+      "dataAsOf": "2026-11-12T01:52:33.704Z",
+      "storylines": [
+        "martinch94 led the transaction count",
+        "No successful waiver claims",
+        "TE led the add board"
+      ],
+      "tags": [
+        "Waiver Wire",
+        "Week 10",
+        "Transactions"
+      ]
+    },
     {
       "articleId": "2026-week-09-waiver-recap",
       "path": "content/articles/2026/week-09-waiver-recap.json",

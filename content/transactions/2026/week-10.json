@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 1,
+  "kind": "transactions",
+  "season": 2026,
+  "week": 10,
+  "generatedAt": "2026-11-12T01:52:33.704Z",
+  "dataAsOf": "2026-11-12T01:52:33.704Z",
+  "immutable": true,
+  "source": {
+    "provider": "Sleeper API",
+    "leagueId": "1377086848295260160",
+    "endpoint": "https://api.sleeper.app/v1/league/1377086848295260160/transactions/10",
+    "statusFilter": "complete",
+    "includedTypes": [
+      "waiver",
+      "free_agent"
+    ],
+    "excludedTypes": [
+      "trade"
+    ]
+  },
+  "summary": {
+    "completedTransactions": 7,
+    "waiverClaims": 0,
+    "freeAgentMoves": 7,
+    "adds": 7,
+    "drops": 7,
+    "managersActive": 3,
+    "waiverBidsReported": 0,
+    "faabSpent": null,
+    "highestBids": [],
+    "mostActiveManagers": [
+      "martinch94"
+    ],
+    "mostActiveCount": 5,
+    "topAddedPositions": [
+      "TE"
+    ],
+    "topAddedPositionCount": 3
+  },
+  "managerSummaries": [
+    {
+      "manager": "martinch94",
+      "rosterId": 6,
+      "transactionCount": 5,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 5,
+      "adds": 5,
+      "drops": 5,
+      "faabSpent": null
+    },
+    {
+      "manager": "akaaashh",
+      "rosterId": 2,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 1,
+      "drops": 1,
+      "faabSpent": null
+    },
+    {
+      "manager": "Archibaldo",
+      "rosterId": 3,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 1,
+      "drops": 1,
+      "faabSpent": null
+    }
+  ],
+  "transactions": [
+    {
+      "transactionId": "1426254190484676608",
+      "sleeperTransactionId": "1426254190484676608",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T14:40:06.834Z",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "adds": [
+        {
+          "playerId": "12504",
+          "name": "Kaleb Johnson",
+          "position": "RB",
+          "team": "GB"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "12969",
+          "name": "Lan Larison",
+          "position": "RB",
+          "team": "NE"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426254190484676608"
+      ]
+    },
+    {
+      "transactionId": "1426228626637983744",
+      "sleeperTransactionId": "1426228626637983744",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T12:58:31.939Z",
+      "rosterId": 3,
+      "manager": "Archibaldo",
+      "adds": [
+        {
+          "playerId": "7600",
+          "name": "Pat Freiermuth",
+          "position": "TE",
+          "team": "PIT"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "8172",
+          "name": "Greg Dulcich",
+          "position": "TE",
+          "team": "MIA"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426228626637983744"
+      ]
+    },
+    {
+      "transactionId": "1426158438538289152",
+      "sleeperTransactionId": "1426158438538289152",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T08:19:37.791Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "DET",
+          "name": "Detroit Lions",
+          "position": "DEF",
+          "team": "DET"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "11631",
+          "name": "Brian Thomas Jr.",
+          "position": "WR",
+          "team": "JAX"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426158438538289152"
+      ]
+    },
+    {
+      "transactionId": "1426157730116177931",
+      "sleeperTransactionId": "1426157730116177931",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T08:16:48.891Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "2505",
+          "name": "Darren Waller",
+          "position": "TE",
+          "team": "CAR"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "3271",
+          "name": "Tyler Higbee",
+          "position": "TE",
+          "team": "LAR"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426157730116177931"
+      ]
+    },
+    {
+      "transactionId": "1426155958119182336",
+      "sleeperTransactionId": "1426155958119182336",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T08:09:46.414Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "3271",
+          "name": "Tyler Higbee",
+          "position": "TE",
+          "team": "LAR"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "10219",
+          "name": "Chris Rodriguez Jr.",
+          "position": "RB",
+          "team": "JAX"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426155958119182336"
+      ]
+    },
+    {
+      "transactionId": "1426155354416254976",
+      "sleeperTransactionId": "1426155354416254976",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T08:07:22.479Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "9228",
+          "name": "Bryce Young",
+          "position": "QB",
+          "team": "CAR"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "13297",
+          "name": "Reggie Virgil",
+          "position": "WR",
+          "team": "ARI"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426155354416254976"
+      ]
+    },
+    {
+      "transactionId": "1426155258014339073",
+      "sleeperTransactionId": "1426155258014339073",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 10,
+      "completedAt": "2026-11-11T08:06:59.496Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "TB",
+          "name": "Tampa Bay Buccaneers",
+          "position": "DEF",
+          "team": "TB"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "9754",
+          "name": "Quentin Johnston",
+          "position": "WR",
+          "team": "LAC"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w10:transaction:1426155258014339073"
+      ]
+    }
+  ],
+  "factIds": [
+    "2026:w10:transaction:1426254190484676608",
+    "2026:w10:transaction:1426228626637983744",
+    "2026:w10:transaction:1426158438538289152",
+    "2026:w10:transaction:1426157730116177931",
+    "2026:w10:transaction:1426155958119182336",
+    "2026:w10:transaction:1426155354416254976",
+    "2026:w10:transaction:1426155258014339073"
+  ],
+  "id": "farmhood-2026-week-10-transactions-70823416157e89b5"
+}
