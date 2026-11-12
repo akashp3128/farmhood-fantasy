@@ -35,8 +35,37 @@
 .desk-rival h3{font-size:18px;margin:0 0 4px}
 .desk-rival p{margin:0;font-size:13px}
 .desk-fp-line{font-family:var(--serif);font-style:italic;color:var(--muted);margin:4px 0 0}
+.desk-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin:12px 0 18px}
+.desk-field{display:flex;flex:1 1 170px;flex-direction:column;gap:6px;min-width:0;max-width:100%;font-size:12px;font-weight:700;color:var(--text)}
+.desk-field select,.desk-field input,.desk-button{font:inherit;font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:3px;min-height:44px;padding:10px;width:100%;max-width:100%;box-sizing:border-box}
+.desk-button{width:auto;cursor:pointer;padding:10px 16px}
+.desk-field input::placeholder{color:var(--muted)}
+.desk-field select:focus-visible,.desk-field input:focus-visible,.desk-button:focus-visible,.desk-drilldown>summary:focus-visible,.desk-table-scroll:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.desk-table-scroll{max-width:100%;overflow-x:auto;margin:12px 0;overscroll-behavior-x:contain}
+.desk-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);font-variant-numeric:tabular-nums}
+.desk-table caption{text-align:left;font-family:var(--serif);font-weight:700;padding:8px 0;font-size:15px;color:var(--text)}
+.desk-table th,.desk-table td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.desk-table thead th{background:var(--bg2);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.desk-table tbody th{font-family:var(--serif);font-weight:700}
+.desk-table tbody tr:hover{background:var(--bg2)}
+.desk-drilldown{border-bottom:1px solid var(--line)}
+.desk-drilldown>summary{cursor:pointer;min-height:44px;padding:14px 0;font-family:var(--serif);font-weight:700}
+.desk-odds-summary{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(80px,1fr) minmax(100px,.6fr);gap:16px;align-items:center;list-style:none}
+.desk-odds-summary::after{content:'View seed details +';grid-column:1/-1;font:500 11px 'Public Sans',sans-serif;color:var(--blue)}
+.desk-drilldown[open]>.desk-odds-summary::after{content:'Hide seed details −'}
+.desk-odds-summary>b{text-align:right;font-size:18px;font-variant-numeric:tabular-nums}
+.desk-drilldown-body{padding:0 0 16px;max-width:100%}
+.desk-drilldown-body p{font-size:13px;line-height:1.6}
+.desk-live-body .desk-prize .desk-drilldown>summary{font:700 12px 'Public Sans',sans-serif;color:var(--blue)}
 @media(max-width:720px){
   .desk-money-grid,.desk-fair-row,.desk-odd{grid-template-columns:1fr}
   .desk-exposure-row{grid-template-columns:1fr}
   .desk-odd b,.desk-fair-row b{text-align:left}
+  .desk-controls{gap:10px}
+  .desk-field{flex-basis:calc(50% - 10px)}
+  .desk-odds-summary{grid-template-columns:minmax(0,1fr) auto;gap:10px}
+  .desk-odds-summary .desk-bar{grid-column:1/-1;grid-row:2}
+  .desk-odds-summary .desk-odd-copy span{line-height:1.5}
+  .desk-table th,.desk-table td{padding:10px}
 }
+@media(max-width:420px){.desk-field{flex-basis:100%}.desk-prize-row{flex-wrap:wrap}.desk-odds-summary>b{font-size:15px}}
