@@ -164,3 +164,23 @@ test('comparison scope persists in the URL and replay links select the compared 
   assert.equal(new URLSearchParams(h.context.location.search).get('scope'), 'season');
   assert.equal(h.context.document.activeElement.dataset.schedFocus, 'scope-window');
 });
+
+test('mobile heatmap keeps a labeled keyboard scroll region and a single full-card compare target', async () => {
+  const h = harness();
+  h.context.FarmhoodSchedule.mount(h.host); await settle();
+  const scroller = h.host.querySelectorAll('div').find(item => item.className === 'sched-scroll');
+  assert.equal(scroller.tabIndex, 0);
+  assert.equal(scroller.getAttribute('role'), 'region');
+  assert.match(scroller.getAttribute('aria-label'), /Full season heatmap, horizontally scrollable/);
+  scroller.emit('keydown', {target: scroller, key: 'ArrowRight'});
+  assert.equal(scroller.scrollLeft, 96);
+  scroller.emit('keydown', {target: scroller, key: 'ArrowLeft'});
+  assert.equal(scroller.scrollLeft, 0);
+  assert.match(h.host.textContent, /Swipe or scroll sideways/);
+  const compare = h.focus('compare-1');
+  assert.equal(compare.tagName, 'button');
+  assert.match(compare.textContent, /Alpha/);
+  compare.click();
+  assert.equal(h.context.location.hash, '#h2h');
+  assert.ok(h.focus('select-a'));
+});

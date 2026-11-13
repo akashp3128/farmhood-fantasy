@@ -788,20 +788,35 @@
     scroll.tabIndex = 0;
     scroll.setAttribute('role', 'region');
     scroll.setAttribute('aria-label', caption);
-    const element = node('table', 'desk-table');
+    const cards = headers.length >= 4;
+    const element = node('table', 'desk-table' + (cards ? ' desk-table--cards' : ''));
+    element.setAttribute('role', 'table');
     element.appendChild(node('caption', '', caption));
     const head = node('tr', '');
-    headers.forEach(label => { const cell = node('th', '', label); cell.scope = 'col'; head.appendChild(cell); });
+    head.setAttribute('role', 'row');
+    headers.forEach(label => { const cell = node('th', '', label); cell.scope = 'col'; cell.setAttribute('role', 'columnheader'); head.appendChild(cell); });
     const thead = node('thead', '');
+    thead.setAttribute('role', 'rowgroup');
     thead.appendChild(head);
     const tbody = node('tbody', '');
+    tbody.setAttribute('role', 'rowgroup');
     rows.forEach(values => {
       const row = node('tr', '');
+      row.setAttribute('role', 'row');
       values.forEach((value, index) => {
         const cell = node(index === 0 ? 'th' : 'td', '');
         if (index === 0) cell.scope = 'row';
-        if (value && typeof value === 'object' && value.nodeType) cell.appendChild(value);
-        else cell.textContent = value == null ? '—' : String(value);
+        cell.setAttribute('role', index === 0 ? 'rowheader' : 'cell');
+        if (cards) {
+          const label = node('span', 'desk-cell-label', headers[index]);
+          label.setAttribute('aria-hidden', 'true');
+          cell.appendChild(label);
+        }
+        const content = node('span', 'desk-cell-value');
+        if (value && typeof value === 'object' && value.nodeType) content.appendChild(value);
+        else content.textContent = value == null ? '—' : String(value);
+        cell.appendChild(content);
+        if (value && value.title && String(value.className || '').split(/\s+/).includes('na')) cell.appendChild(node('span', 'desk-cell-note', value.title));
         row.appendChild(cell);
       });
       tbody.appendChild(row);
@@ -1180,6 +1195,14 @@
     switches.setAttribute('aria-label', 'Season comparison views');
     const replayControls = node('div', 'desk-controls');
     const allPlayControls = node('div', 'desk-controls');
+    const refinements = node('details', 'desk-refinements');
+    const refineSummary = node('summary', '');
+    const refineDescription = node('span', 'desk-refine-context');
+    refineSummary.append(node('strong', '', 'Refine comparison'), refineDescription);
+    if (ui.refineOpen == null) ui.refineOpen = !(root.matchMedia && root.matchMedia('(max-width:640px)').matches);
+    refinements.open = ui.refineOpen;
+    refinements.addEventListener('toggle', () => { if (refinements.isConnected) ui.refineOpen = refinements.open; });
+    refinements.append(refineSummary, controls);
     const holder = node('div', '');
     function syncReplayUrl() {
       try {
@@ -1193,6 +1216,9 @@
     const paint = () => {
       holder.textContent = '';
       replayControls.hidden = ui.view !== 'replay'; allPlayControls.hidden = ui.view !== 'allplay';
+      selfRuleField.hidden = ui.view !== 'replay';
+      refineDescription.textContent = ui.season + ' · ' + (ui.through === 'all' ? 'All final weeks' : 'Through Week ' + ui.through)
+        + (ui.view === 'replay' ? ' · ' + (ui.selfMatch === 'swap' ? 'Swap managers' : 'Skip self-matchups') : '');
       [...switches.children].forEach(button => {
         const selected = button.dataset.fairView === ui.view;
         button.className = 'clarity-tab' + (selected ? ' active' : '');
@@ -1254,10 +1280,12 @@
         }), ui.manager + ' week-by-week schedule impact'));
       }
     };
-    controls.appendChild(field('Season', [['2026', '2026 · current season'], ['2025', '2025 · archive']], ui.season, value => {
+    const seasonField = field('Season', [['2026', '2026 · current season'], ['2025', '2025 · archive']], ui.season, value => {
       ui.season = value; ui.through = 'all'; ui.manager = 'all';
-      const replacement = renderFair(bundle); wrap.replaceWith(replacement); replacement.querySelector('select').focus({preventScroll: true});
-    }));
+      const replacement = renderFair(bundle); wrap.replaceWith(replacement); replacement.querySelector('[data-desk-season="true"]').focus({preventScroll: true});
+    });
+    seasonField.querySelector('select').dataset.deskSeason = 'true';
+    controls.appendChild(seasonField);
     controls.appendChild(field('Through week', [['all', 'All final weeks']].concat(allWeeks.map(week => [week.week, 'Week ' + week.week])), ui.through, value => { ui.through = value; paint(); }));
     [['replay', 'Schedule replay'], ['strength', 'Season strength'], ['allplay', 'All-play baseline']].forEach(item => {
       const button = node('button', 'clarity-tab', item[1]); button.type = 'button'; button.dataset.fairView = item[0];
@@ -1265,10 +1293,11 @@
     });
     replayControls.appendChild(field('Your team', names.map(name => [name, name]), ui.replayTeam, value => { ui.replayTeam = value; paint(); }));
     replayControls.appendChild(field('Borrow this schedule', names.map(name => [name, name]), ui.replayOwner, value => { ui.replayOwner = value; paint(); }));
-    replayControls.appendChild(field('Self-matchup rule', [['skip', 'Skip self-matchups · N/A'], ['swap', 'Swap the two managers']], ui.selfMatch, value => { ui.selfMatch = value; paint(); }));
+    const selfRuleField = field('Self-matchup rule', [['skip', 'Skip self-matchups · N/A'], ['swap', 'Swap the two managers']], ui.selfMatch, value => { ui.selfMatch = value; paint(); });
+    controls.appendChild(selfRuleField);
     allPlayControls.appendChild(field('Sort by', [['luck', 'Schedule edge'], ['expected', 'All-play wins'], ['actual', 'Actual wins'], ['points', 'Points scored']], ui.sort, value => { ui.sort = value; paint(); }));
     allPlayControls.appendChild(field('Manager detail', optionsFor(allWeeks.flatMap(week => week.rows.map(row => row.name)), 'All managers'), ui.manager, value => { ui.manager = value; paint(); }));
-    wrap.append(controls, switches, replayControls, allPlayControls);
+    wrap.append(switches, replayControls, refinements, allPlayControls);
     wrap.appendChild(holder);
     paint();
     return wrap;

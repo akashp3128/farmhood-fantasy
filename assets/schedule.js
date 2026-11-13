@@ -322,6 +322,23 @@
     return weeks.slice(0, -1).join(', ') + ' and ' + weeks[weeks.length - 1];
   }
 
+  function scrollHint(label) {
+    return node('p', 'sched-scroll-hint sched-swipe-hint', label + ' · Swipe or scroll sideways to see every week. Keyboard: focus the grid, then use the arrow keys.');
+  }
+
+  function scheduleScroller(label) {
+    const scroller = node('div', 'sched-scroll');
+    scroller.tabIndex = 0;
+    scroller.setAttribute('role', 'region');
+    scroller.setAttribute('aria-label', label + ', horizontally scrollable');
+    scroller.addEventListener('keydown', event => {
+      if (event.target !== scroller || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      scroller.scrollLeft = Math.max(0, (scroller.scrollLeft || 0) + (event.key === 'ArrowRight' ? 96 : -96));
+    });
+    return scroller;
+  }
+
   function leagueInsights(model) {
     const source = model || {rosters: []};
     if (!source.rosters || !source.rosters.length) return [];
@@ -883,7 +900,8 @@
     panel.appendChild(node('p', 'sched-data-label', 'DIFFICULTY INDEX · 0–100 · NOT PROJECTED POINTS'));
     panel.appendChild(node('p', 'note', 'The index column uses the selected comparison window. Colors reflect each opponent’s CURRENT record and scoring rank—not their projected score or your result. The heatmap retains the full posted season for context.'));
     panel.appendChild(legend());
-    const scroller = node('div', 'sched-scroll');
+    panel.appendChild(scrollHint('Full season heatmap'));
+    const scroller = scheduleScroller('Full season heatmap');
     const table = node('table', 'sched-heat');
     const caption = node('caption', '', 'Color is the opponent, not the result. Green is a soft draw, rust is a grind, and the underline marks a multi-week run. W and L are final. Gold-edged rows are in the playoff picture.');
     table.appendChild(caption);
@@ -892,7 +910,8 @@
     const managerHead = node('th', 'sched-sticky', 'Manager');
     managerHead.scope = 'col';
     managerHead.rowSpan = 2;
-    const slateHead = node('th', '', 'Index · ' + (state.scope === 'completed' ? 'played' : state.scope === 'season' ? 'season' : 'left'));
+    const slateHead = node('th', 'sched-index-head');
+    slateHead.append(node('span', '', 'Index'), node('small', '', state.scope === 'completed' ? 'played' : state.scope === 'season' ? 'season' : 'left'));
     slateHead.scope = 'col';
     slateHead.rowSpan = 2;
     group.append(managerHead, slateHead);
@@ -921,18 +940,17 @@
       const row = node('tr', roster.inPlayoffPicture ? 'in-field' : '');
       const who = node('th', 'sched-sticky');
       who.scope = 'row';
-      const identity = node('div', 'sched-manager');
+      const identity = node('button', 'sched-manager sched-manager-action');
+      identity.type = 'button';
+      identity.dataset.schedFocus = 'compare-' + roster.rosterId;
+      identity.setAttribute('aria-label', 'Compare ' + roster.name + ' head to head');
+      identity.addEventListener('click', () => onCompare(roster.rosterId));
       identity.appendChild(avatarNode(roster.name));
-      const copy = node('div', 'sched-manager-copy');
+      const copy = node('span', 'sched-manager-copy');
       copy.appendChild(node('strong', '', roster.rank + '. ' + roster.name));
       copy.appendChild(node('small', '', formatOwn(roster) + (roster.inPlayoffPicture ? ' · in the field' : '')));
       identity.appendChild(copy);
-      const compare = node('button', 'sched-compare', 'Compare');
-      compare.type = 'button';
-      compare.dataset.schedFocus = 'compare-' + roster.rosterId;
-      compare.setAttribute('aria-label', 'Compare ' + roster.name + ' head to head');
-      compare.addEventListener('click', () => onCompare(roster.rosterId));
-      identity.appendChild(compare);
+      identity.appendChild(node('span', 'sched-compare-cue', 'Compare →'));
       who.appendChild(identity);
       row.appendChild(who);
       const slate = node('td', 'sched-slate ' + metrics.label.toLowerCase());
@@ -1138,7 +1156,8 @@
     const report = byeReport({starters: dir.starters, bench: dir.bench, weeks, nfl: bundle.nfl});
     panel.appendChild(notesNode(byeInsights(report)));
     if (!report.starters.length) return panel;
-    const scroller = node('div', 'sched-scroll');
+    panel.appendChild(scrollHint('Starter bye calendar'));
+    const scroller = scheduleScroller('Starter bye calendar');
     const table = node('table', 'sched-heat sched-bye');
     table.appendChild(node('caption', '', 'Starters on ' + dir.name + ' from Week ' + weeks[0] + ' through Week ' + weeks[weeks.length - 1] + '. BYE is a dark week. @ marks an away game.'));
     const head = node('thead');
@@ -1242,7 +1261,8 @@
     if (playerA && playerB && playerA.id !== playerB.id) {
       const comparison = comparePlayers(playerA, playerB, bundle.nfl, weeks);
       duel.appendChild(notesNode(duelInsights(comparison, playerA, playerB).slice(0, 4)));
-      const grid = node('div', 'sched-scroll');
+      duel.appendChild(scrollHint('Player calendar comparison'));
+      const grid = scheduleScroller('Player calendar comparison');
       const table = node('table', 'sched-heat sched-bye');
       const head = node('thead');
       const headRow = node('tr');

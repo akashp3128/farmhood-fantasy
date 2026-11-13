@@ -252,3 +252,36 @@ test('live and final actual score views do not substitute estimates or certify p
   press(h.host, 'Projections · EST');
   assert.match(h.host.textContent, /128\.07 Proj · EST/);
 });
+
+test('mobile replay collapses refinements without hiding their current context or losing selections', () => {
+  const h = harness(), source = bundle();
+  h.context.matchMedia = () => ({matches: true});
+  h.host.appendChild(h.desk.renderFair(source));
+  const refinements = h.host.querySelectorAll('details').find(item => item.className === 'desk-refinements');
+  assert.equal(refinements.open, false);
+  assert.match(refinements.querySelector('summary').textContent, /2026 · All final weeks · Skip self-matchups/);
+  refinements.open = true; refinements.emit('toggle');
+  select(h.host, 'Self-matchup rule', 'swap');
+  select(h.host, 'Through week', '1');
+  assert.match(refinements.querySelector('summary').textContent, /Through Week 1 · Swap managers/);
+  h.context.LEAGUE = {names2025: {1: 'Alpha', 2: 'Bravo'}, weekly2025: {1: [[1, 1, 75], [2, 1, 50]]}};
+  select(h.host, 'Season', '2025');
+  assert.equal(source.fairUi.refineOpen, true);
+  assert.equal(h.host.querySelectorAll('details').find(item => item.className === 'desk-refinements').open, true);
+  assert.equal(h.context.document.activeElement.dataset.deskSeason, 'true');
+});
+
+test('phone card tables retain native labels, header roles, zero scores and visible N/A explanations', () => {
+  const h = harness();
+  h.host.appendChild(h.desk.renderFair(bundle()));
+  const table = h.host.querySelectorAll('table').find(item => item.children[0].textContent === 'Week-by-week schedule replay');
+  assert.match(table.className, /desk-table--cards/);
+  assert.equal(table.getAttribute('role'), 'table');
+  assert.ok(table.querySelectorAll('th').some(cell => cell.getAttribute('role') === 'columnheader'));
+  assert.ok(table.querySelectorAll('th').some(cell => cell.getAttribute('role') === 'rowheader'));
+  const labels = table.querySelectorAll('span').filter(item => item.className === 'desk-cell-label');
+  assert.ok(labels.some(item => item.textContent === 'Replayed result'));
+  assert.ok(labels.every(item => item.getAttribute('aria-hidden') === 'true'));
+  const note = table.querySelectorAll('span').find(item => item.className === 'desk-cell-note');
+  assert.match(note.textContent, /Self-matchup excluded from both/);
+});
