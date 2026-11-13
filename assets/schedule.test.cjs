@@ -339,3 +339,26 @@ test('empty input does not throw', () => {
   assert.deepEqual(schedule.leagueInsights(model), []);
   assert.deepEqual(schedule.matchupInsights(model, 1, 2), []);
 });
+
+test('comparison windows separate completed scoring, remaining index and full-season opponents', () => {
+  const model = {regularSeasonWeeks: 3, completedThrough: 2, rosters: [{rosterId: 1, cells: [
+    {week: 1, phase: 'final', points: 100, oppPoints: 80, result: 'W', opponentStrength: 0.2},
+    {week: 2, phase: 'final', points: 0, oppPoints: 90, result: 'L', opponentStrength: 0.4},
+    {week: 3, phase: 'scheduled', points: 0, oppPoints: 0, result: null, opponentStrength: 0.9},
+    {week: 4, phase: 'playoff', points: 0, oppPoints: 0, opponentStrength: 0.8}
+  ]}]};
+  const desk = require('./schedule.js');
+  const completed = desk.scopeMetrics(model, 1, 'completed');
+  assert.equal(completed.index, 30);
+  assert.equal(completed.finalGames, 2);
+  assert.equal(completed.ppg, 50);
+  assert.equal(completed.median, 50);
+  assert.equal(completed.opponentPPG, 85);
+  assert.equal(completed.wins, 1); assert.equal(completed.losses, 1);
+  const remaining = desk.scopeMetrics(model, 1, 'remaining');
+  assert.equal(remaining.index, 90);
+  assert.equal(remaining.finalGames, 0);
+  assert.equal(remaining.ppg, null);
+  assert.equal(desk.scopeMetrics(model, 1, 'season').index, 50);
+  assert.equal(desk.scopeMetrics(model, 1, 'season').known, 3);
+});

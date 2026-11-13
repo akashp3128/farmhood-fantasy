@@ -36,6 +36,17 @@
 .desk-rival p{margin:0;font-size:13px}
 .desk-fp-line{font-family:var(--serif);font-style:italic;color:var(--muted);margin:4px 0 0}
 .desk-controls{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin:12px 0 18px}
+.desk-controls[hidden]{display:none}
+.desk-data-label{font:800 11px 'Public Sans',sans-serif;letter-spacing:.8px;line-height:1.6;padding:8px 12px;border-left:4px solid var(--blue);background:var(--surface);color:var(--text);margin:10px 0}
+.desk-replay-title{font-family:var(--serif);font-size:22px;line-height:1.35;margin:16px 0 12px}
+.desk-result{font-weight:800}.desk-result.w{color:var(--win)}.desk-result.l{color:var(--loss)}.desk-result.t,.desk-result.na{color:var(--muted)}
+.desk-money.is-projected{border:1px dashed var(--gold-solid);padding:12px;background:var(--bg2)}
+.desk-money.is-projected .desk-data-label{color:var(--gold);border-color:var(--gold-solid)}
+.desk-money.is-projected .desk-projected-value{color:var(--gold)}
+.desk-projection-warning{font-size:12px;font-weight:700;line-height:1.5;color:var(--gold)}
+.desk-score-modes .clarity-tab:focus-visible,.desk-view-switch .clarity-tab:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.desk-score-modes .clarity-tab:last-child.active{color:var(--surface);background:var(--gold-solid);border-color:var(--gold-solid)}
+.desk-view-switch{flex-wrap:wrap;overflow:visible}
 .desk-field{display:flex;flex:1 1 170px;flex-direction:column;gap:6px;min-width:0;max-width:100%;font-size:12px;font-weight:700;color:var(--text)}
 .desk-field select,.desk-field input,.desk-button{font:inherit;font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:3px;min-height:44px;padding:10px;width:100%;max-width:100%;box-sizing:border-box}
 .desk-button{width:auto;cursor:pointer;padding:10px 16px}

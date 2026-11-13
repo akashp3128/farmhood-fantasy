@@ -365,6 +365,103 @@
     return result;
   }
 
+  // Counterfactuals reuse observed weekly scores, never projections. A malformed
+  // pair is unavailable, not a bye, zero-point score, or automatic victory.
+  function replaySlates(weeks) {
+    const counts = new Map();
+    (weeks || []).forEach(week => { if (week) counts.set(Number(week.week), (counts.get(Number(week.week)) || 0) + 1); });
+    return (weeks || []).filter(week => week && Number.isInteger(Number(week.week)) && Number(week.week) > 0
+      && week.final !== false && !['live', 'scheduled', 'pending'].includes(String(week.status || week.phase || '').toLowerCase()))
+      .sort((a, b) => Number(a.week) - Number(b.week)).map(week => {
+        const rows = Array.isArray(week.rows) ? week.rows : [];
+        const ids = new Map();
+        rows.forEach(row => { if (row && row.id != null) ids.set(String(row.id), (ids.get(String(row.id)) || 0) + 1); });
+        const byId = new Map(rows.filter(row => row && row.id != null && String(row.id) && ids.get(String(row.id)) === 1).map(row => [String(row.id), row]));
+        const pair = id => {
+          if (counts.get(Number(week.week)) !== 1) return null;
+          const row = byId.get(String(id));
+          if (!row || scoreOf(row.matchupId) == null || Number(row.matchupId) <= 0 || scoreOf(row.points) == null) return null;
+          const sides = rows.filter(other => other && String(other.matchupId) === String(row.matchupId));
+          if (sides.length !== 2 || sides.some(other => !byId.has(String(other.id)) || scoreOf(other.points) == null)) return null;
+          const opponent = sides.find(other => String(other.id) !== String(row.id));
+          return opponent ? {row, opponent} : null;
+        };
+        return {week: Number(week.week), rows: [...byId.values()], pair, complete: counts.get(Number(week.week)) === 1 && byId.size === rows.length && rows.length >= 2 && rows.every(row => row && pair(row.id))};
+      }).filter((slate, index, all) => all.findIndex(other => other.week === slate.week) === index);
+  }
+  function resultOf(points, against) {
+    const difference = Math.round(Number(points) * 100) - Math.round(Number(against) * 100);
+    return difference === 0 ? 'T' : difference > 0 ? 'W' : 'L';
+  }
+  function recordOf(results) {
+    const wins = results.filter(value => value === 'W').length;
+    const losses = results.filter(value => value === 'L').length;
+    const ties = results.filter(value => value === 'T').length;
+    return {wins, losses, ties, games: wins + losses + ties, equivalentWins: wins + ties * 0.5};
+  }
+  function median(values) {
+    if (!values.length) return null;
+    const ordered = values.slice().sort((a, b) => a - b);
+    return (ordered[Math.floor((ordered.length - 1) / 2)] + ordered[Math.ceil((ordered.length - 1) / 2)]) / 2;
+  }
+  function scheduleReplay(input) {
+    const source = input || {};
+    const teamId = String(source.teamId == null ? '' : source.teamId);
+    const scheduleId = String(source.scheduleId == null ? '' : source.scheduleId);
+    const method = source.selfMatch === 'swap' ? 'swap' : 'skip';
+    const slates = replaySlates(source.weeks);
+    const actualFull = [];
+    let teamName = teamId, scheduleName = scheduleId;
+    const rows = slates.map(slate => {
+      const own = slate.pair(teamId), borrowed = slate.pair(scheduleId);
+      const name = id => (slate.rows.find(row => String(row.id) === id) || {}).name || id;
+      teamName = name(teamId); scheduleName = name(scheduleId);
+      const actualResult = own ? resultOf(own.row.points, own.opponent.points) : null;
+      if (actualResult) actualFull.push(actualResult);
+      const row = {week: slate.week, points: own ? Number(own.row.points) : null, originalOpponent: own ? own.opponent.name || String(own.opponent.id) : '', originalPointsAgainst: own ? Number(own.opponent.points) : null,
+        actualResult, opponent: borrowed ? borrowed.opponent.name || String(borrowed.opponent.id) : '', opponentPoints: null, replayResult: null, swapped: false, changed: false, status: 'missing', reason: 'Missing or ambiguous final matchup / score'};
+      if (!own || !borrowed) return row;
+      let opponent = borrowed.opponent;
+      if (teamId !== scheduleId && String(opponent.id) === teamId) {
+        if (method === 'skip') return Object.assign(row, {status: 'self', reason: 'Self-matchup excluded from both compared records'});
+        opponent = borrowed.row;
+        row.swapped = true;
+      }
+      row.opponent = opponent.name || String(opponent.id);
+      row.opponentPoints = Number(opponent.points);
+      row.replayResult = resultOf(row.points, row.opponentPoints);
+      row.changed = row.actualResult !== row.replayResult;
+      row.status = 'played'; row.reason = '';
+      return row;
+    });
+    const eligible = rows.filter(row => row.status === 'played');
+    const actual = recordOf(eligible.map(row => row.actualResult));
+    const replay = recordOf(eligible.map(row => row.replayResult));
+    return {teamId, scheduleId, teamName, scheduleName, method, rows, games: eligible.length, skippedWeeks: rows.length - eligible.length,
+      fullActual: recordOf(actualFull), actual, replay, winsDelta: replay.equivalentWins - actual.equivalentWins,
+      actualOpponentMean: mean(eligible.map(row => row.originalPointsAgainst)), replayOpponentMean: mean(eligible.map(row => row.opponentPoints))};
+  }
+  function seasonStrength(weeks) {
+    const slates = replaySlates(weeks);
+    const profiles = new Map();
+    slates.forEach(slate => slate.rows.forEach(row => {
+      const pair = slate.pair(row.id);
+      if (!pair) return;
+      const id = String(row.id);
+      if (!profiles.has(id)) profiles.set(id, {id, name: row.name || id, scores: [], opponents: [], results: [], allPlay: []});
+      const profile = profiles.get(id);
+      profile.scores.push(Number(row.points)); profile.opponents.push(Number(pair.opponent.points));
+      profile.results.push(resultOf(row.points, pair.opponent.points));
+      if (slate.complete) profile.allPlay.push(slate.rows.filter(other => String(other.id) !== id).reduce((sum, other) => {
+        const result = resultOf(row.points, other.points); return sum + (result === 'W' ? 1 : result === 'T' ? 0.5 : 0);
+      }, 0) / (slate.rows.length - 1));
+    }));
+    return [...profiles.values()].map(profile => Object.assign(profile, {record: recordOf(profile.results), games: profile.scores.length,
+      points: Math.round(profile.scores.reduce((sum, score) => sum + score, 0) * 100) / 100,
+      ppg: mean(profile.scores), median: median(profile.scores), opponentPPG: mean(profile.opponents), opponentMedian: median(profile.opponents),
+      allPlayPct: mean(profile.allPlay), allPlayWeeks: profile.allPlay.length})).sort((a, b) => b.ppg - a.ppg || a.name.localeCompare(b.name));
+  }
+
   function waiverAutopsy(input) {
     const source = input || {};
     const weeks = (source.weeks || []).filter(week => week && week.final !== false && !['live', 'scheduled', 'pending'].includes(String(week.status || '').toLowerCase())).slice().sort((a, b) => a.week - b.week);
@@ -753,6 +850,7 @@
   }
 
   let matchupUi = {tab: 'money', open: null};
+  const matchupScoreModes = new Map();
 
   function mountMatchup(host, ctx) {
     if (!host || !root.document || !root.FarmhoodLive) return;
@@ -772,8 +870,8 @@
       return {
         name: roster ? roster.name : ('Roster ' + row.rosterId),
         ownerId: roster ? roster.ownerId : null,
-        points: finite(row.points, 0),
-        projection: watch ? watch.projection : null,
+        points: scoreOf(row.points),
+        projection: watch ? scoreOf(watch.pregameProjection) : null,
         starters: lineup.filter(player => player.id && player.id !== '0').map(player => ({
           id: player.id, name: player.name, slot: player.slot, position: player.position,
           points: player.points, projection: player.projection, locked: !!player.locked,
@@ -792,9 +890,10 @@
     const rivalry = configuredRivalry ? Object.assign({}, configuredRivalry, {a: configuredRivalry.managerA, b: configuredRivalry.managerB}) : null;
     const position = payoutConfig.positionSchedule[week] || '';
     const prizes = {high: payoutConfig.weeklyPrizes.highestScore, position: payoutConfig.weeklyPrizes.positionLeader, rivalry: payoutConfig.rivalryPrize};
-    const scheduled = ctx.weekState === 'Scheduled';
+    const scoreKey = ctx.snapshot.season + ':' + week;
+    const scoreMode = matchupScoreModes.get(scoreKey) || 'actual';
     const dollars = dollarsOnTheTable({
-      teams, mode: scheduled ? 'projected' : 'actual', position, rivalry,
+      teams, mode: scoreMode, position, rivalry,
       prizes
     });
     dollars.teamCount = teams.length;
@@ -817,7 +916,19 @@
     });
     body.appendChild(tabs);
     if (matchupUi.tab === 'exposure') body.appendChild(renderExposure(exposure, ctx.weekState));
-    else body.appendChild(renderDollars(dollars, ctx.weekState, week, position));
+    else {
+      const modes = node('div', 'clarity-tabs desk-score-modes');
+      modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', 'Choose actual points or projections');
+      [['actual', 'Actual points'], ['projected', 'Projections · EST']].forEach(item => {
+        const button = node('button', 'clarity-tab' + (scoreMode === item[0] ? ' active' : ''), item[1]); button.type = 'button';
+        button.dataset.deskScoreMode = item[0]; button.setAttribute('aria-pressed', scoreMode === item[0] ? 'true' : 'false');
+        button.addEventListener('click', () => {
+          matchupScoreModes.set(scoreKey, item[0]); matchupUi.open = true; mountMatchup(host, ctx);
+          const active = host.querySelector('[data-desk-score-mode="' + item[0] + '"]'); if (active) active.focus({preventScroll: true});
+        }); modes.appendChild(button);
+      });
+      body.append(modes, renderDollars(dollars, ctx.weekState, week, position));
+    }
     const open = matchupUi.open == null ? false : matchupUi.open;
     const details = disclosure('This week, off the scoreboard', 'Unofficial prize race · starters still playing', body);
     details.open = open;
@@ -826,46 +937,56 @@
   }
 
   function renderDollars(board, weekState, week, position) {
-    const wrap = node('div', 'desk-money');
-    const verb = weekState === 'Final' ? 'final scores, unofficial awards' : (board.mode === 'projected' ? 'projected leaders, not payouts' : 'in progress');
-    wrap.appendChild(node('p', 'desk-kicker', 'Week ' + week + ' ' + verb + '. Official awards are reconciled on Tuesdays in Central time. Position awards use one eligible starting player—not the whole position group.'));
-    if (board.mode === 'projected' && board.high.length < board.teamCount) wrap.appendChild(node('p', 'desk-note', 'Incomplete forecast: ' + board.high.length + ' of ' + board.teamCount + ' team totals are available. Listed leaders exclude missing projections and may change.'));
+    const projected = board.mode === 'projected';
+    const pregame = weekState === 'Scheduled';
+    const wrap = node('div', 'desk-money' + (projected ? ' is-projected' : ' is-actual'));
+    wrap.appendChild(node('p', 'desk-data-label', projected ? 'ESTIMATES ONLY · PROJ · NOT ACTUAL POINTS' : 'ACTUAL POINTS · PTS · ' + (pregame ? 'NOT STARTED' : weekState === 'Final' ? 'FINAL SCORES' : 'LIVE / PROVISIONAL')));
+    wrap.appendChild(node('p', 'desk-kicker', projected
+      ? 'Week ' + week + ' full-lineup estimates. Not actual points or earned payouts.'
+      : pregame ? 'Week ' + week + ' has not started. No leader or prize has been earned. Use Projections to see estimates separately.'
+        : 'Week ' + week + ' actual scoring. ' + (weekState === 'Final' ? 'Highest scores are shown below; this panel does not certify awards.' : 'Scores and leaders can change until games are final.')));
+    const awardLink = node('a', 'desk-note', 'Official awards → Payouts'); awardLink.href = 'payouts.html'; wrap.appendChild(awardLink);
+    if (board.mode === 'projected' && board.high.length < board.teamCount) wrap.appendChild(node('p', 'desk-projection-warning', 'Incomplete forecast: ' + board.high.length + '/' + board.teamCount + ' totals available. Missing projections are excluded.'));
     const grid = node('div', 'desk-money-grid');
-    grid.appendChild(prizeColumn('High score', money(board.prizes.high), board.high, row => row.name));
-    grid.appendChild(prizeColumn(position + ' starter', money(board.prizes.position), board.positionBoard, row => row.player + ' · ' + row.name));
+    grid.appendChild(prizeColumn(projected ? 'Projected high score' : 'Actual high score', money(board.prizes.high), !projected && pregame ? [] : board.high, row => row.name, {projected, pregame}));
+    grid.appendChild(prizeColumn((projected ? 'Projected ' : 'Actual ') + position + ' starter', money(board.prizes.position), !projected && pregame ? [] : board.positionBoard, row => row.player + ' · ' + row.name, {projected, pregame}));
     const rivalry = node('section', 'desk-prize');
     rivalry.appendChild(node('h3', '', board.rivalry ? 'Rivalry ' + money(board.prizes.rivalry) : 'Rivalry'));
     if (!board.rivalry) rivalry.appendChild(node('p', '', 'No rivalry purse this week.'));
     else {
-    let lead = 'Waiting on both projections';
-    if (board.rivalry.scoreA == null && board.rivalry.scoreB != null) lead = board.rivalry.labelA + ' is not projected yet';
-    else if (board.rivalry.scoreB == null && board.rivalry.scoreA != null) lead = board.rivalry.labelB + ' is not projected yet';
-    else if (board.rivalry.leader === 'tie') lead = 'Tied';
-    else if (board.rivalry.leader === board.rivalry.a) lead = board.rivalry.labelA + ' leads';
-    else if (board.rivalry.leader === board.rivalry.b) lead = board.rivalry.labelB + ' leads';
+    let lead = projected ? 'Forecast unavailable' : 'Scores unavailable';
+    if (!projected && pregame) lead = 'Not started · no leader';
+    else if (board.rivalry.leader === 'tie') lead = projected ? 'Projected tie · EST' : 'Tied on actual points';
+    else if (board.rivalry.leader) lead = (board.rivalry.leader === board.rivalry.a ? board.rivalry.labelA : board.rivalry.labelB) + (projected ? ' · projected edge (EST)' : ' · higher actual score');
     rivalry.appendChild(node('p', 'desk-prize-lead', lead));
-      rivalry.appendChild(node('p', '', board.rivalry.labelA + ' ' + (board.rivalry.scoreA == null ? '—' : board.rivalry.scoreA.toFixed(1)) + ' · ' + board.rivalry.labelB + ' ' + (board.rivalry.scoreB == null ? '—' : board.rivalry.scoreB.toFixed(1))));
+      rivalry.appendChild(node('p', '', board.rivalry.labelA + ' ' + (board.rivalry.scoreA == null ? '—' : board.rivalry.scoreA.toFixed(2)) + (projected ? ' Proj' : ' Pts') + ' · ' + board.rivalry.labelB + ' ' + (board.rivalry.scoreB == null ? '—' : board.rivalry.scoreB.toFixed(2)) + (projected ? ' Proj' : ' Pts')));
     }
     grid.appendChild(rivalry);
     wrap.appendChild(grid);
+    const rules = node('div', '');
+    rules.appendChild(node('p', 'desk-note', 'Prizes reconcile on Tuesdays in Central time. The position prize is for one eligible starting player, not a position-group total. Forecasts are full-lineup projections from the current feed—not frozen original predictions. They can change with lineups, injuries and new data, and never certify a payout.'));
+    wrap.appendChild(disclosure('About points and awards', 'Projection source, starter eligibility, and Tuesday reconciliation', rules));
     return wrap;
   }
 
-  function prizeColumn(title, amount, rows, label) {
+  function prizeColumn(title, amount, rows, label, options) {
+    const projected = options && options.projected;
+    const pregame = options && options.pregame && !projected;
     const column = node('section', 'desk-prize');
     column.appendChild(node('h3', '', title));
     column.appendChild(node('p', 'desk-prize-amount', amount));
     const more = node('details', 'desk-drilldown');
     more.appendChild(node('summary', '', 'Show all ' + (rows || []).length + ' managers'));
     (rows || []).forEach((row, index) => {
-      const line = node('div', 'desk-prize-row' + (row.leading ? ' is-leading' : ''));
+      const line = node('div', 'desk-prize-row' + (row.leading && !pregame ? ' is-leading' : ''));
       line.appendChild(node('span', '', label(row)));
-      line.appendChild(node('b', '', row.score.toFixed(2) + (row.leading ? ' · leads' : ' · ' + row.gap.toFixed(2) + ' back')));
+      line.appendChild(node('b', projected ? 'desk-projected-value' : 'desk-actual-value', row.score.toFixed(2) + (projected ? ' Proj · EST' : ' Pts')
+        + (pregame ? ' · not started' : projected ? (row.leading ? ' · projected top' : ' · ' + row.gap.toFixed(2) + ' projected gap') : row.leading ? ' · highest actual' : ' · ' + row.gap.toFixed(2) + ' actual gap')));
       (index < 4 ? column : more).appendChild(line);
     });
     if (rows && rows.length > 4) column.appendChild(more);
-    if (rows && rows[0] && rows.filter(row => row.leading).length > 1) column.appendChild(node('p', 'desk-note', 'Tied owners split this prize; penny rounding may vary by owner. Official shares appear in Payouts.'));
-    if (!rows || !rows.length) column.appendChild(node('p', '', 'No score yet.'));
+    if (!projected && !pregame && rows && rows[0] && rows.filter(row => row.leading).length > 1) column.appendChild(node('p', 'desk-note', 'Tied actual scores. Official shares appear in Payouts after reconciliation.'));
+    if (!rows || !rows.length) column.appendChild(node('p', '', projected ? 'Projection unavailable.' : pregame ? 'Not started · no actual points yet.' : 'Actual points unavailable.'));
     return column;
   }
 
@@ -1035,17 +1156,95 @@
     const liveWeeks = bundle ? weeksFromBundle(bundle) : [];
     const archive = weeks2025();
     const ui = bundle ? (bundle.fairUi || (bundle.fairUi = {season: '2026', through: 'all', sort: 'luck', manager: 'all'})) : {season: '2025', through: 'all', sort: 'luck', manager: 'all'};
+    if (!ui.replayInitialized) {
+      ui.view = 'replay'; ui.selfMatch = 'skip';
+      try {
+        const params = new URLSearchParams(root.location.search);
+        ui.replayTeam = params.get('replayTeam') || params.get('a');
+        ui.replayOwner = params.get('replayOwner') || params.get('b');
+        ui.selfMatch = params.get('replayMethod') === 'swap' ? 'swap' : 'skip';
+        if (['2025', '2026'].includes(params.get('replaySeason'))) ui.season = params.get('replaySeason');
+        ui.through = /^[1-9]\d?$/.test(params.get('replayWeek') || '') && Number(params.get('replayWeek')) <= 14 ? params.get('replayWeek') : 'all';
+      } catch (_error) {}
+      ui.replayInitialized = true;
+    }
+    const allWeeks = ui.season === '2026' ? liveWeeks : archive;
+    if (ui.through !== 'all' && !allWeeks.some(week => week.week === Number(ui.through))) ui.through = 'all';
+    const names = [...new Set(allWeeks.flatMap(week => week.rows.map(row => row.name)))].sort((a, b) => a.localeCompare(b));
+    if (!names.includes(ui.replayTeam)) ui.replayTeam = names[0] || '';
+    if (!names.includes(ui.replayOwner)) ui.replayOwner = names.find(name => name !== ui.replayTeam) || names[0] || '';
+    const record = value => value.wins + '–' + value.losses + '–' + value.ties;
+    const number = value => value == null ? '—' : value.toFixed(2);
     const controls = node('div', 'desk-controls');
+    const switches = node('div', 'clarity-tabs desk-view-switch');
+    switches.setAttribute('aria-label', 'Season comparison views');
+    const replayControls = node('div', 'desk-controls');
+    const allPlayControls = node('div', 'desk-controls');
     const holder = node('div', '');
+    function syncReplayUrl() {
+      try {
+        if (!root.history || !root.location) return;
+        const params = new URLSearchParams(root.location.search);
+        params.set('replayTeam', ui.replayTeam); params.set('replayOwner', ui.replayOwner); params.set('replayMethod', ui.selfMatch);
+        params.set('replaySeason', ui.season); params.set('replayWeek', ui.through);
+        root.history.replaceState(null, '', root.location.pathname + '?' + params + '#fair');
+      } catch (_error) {}
+    }
     const paint = () => {
       holder.textContent = '';
+      replayControls.hidden = ui.view !== 'replay'; allPlayControls.hidden = ui.view !== 'allplay';
+      [...switches.children].forEach(button => {
+        const selected = button.dataset.fairView === ui.view;
+        button.className = 'clarity-tab' + (selected ? ' active' : '');
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      });
       const weeks = (ui.season === '2026' ? liveWeeks : archive).filter(week => ui.through === 'all' || week.week <= Number(ui.through));
       const result = fairSchedule(weeks).sort((a, b) => b[ui.sort] - a[ui.sort] || a.name.localeCompare(b.name));
-      holder.appendChild(node('p', 'desk-kicker', ui.season + ' · ' + weeks.length + ' complete regular-season weeks. Expected wins = share of the league you outscored each week (ties count half). Schedule edge = actual wins minus expected wins; it is descriptive, not proof of skill or luck.'));
+      holder.appendChild(node('p', 'desk-data-label', 'ACTUAL RESULTS · ' + ui.season + ' · ' + weeks.length + ' complete regular-season weeks · no projected scores'));
+      const expectedThrough = ui.through === 'all' ? (ui.season === '2026' && bundle ? bundle.model.completedThrough : 14) : Number(ui.through);
+      const missingWeeks = Array.from({length: expectedThrough}, (_, index) => index + 1).filter(week => !weeks.some(slate => slate.week === week));
+      if (missingWeeks.length) holder.appendChild(node('p', 'desk-note', 'Final data unavailable for Week ' + missingWeeks.join(', ') + '. Those weeks are excluded from every comparison; displayed records are not the complete season.'));
       if (!result.length) {
         holder.appendChild(node('p', '', 'No final weeks to replay yet.'));
         return;
       }
+      if (ui.view === 'replay') {
+        const report = scheduleReplay({weeks, teamId: ui.replayTeam, scheduleId: ui.replayOwner, selfMatch: ui.selfMatch});
+        holder.appendChild(node('h3', 'desk-replay-title', report.teamName + ' on ' + report.scheduleName + '’s schedule'));
+        const strip = node('div', 'desk-strip');
+        const delta = (report.winsDelta > 0 ? '+' : '') + report.winsDelta;
+        [['Actual · same weeks', record(report.actual)], ['Replayed record', record(report.replay)], ['Win-equivalent change', delta]].forEach(item => {
+          const cell = node('div', 'desk-strip-item'); cell.append(node('b', '', item[1]), node('span', '', item[0])); strip.appendChild(cell);
+        });
+        holder.appendChild(strip);
+        holder.appendChild(node('p', 'desk-callout', report.games + ' paired weeks compared · ' + report.skippedWeeks + ' excluded. Your full available actual record: ' + record(report.fullActual) + '. A tie counts as half a win for the change above.'));
+        holder.appendChild(node('p', 'desk-note', ui.selfMatch === 'skip'
+          ? 'Exact borrowed opponents. A matchup against your own score is N/A and excluded from BOTH compared records—never an automatic win or tie.'
+          : 'Two-way schedule swap. If the borrowed opponent would be you, you face the schedule owner instead; the original head-to-head stays intact.'));
+        holder.appendChild(node('p', 'desk-note', 'Keep your real weekly score and compare it with the borrowed opponent’s real score from that same week. No roster, scoring, or standings changes are made.'));
+        holder.appendChild(table(['Week', 'Your pts', 'Actual opponent', 'Actual result', 'Borrowed opponent', 'Opponent pts', 'Replayed result'], report.rows.map(row => {
+          const outcome = node('span', row.status !== 'played' ? 'desk-result na' : 'desk-result ' + row.replayResult.toLowerCase(), row.status === 'played' ? row.replayResult + (row.changed ? ' · changed' : ' · same') : 'N/A');
+          outcome.title = row.reason || (row.swapped ? 'Self-match avoided by swapping manager positions' : 'Same-week actual-score replay');
+          return [row.week, number(row.points), row.originalOpponent || 'Unavailable', row.actualResult || 'N/A', row.opponent + (row.swapped ? ' · swapped' : '') || 'Unavailable', number(row.opponentPoints), outcome];
+        }), 'Week-by-week schedule replay'));
+        const exclusions = report.rows.filter(row => row.status !== 'played');
+        if (exclusions.length) holder.appendChild(node('p', 'desk-note', exclusions.map(row => 'Week ' + row.week + ': ' + row.reason).join('. ') + '.'));
+        holder.appendChild(node('p', 'desk-note', 'Opponent scoring faced on these same weeks: actual ' + number(report.actualOpponentMean) + ' PPG → borrowed ' + number(report.replayOpponentMean) + ' PPG. Higher means a tougher scoring slate, not a forecast.'));
+        const alternatives = names.map(name => scheduleReplay({weeks, teamId: ui.replayTeam, scheduleId: name, selfMatch: ui.selfMatch}));
+        const allSchedules = node('div', '');
+        allSchedules.appendChild(node('p', 'desk-note', 'With N/A self-matchups excluded, game counts can differ by schedule. Compare paired records and counts, not raw win totals alone.'));
+        allSchedules.appendChild(table(['Schedule owner', 'Weeks compared', 'Actual · same weeks', 'Replayed W–L–T', 'Win change'], alternatives.map(row => [row.scheduleName, row.games, record(row.actual), record(row.replay), (row.winsDelta > 0 ? '+' : '') + row.winsDelta]), 'Your record on every manager’s schedule'));
+        holder.appendChild(disclosure('Try every schedule', 'All schedule owners, with matched-week records', allSchedules));
+        syncReplayUrl();
+        return;
+      }
+      if (ui.view === 'strength') {
+        holder.appendChild(node('h3', 'desk-replay-title', 'Separate team scoring from the schedule you faced'));
+        holder.appendChild(node('p', 'desk-note', 'Team strength uses your actual PPG, median, and all-play rate. Schedule strength uses opponents’ actual same-week scoring; higher opponent PPG means a tougher scoring slate. These are retrospective descriptions—not pregame projections or proof of causation.'));
+        holder.appendChild(table(['Manager', 'Actual W–L–T', 'Avg. pts', 'Median pts', 'All-play rate', 'Opp. avg. pts', 'Opp. median pts'], seasonStrength(weeks).map(row => [row.name, record(row.record), number(row.ppg), number(row.median), pct(row.allPlayPct), number(row.opponentPPG), number(row.opponentMedian)]), ui.season + ' team strength vs schedule strength'));
+        return;
+      }
+      holder.appendChild(node('p', 'desk-kicker', 'Expected wins = share of the league you outscored each week (ties count half). Schedule edge = actual wins minus that expectation. This all-play baseline is not the same as borrowing one manager’s schedule.'));
       const visible = result.filter(row => ui.manager === 'all' || row.name === ui.manager);
       holder.appendChild(table(['Manager', 'Games', 'Actual wins', 'All-play expected', 'Schedule edge', 'Points'], visible.map(row => [row.name, row.games, row.actual.toFixed(2), row.expected.toFixed(2), (row.luck > 0 ? '+' : '') + row.luck.toFixed(2), row.points.toFixed(2)]), ui.season + ' fair-slate replay'));
       if (ui.manager !== 'all') {
@@ -1055,15 +1254,21 @@
         }), ui.manager + ' week-by-week schedule impact'));
       }
     };
-    const allWeeks = ui.season === '2026' ? liveWeeks : archive;
     controls.appendChild(field('Season', [['2026', '2026 · current season'], ['2025', '2025 · archive']], ui.season, value => {
       ui.season = value; ui.through = 'all'; ui.manager = 'all';
       const replacement = renderFair(bundle); wrap.replaceWith(replacement); replacement.querySelector('select').focus({preventScroll: true});
     }));
     controls.appendChild(field('Through week', [['all', 'All final weeks']].concat(allWeeks.map(week => [week.week, 'Week ' + week.week])), ui.through, value => { ui.through = value; paint(); }));
-    controls.appendChild(field('Sort by', [['luck', 'Schedule edge'], ['expected', 'All-play wins'], ['actual', 'Actual wins'], ['points', 'Points scored']], ui.sort, value => { ui.sort = value; paint(); }));
-    controls.appendChild(field('Manager detail', optionsFor(allWeeks.flatMap(week => week.rows.map(row => row.name)), 'All managers'), ui.manager, value => { ui.manager = value; paint(); }));
-    wrap.appendChild(controls);
+    [['replay', 'Schedule replay'], ['strength', 'Season strength'], ['allplay', 'All-play baseline']].forEach(item => {
+      const button = node('button', 'clarity-tab', item[1]); button.type = 'button'; button.dataset.fairView = item[0];
+      button.addEventListener('click', () => { ui.view = item[0]; paint(); }); switches.appendChild(button);
+    });
+    replayControls.appendChild(field('Your team', names.map(name => [name, name]), ui.replayTeam, value => { ui.replayTeam = value; paint(); }));
+    replayControls.appendChild(field('Borrow this schedule', names.map(name => [name, name]), ui.replayOwner, value => { ui.replayOwner = value; paint(); }));
+    replayControls.appendChild(field('Self-matchup rule', [['skip', 'Skip self-matchups · N/A'], ['swap', 'Swap the two managers']], ui.selfMatch, value => { ui.selfMatch = value; paint(); }));
+    allPlayControls.appendChild(field('Sort by', [['luck', 'Schedule edge'], ['expected', 'All-play wins'], ['actual', 'Actual wins'], ['points', 'Points scored']], ui.sort, value => { ui.sort = value; paint(); }));
+    allPlayControls.appendChild(field('Manager detail', optionsFor(allWeeks.flatMap(week => week.rows.map(row => row.name)), 'All managers'), ui.manager, value => { ui.manager = value; paint(); }));
+    wrap.append(controls, switches, replayControls, allPlayControls);
     wrap.appendChild(holder);
     paint();
     return wrap;
@@ -1349,7 +1554,7 @@
   }
 
   return {
-    dollarsOnTheTable, mondayExposure, playoffEquity, fairSchedule, waiverAutopsy, draftGraveyard, rivalrySeries, fingerprints, fingerprintFor,
+    dollarsOnTheTable, mondayExposure, playoffEquity, fairSchedule, scheduleReplay, seasonStrength, waiverAutopsy, draftGraveyard, rivalrySeries, fingerprints, fingerprintFor,
     renderOdds, renderFair, mountMatchup, mountDraft, mountHistory, mountManagers,
     PRIZES, RIVALRIES, POSITION_BY_WEEK
   };

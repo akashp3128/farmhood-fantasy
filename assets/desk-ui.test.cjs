@@ -19,7 +19,11 @@ class Element {
   focus() { this.document.activeElement = this; }
   contains(element) { return element === this || this.children.some(child => child.contains(element)); }
   replaceWith(element) { const siblings = this.parentNode.children; siblings[siblings.indexOf(this)] = element; element.parentNode = this.parentNode; }
-  querySelectorAll(tag) { return this.children.flatMap(child => [...(child.tagName === tag ? [child] : []), ...child.querySelectorAll(tag)]); }
+  querySelectorAll(tag) {
+    const attribute = tag.match(/^\[data-([^=]+)="([^"]*)"\]$/);
+    const matches = child => attribute ? child.dataset[attribute[1].replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())] === attribute[2] : child.tagName === tag;
+    return this.children.flatMap(child => [...(matches(child) ? [child] : []), ...child.querySelectorAll(tag)]);
+  }
   querySelector(tag) { return this.querySelectorAll(tag)[0] || null; }
 }
 function harness() {
@@ -36,6 +40,10 @@ function select(host, label, value) {
   const control = field.querySelector('select');
   control.focus(); control.value = value; control.emit('change');
   return control;
+}
+function press(host, label) {
+  const button = host.querySelectorAll('button').find(item => item.textContent === label);
+  assert.ok(button, 'Missing button: ' + label); button.focus(); button.emit('click'); return button;
 }
 async function settle() { for (let turn = 0; turn < 5; turn++) await new Promise(resolve => setImmediate(resolve)); }
 async function open(details) { details.open = true; details.emit('toggle'); await settle(); }
@@ -80,10 +88,10 @@ test('Fair Slate stays on labeled 2026, includes final zero and drills down by m
   const h = harness(); const source = bundle();
   h.context.LEAGUE = {names2025: {1: 'Alpha', 2: 'Bravo'}, weekly2025: {1: [[1, 1, 75], [2, 1, 50]], 15: [[1, 1, 999], [2, 1, 900]]}};
   h.host.appendChild(h.desk.renderFair(source));
-  assert.match(h.host.textContent, /2026 · 1 complete/);
+  assert.match(h.host.textContent, /ACTUAL RESULTS · 2026 · 1 complete/);
   assert.match(h.host.textContent, /100\.12/);
   assert.match(h.host.textContent, /Bravo/);
-  select(h.host, 'Manager detail', 'Bravo');
+  press(h.host, 'All-play baseline'); select(h.host, 'Manager detail', 'Bravo');
   assert.match(h.host.textContent, /Bravo week-by-week schedule impact/);
   select(h.host, 'Through week', '1');
   select(h.host, 'Season', '2025');
@@ -169,4 +177,78 @@ test('each interactive host loads live data before the feature entry point, incl
     assert.ok(html.indexOf('src="assets/live.js') > 0, name + ' missing live feed');
     assert.ok(html.indexOf('src="assets/live.js') < html.indexOf('src="assets/desk.js'), name + ' wrong script order');
   }
+});
+
+test('schedule replay switches self-match handling, compares strength, and keeps all-play distinct', () => {
+  const h = harness(), source = bundle();
+  h.host.appendChild(h.desk.renderFair(source));
+  assert.match(h.host.textContent, /Alpha on Bravo’s schedule/);
+  assert.match(h.host.textContent, /0 paired weeks compared · 1 excluded/);
+  assert.match(h.host.textContent, /Self-matchup excluded from both/);
+  select(h.host, 'Self-matchup rule', 'swap');
+  assert.match(h.host.textContent, /1 paired weeks compared · 0 excluded/);
+  assert.match(h.host.textContent, /Two-way schedule swap/);
+  assert.match(h.host.textContent, /Bravo · swapped/);
+  press(h.host, 'Season strength');
+  assert.match(h.host.textContent, /team strength vs schedule strength/);
+  assert.match(h.host.textContent, /Median pts/);
+  press(h.host, 'All-play baseline');
+  assert.match(h.host.textContent, /not the same as borrowing one manager’s schedule/);
+  press(h.host, 'Schedule replay');
+  assert.equal(source.fairUi.selfMatch, 'swap');
+  assert.equal(h.context.document.activeElement.textContent, 'Schedule replay');
+});
+
+test('schedule comparison deep links select the two managers and update without discarding other parameters', () => {
+  const h = harness(), source = bundle();
+  h.context.URLSearchParams = URLSearchParams;
+  h.context.location = {pathname: '/schedule.html', search: '?a=Alpha&scope=completed&replayTeam=Bravo&replayOwner=Alpha'};
+  let lastUrl = '';
+  h.context.history = {replaceState: (_state, _title, url) => { lastUrl = url; }};
+  h.host.appendChild(h.desk.renderFair(source));
+  assert.match(h.host.textContent, /Bravo on Alpha’s schedule/);
+  select(h.host, 'Self-matchup rule', 'swap');
+  assert.match(lastUrl, /scope=completed/);
+  assert.match(lastUrl, /replayMethod=swap/);
+  assert.match(lastUrl, /replaySeason=2026/);
+  assert.match(lastUrl, /replayWeek=all/);
+  assert.match(lastUrl, /#fair$/);
+});
+
+async function moneyHarness(phase = 'Scheduled') {
+  const h = harness();
+  h.context.LEAGUE = {};
+  h.context.fetch = async () => ({ok: true, json: async () => ({regularSeasonWeeks: 14, positionSchedule: {1: 'QB', 2: 'QB'}, weeklyPrizes: {highestScore: 30, positionLeader: 10}, rivalryPrize: 50, rivalries: [{week: 1, managerA: 'Alpha', managerB: 'Bravo', labelA: 'Al', labelB: 'Be'}]})});
+  h.context.FarmhoodLive = {lineupFor: row => [{id: 'p' + row.rosterId, name: 'QB ' + row.rosterId, slot: 'QB', position: 'QB', projection: 20, points: row.points, gameStatus: phase === 'Live' ? 'live' : 'pre_game'}]};
+  const ctx = {snapshot: {season: 2026, rosters: [{rosterId: 1, name: 'Alpha'}, {rosterId: 2, name: 'Bravo'}], rosterPositions: ['QB']}, selectedWeek: 1, weekState: phase,
+    rows: [{rosterId: 1, points: phase === 'Scheduled' ? 0 : 42}, {rosterId: 2, points: phase === 'Scheduled' ? 0 : 38}],
+    forecast: {teams: [{rosterId: 1, pregameProjection: 128.07, projection: 50}, {rosterId: 2, pregameProjection: 121.31, projection: 60}]}};
+  h.desk.mountMatchup(h.host, ctx); await settle(); return {...h, ctx};
+}
+
+test('money defaults to actual points, never pregame zero leaders, and labels every estimate explicitly', async () => {
+  const h = await moneyHarness();
+  assert.match(h.host.textContent, /ACTUAL POINTS · PTS · NOT STARTED/);
+  assert.match(h.host.textContent, /No leader or prize has been earned/);
+  assert.doesNotMatch(h.host.textContent, /128\.07|highest actual|split this prize/);
+  press(h.host, 'Projections · EST');
+  assert.match(h.host.textContent, /128\.07 Proj · EST/);
+  assert.match(h.host.textContent, /ESTIMATES ONLY/);
+  assert.doesNotMatch(h.host.textContent, / · leads|128\.07 Pts/);
+  h.desk.mountMatchup(h.host, h.ctx);
+  assert.match(h.host.textContent, /128\.07 Proj · EST/);
+  h.desk.mountMatchup(h.host, {...h.ctx, selectedWeek: 2});
+  assert.match(h.host.textContent, /ACTUAL POINTS · PTS · NOT STARTED/);
+});
+
+test('live and final actual score views do not substitute estimates or certify payouts', async () => {
+  const h = await moneyHarness('Live');
+  assert.match(h.host.textContent, /42\.00 Pts · highest actual/);
+  assert.match(h.host.textContent, /LIVE \/ PROVISIONAL/);
+  assert.doesNotMatch(h.host.textContent, /128\.07/);
+  h.desk.mountMatchup(h.host, {...h.ctx, weekState: 'Final'});
+  assert.match(h.host.textContent, /FINAL SCORES/);
+  assert.match(h.host.textContent, /does not certify awards/);
+  press(h.host, 'Projections · EST');
+  assert.match(h.host.textContent, /128\.07 Proj · EST/);
 });

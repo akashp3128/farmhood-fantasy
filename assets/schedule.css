@@ -14,6 +14,13 @@
 .sched-note strong{display:block;font-family:var(--serif);font-size:16px;line-height:1.2}
 .sched-note p{margin:3px 0 0;font-size:13px;color:#3E4A3F}
 .sched-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:0 0 14px}
+.sched-scope{max-width:500px;margin:0 0 16px}
+.sched-data-label{font-size:11px;font-weight:800;letter-spacing:.7px;line-height:1.6;border-left:4px solid var(--blue);padding:8px 12px;background:var(--surface)}
+.sched-actual-comparison{border:1px solid var(--line);background:var(--surface);padding:16px;margin:16px 0}
+.sched-actual-comparison h3{font-family:var(--serif);font-size:20px;margin:0 0 8px}
+.sched-comparison-metrics{display:flex;flex-direction:column;gap:6px;font-size:13px;padding:12px 0;border-top:1px solid var(--line);line-height:1.6}
+.sched-comparison-metrics strong{font-family:var(--serif);font-size:17px}
+.sched-replay-link{display:inline-block;box-sizing:border-box;min-height:44px;padding:12px;border:1px solid var(--line);margin:8px 8px 0 0;font-size:13px;font-weight:700;max-width:100%;overflow-wrap:anywhere}
 .sched-field{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%;flex:1 1 220px}
 .sched-field span{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted-2)}
 .sched-field select{min-height:44px;min-width:0;width:100%;max-width:100%;border:1px solid var(--clarity-control-border,rgba(23,59,39,.62));background:var(--surface);color:var(--text);font:inherit;font-size:14px;padding:8px 10px}

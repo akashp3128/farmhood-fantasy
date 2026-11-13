@@ -148,3 +148,19 @@ test('older refresh completion cannot overwrite a newer captured snapshot', asyn
   assert.match(h.host.textContent, /Latest Manager/);
   assert.doesNotMatch(h.host.textContent, /Outdated Manager/);
 });
+
+test('comparison scope persists in the URL and replay links select the compared managers', async () => {
+  const h = harness('?a=Alpha&b=Bravo&scope=completed', '#h2h');
+  h.context.FarmhoodSchedule.mount(h.host); await settle();
+  assert.equal(h.focus('scope-window').value, 'completed');
+  assert.match(h.host.textContent, /Team scoring vs schedule difficulty/);
+  const link = h.host.querySelectorAll('a').find(item => item.textContent.includes('Replay Alpha on Bravo'));
+  assert.ok(link);
+  const url = new URL(link.href, 'https://example.test');
+  assert.equal(url.hash, '#fair');
+  assert.equal(url.searchParams.get('replayTeam'), 'Alpha');
+  assert.equal(url.searchParams.get('replayOwner'), 'Bravo');
+  h.focus('scope-window').value = 'season'; h.focus('scope-window').emit('change');
+  assert.equal(new URLSearchParams(h.context.location.search).get('scope'), 'season');
+  assert.equal(h.context.document.activeElement.dataset.schedFocus, 'scope-window');
+});
