@@ -15,6 +15,12 @@
   const SWING_GAP = 0.18;
   const WIN_WEIGHT = 0.62;
   const PF_WEIGHT = 0.38;
+  const NFL_TEAMS = new Set('ARI ATL BAL BUF CAR CHI CIN CLE DAL DEN DET GB HOU IND JAX KC LAC LAR LV MIA MIN NE NO NYG NYJ PHI PIT SEA SF TB TEN WAS'.split(' '));
+
+  function nflTeam(value) {
+    const code = String(value || '').toUpperCase();
+    return ({JAC: 'JAX', LA: 'LAR', WSH: 'WAS', OAK: 'LV', SD: 'LAC'})[code] || code;
+  }
 
   function finite(value, fallback) {
     return Number.isFinite(Number(value)) ? Number(value) : fallback;
@@ -92,6 +98,8 @@
       const week = Number(key);
       const rows = Array.isArray(weekMap[key]) ? weekMap[key] : [];
       const groups = new Map();
+      const rosterCounts = new Map();
+      rows.forEach(row => rosterCounts.set(Number(row && row.rosterId), (rosterCounts.get(Number(row && row.rosterId)) || 0) + 1));
       rows.forEach(row => {
         const rosterId = Number(row && row.rosterId);
         if (!rosterId) return;
@@ -101,9 +109,10 @@
       });
       const cells = {};
       groups.forEach(sides => {
-        if (sides.length !== 2) {
+        if (sides.length !== 2 || sides.some(row => rosterCounts.get(Number(row.rosterId)) > 1)) {
           sides.forEach(row => {
-            cells[Number(row.rosterId)] = {opponentId: null, points: finiteOrNull(row.points), oppPoints: null, bye: true};
+            const explicitBye = rosterCounts.get(Number(row.rosterId)) === 1 && (row.matchupId == null || row.matchupId < 0);
+            cells[Number(row.rosterId)] = {opponentId: null, points: finiteOrNull(row.points), oppPoints: null, bye: explicitBye, missing: !explicitBye};
           });
           return;
         }
@@ -237,7 +246,7 @@
           : week <= completedThrough
             ? 'final'
             : (week === currentWeek && pack && weekHasScoring(pack.rows) ? 'live' : 'scheduled');
-        if (!entry) {
+        if (!entry || entry.missing || (!entry.bye && !byId.has(entry.opponentId))) {
           return {week, missing: true, bye: false, opponentId: null, band: 'none', phase, result: null, remaining: false, points: null, oppPoints: null};
         }
         const opponent = entry.opponentId != null ? byId.get(entry.opponentId) : null;
@@ -245,7 +254,7 @@
         return {
           week,
           missing: false,
-          bye: !!entry.bye || !opponent,
+          bye: !!entry.bye,
           opponentId: opponent ? opponent.rosterId : null,
           opponentName: opponent ? opponent.name : null,
           opponentAbbrev: opponent ? opponent.abbrev : null,
@@ -299,6 +308,7 @@
       regularWeeks,
       playoffWeeks,
       remainingWeeks,
+      incompleteWeeks: remainingWeeks.filter(week => base.some(roster => roster.cells.some(cell => cell.week === week && cell.missing))),
       rosters: base,
       softestId: contenders.length ? contenders[0].rosterId : null,
       toughestId: contenders.length ? contenders[contenders.length - 1].rosterId : null
@@ -312,10 +322,28 @@
     return weeks.slice(0, -1).join(', ') + ' and ' + weeks[weeks.length - 1];
   }
 
+  function scrollHint(label) {
+    return node('p', 'sched-scroll-hint sched-swipe-hint', label + ' · Swipe or scroll sideways to see every week. Keyboard: focus the grid, then use the arrow keys.');
+  }
+
+  function scheduleScroller(label) {
+    const scroller = node('div', 'sched-scroll');
+    scroller.tabIndex = 0;
+    scroller.setAttribute('role', 'region');
+    scroller.setAttribute('aria-label', label + ', horizontally scrollable');
+    scroller.addEventListener('keydown', event => {
+      if (event.target !== scroller || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      scroller.scrollLeft = Math.max(0, (scroller.scrollLeft || 0) + (event.key === 'ArrowRight' ? 96 : -96));
+    });
+    return scroller;
+  }
+
   function leagueInsights(model) {
     const source = model || {rosters: []};
     if (!source.rosters || !source.rosters.length) return [];
     const notes = [];
+    if ((source.incompleteWeeks || []).length) notes.push({tone: 'mid', title: 'Incomplete fantasy schedule', text: 'Opponent pairings are missing in ' + source.incompleteWeeks.map(week => 'Week ' + week).join(', ') + '. Slate indices use only known opponents and may not cover the full road left.'});
     const soft = source.rosters.find(roster => roster.rosterId === source.softestId);
     const hard = source.rosters.find(roster => roster.rosterId === source.toughestId);
     if (soft && soft.remaining.games) {
@@ -347,8 +375,8 @@
     if (!notes.length) {
       notes.push({
         tone: 'mid',
-        title: 'Regular season complete',
-        text: 'Every regular-season game is final. The heatmap is the road they walked, and the last columns are the posted playoff slate.'
+        title: source.remainingWeeks.length ? 'Schedule not yet confirmed' : 'Regular season complete',
+        text: source.remainingWeeks.length ? 'Regular-season weeks remain, but their opponent pairings are missing or incomplete. No remaining-slate ranking is available.' : 'Every regular-season game is final. The heatmap is the road they walked, and the last columns are the posted playoff slate.'
       });
     }
     return notes;
@@ -426,7 +454,7 @@
       notes.push({
         tone: 'gold',
         title: 'Pencil mark',
-        text: listWeeks(posted) + ' pairs them on the posted playoff slate. The bracket reseeds, so that pairing is not locked.'
+        text: listWeeks(posted) + ' pairs them on the posted playoff slate. Future bracket pairings are not locked.'
       });
     }
     return notes;
@@ -455,26 +483,62 @@
     return /^(out|ir|pup|suspended|inactive)$/i.test(String(injury || '').trim());
   }
 
-  function normalizeNflWeek(rows) {
+  function normalizeNflWeek(rows, week, verifiedSeason) {
     const teams = {};
-    (Array.isArray(rows) ? rows : []).forEach(game => {
+    let valid = true;
+    let games = 0;
+    (Array.isArray(rows) ? rows : []).filter(game => week == null || game && Number(game.week) === Number(week)).forEach(game => {
       const meta = (game && game.metadata) || {};
-      const home = String((game && (game.home || meta.home_team)) || '').toUpperCase();
-      const away = String((game && (game.away || meta.away_team)) || '').toUpperCase();
-      if (/^[A-Z]{2,4}$/.test(home) && /^[A-Z]{2,4}$/.test(away)) {
+      const home = nflTeam(game && (game.home || meta.home_team));
+      const away = nflTeam(game && (game.away || meta.away_team));
+      if (NFL_TEAMS.has(home) && NFL_TEAMS.has(away) && home !== away && !teams[home] && !teams[away]) {
         teams[home] = {opponent: away, home: true};
         teams[away] = {opponent: home, home: false};
-      }
+        games += 1;
+      } else valid = false;
     });
-    return Object.keys(teams).length ? teams : null;
+    if (!Object.keys(teams).length) return null;
+    // Absence proves a bye only after the full season passes validation.
+    Object.defineProperty(teams, 'complete', {value: valid && (verifiedSeason === true || games === 16)});
+    return teams;
+  }
+
+  function normalizeNflSeason(rows) {
+    if (!Array.isArray(rows) || rows.length !== 272) return null;
+    const counts = new Map([...NFL_TEAMS].map(team => [team, 0]));
+    const ids = new Set();
+    const appearances = new Set();
+    for (const game of rows) {
+      const week = Number(game && game.week);
+      const home = nflTeam(game && game.home);
+      const away = nflTeam(game && game.away);
+      const id = String(game && game.game_id || '');
+      if (!Number.isInteger(week) || week < 1 || week > 18 || !NFL_TEAMS.has(home) || !NFL_TEAMS.has(away) || home === away || !id || ids.has(id) || /cancel|postpon/i.test(String(game.status || ''))) return null;
+      ids.add(id);
+      for (const team of [home, away]) {
+        const key = week + ':' + team;
+        if (appearances.has(key)) return null;
+        appearances.add(key);
+        counts.set(team, counts.get(team) + 1);
+      }
+    }
+    if ([...counts.values()].some(count => count !== 17)) return null;
+    const season = {};
+    for (let week = 1; week <= 18; week++) {
+      season[week] = normalizeNflWeek(rows, week, true);
+      if (!season[week]) return null;
+    }
+    return season;
   }
 
   function describeTeamWeek(team, slate, week) {
-    const code = String(team || '').toUpperCase();
-    if (!/^[A-Z]{2,4}$/.test(code)) return {week, status: 'fa', label: 'FA'};
+    const code = nflTeam(team);
+    if (!NFL_TEAMS.has(code)) return {week, status: 'unknown', label: '—'};
     if (!slate) return {week, status: 'unknown', label: '—'};
     const game = slate[code];
-    if (!game) return {week, status: 'bye', label: 'BYE'};
+    if (!game) return slate.complete === true
+      ? {week, status: 'bye', label: 'BYE'}
+      : {week, status: 'unknown', label: '—'};
     return {week, status: 'play', opponent: game.opponent, home: !!game.home, label: game.home ? game.opponent : '@' + game.opponent};
   }
 
@@ -498,15 +562,35 @@
         position: player.position,
         covers: bench.filter(candidate => {
           const slot = candidate.weeks.find(item => item.week === week);
-          return slot && slot.status === 'play' && eligibleForSlot(candidate.position, player.slot || player.position);
+          return slot && slot.status === 'play' && !isHardOut(candidate.injury) && eligibleForSlot(candidate.position, player.slot || player.position);
         }).map(candidate => {
           const slot = candidate.weeks.find(item => item.week === week);
           return {id: candidate.id, name: candidate.name, position: candidate.position, opponent: slot.opponent, home: slot.home};
         })
       }));
+      // Maximum bipartite matching: one healthy bench player can cover only
+      // one simultaneous hole, including FLEX slots that share candidates.
+      const assigned = new Map();
+      function assign(index, seen) {
+        for (const candidate of byes[index].covers) {
+          if (seen.has(candidate.id)) continue;
+          seen.add(candidate.id);
+          const previous = assigned.get(candidate.id);
+          if (previous == null || assign(previous, seen)) {
+            assigned.set(candidate.id, index);
+            return true;
+          }
+        }
+        return false;
+      }
+      byes.forEach((_bye, index) => assign(index, new Set()));
+      byes.forEach((bye, index) => {
+        bye.cover = bye.covers.find(candidate => assigned.get(candidate.id) === index) || null;
+      });
       return {week, byes};
     }).filter(item => item.byes.length);
-    return {weeks, starters, bench, weekSummaries};
+    const unknownWeeks = weeks.filter(week => starters.some(player => player.weeks.some(item => item.week === week && item.status === 'unknown')));
+    return {weeks, starters, bench, weekSummaries, unknownWeeks};
   }
 
   function byeInsights(report) {
@@ -515,10 +599,12 @@
       return [{tone: 'mid', title: 'Roster unavailable', text: 'Sleeper did not return a roster for this manager, so bye weeks cannot be mapped yet.'}];
     }
     const notes = [];
+    const unknown = source.unknownWeeks || [];
+    if (unknown.length) notes.push({tone: 'mid', title: 'Incomplete NFL calendar', text: 'Availability is unknown in ' + unknown.map(week => 'Week ' + week).join(', ') + '. Missing games are not counted as byes; check again when the schedule is complete.'});
     const collisions = (source.weekSummaries || []).filter(item => item.byes.length >= 2)
       .sort((a, b) => b.byes.length - a.byes.length || a.week - b.week);
     if (!collisions.length) {
-      notes.push({tone: 'easy', title: 'Bye calendar is clean', text: 'No remaining week puts two starters on bye at once.'});
+      notes.push({tone: unknown.length ? 'mid' : 'easy', title: unknown.length ? 'No confirmed collision' : 'Bye calendar is clean', text: unknown.length ? 'No two-starter bye collision is confirmed on the posted portion of this calendar.' : 'No remaining week puts two starters on bye at once.'});
     } else {
       const worst = collisions[0];
       notes.push({
@@ -530,13 +616,13 @@
     const holes = [];
     (source.weekSummaries || []).forEach(item => {
       item.byes.forEach(bye => {
-        if (!bye.covers.length) holes.push('Week ' + item.week + ' ' + (bye.slot || bye.position || 'starter'));
+        if (!bye.cover) holes.push('Week ' + item.week + ' ' + (bye.slot || bye.position || 'starter'));
       });
     });
     if (holes.length) {
-      notes.push({tone: 'hard', title: 'Waiver weeks', text: 'Uncovered byes: ' + holes.join(', ') + '. No bench player at that slot is active.'});
+      notes.push({tone: 'hard', title: 'Waiver weeks', text: 'Uncovered byes: ' + holes.join(', ') + '. The healthy, scheduled bench cannot cover every slot at once.'});
     } else if ((source.weekSummaries || []).some(item => item.byes.length)) {
-      notes.push({tone: 'easy', title: 'Bench can cover', text: 'Every starter bye on this slice has an active bench player who fits the slot.'});
+      notes.push({tone: 'easy', title: 'Bench can cover', text: 'Each confirmed starter bye has a different healthy bench player with a posted game who fits the slot. Recheck injuries before kickoff.'});
     }
     return notes;
   }
@@ -571,10 +657,11 @@
     const left = playerA || {name: 'Player A'};
     const right = playerB || {name: 'Player B'};
     if (!comparison || !comparison.edges || !comparison.edges.length) {
+      const unknown = comparison && comparison.rows && comparison.rows.some(row => row.a.status === 'unknown' || row.b.status === 'unknown');
       return [{
         tone: 'mid',
-        title: 'No bye edge',
-        text: left.name + ' and ' + right.name + ' play the same weeks on this slice of the calendar. The choice is matchup, not availability.'
+        title: unknown ? 'Availability incomplete' : 'No bye edge',
+        text: unknown ? 'Some NFL games or player teams are not confirmed. There is no verified bye advantage in the posted games.' : left.name + ' and ' + right.name + ' have no play-versus-bye difference on this slice. This compares the calendar, not health, eligibility, or projected points.'
       }];
     }
     return comparison.edges.map(edge => {
@@ -584,8 +671,8 @@
       const where = game.home ? 'vs ' + game.opponent : '@ ' + game.opponent;
       return {
         tone: 'easy',
-        title: 'Week ' + edge.week + ' start',
-        text: 'Start ' + start.name + '. ' + sit.name + ' is on bye, and ' + start.name + ' plays ' + where + '.'
+        title: 'Week ' + edge.week + ' calendar edge',
+        text: start.name + ' has a scheduled game ' + where + '; ' + sit.name + ' is on bye. Check position eligibility and injury status before making a lineup decision.'
       };
     });
   }
@@ -597,12 +684,12 @@
       if (!player || player.id == null || taken.has(String(player.id))) return false;
       if (isHardOut(player.injury)) return false;
       if (!eligibleForSlot(player.position, slot)) return false;
-      const team = String(player.team || '').toUpperCase();
+      const team = nflTeam(player.team);
       return !!(slate && slate[team]);
     }).sort((a, b) => (finite(b.projection, 0) - finite(a.projection, 0)) || String(a.name || '').localeCompare(String(b.name || '')))
       .slice(0, max)
       .map(player => {
-        const team = String(player.team || '').toUpperCase();
+        const team = nflTeam(player.team);
         const game = slate[team];
         return {
           id: String(player.id),
@@ -640,7 +727,7 @@
     } else if (cell.phase === 'live' && cell.points != null) {
       bits.push('live ' + cell.points.toFixed(1) + ' to ' + (cell.oppPoints == null ? '0.0' : cell.oppPoints.toFixed(1)));
     } else if (cell.phase === 'playoff') {
-      bits.push('posted playoff slate, bracket reseeds');
+      bits.push('posted playoff slate, future pairings may change');
     }
     return bits.join(', ') + '.';
   }
@@ -654,7 +741,7 @@
 
   function byeWindow(model) {
     const end = model.playoffWeeks.length ? model.playoffWeeks[model.playoffWeeks.length - 1] : model.regularSeasonWeeks;
-    const start = Math.min(Math.max(model.currentWeek, model.completedThrough + 1), end);
+    const start = Math.max(model.currentWeek, model.completedThrough + 1);
     const weeks = [];
     for (let week = start; week <= end; week++) weeks.push(week);
     return weeks;
@@ -664,6 +751,7 @@
     const rows = model.rosters.slice();
     if (sort === 'slate') {
       rows.sort((a, b) => {
+        if (a.remaining.avgStrength == null && b.remaining.avgStrength == null) return a.name.localeCompare(b.name);
         if (a.remaining.avgStrength == null) return 1;
         if (b.remaining.avgStrength == null) return -1;
         return a.remaining.avgStrength - b.remaining.avgStrength || a.name.localeCompare(b.name);
@@ -709,13 +797,13 @@
     const hard = findRoster(model, model.toughestId);
     const items = soft && hard
       ? [
-          ['Softest road', soft.name, 'Index ' + soft.remaining.index + ' · ' + soft.remaining.label],
-          ['Heaviest road', hard.name, 'Index ' + hard.remaining.index + ' · ' + hard.remaining.label],
+          ['Softest road left', soft.name, 'Index ' + soft.remaining.index + ' · ' + soft.remaining.label],
+          ['Heaviest road left', hard.name, 'Index ' + hard.remaining.index + ' · ' + hard.remaining.label],
           ['Weeks left', String(model.remainingWeeks.length), model.remainingWeeks.length ? 'Regular season' : 'Slate is final']
         ]
       : [
-          ['Softest road', '—', 'Waiting on games'],
-          ['Heaviest road', '—', 'Waiting on games'],
+          ['Softest road left', '—', 'Waiting on games'],
+          ['Heaviest road left', '—', 'Waiting on games'],
           ['Weeks left', String(model.remainingWeeks.length), 'Regular season']
         ];
     items.forEach(item => {
@@ -728,15 +816,37 @@
     return strip;
   }
 
+  function scopeMetrics(model, rosterId, scope) {
+    const roster = model.rosters.find(item => Number(item.rosterId) === Number(rosterId));
+    const cells = roster ? (roster.cells || []).filter(cell => cell.week <= model.regularSeasonWeeks
+      && (scope === 'completed' ? cell.week <= model.completedThrough : scope === 'season' ? true : cell.week > model.completedThrough)) : [];
+    const known = cells.filter(cell => !cell.missing && !cell.bye && cell.opponentStrength != null);
+    const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    const strength = average(known.map(cell => cell.opponentStrength));
+    const finals = cells.filter(cell => cell.phase === 'final' && !cell.missing && !cell.bye && finiteOrNull(cell.points) != null && finiteOrNull(cell.oppPoints) != null);
+    const scores = finals.map(cell => cell.points).sort((a, b) => a - b);
+    return {cells, known: known.length, missing: cells.filter(cell => cell.missing).length, index: strength == null ? null : Math.round(strength * 100), label: strength == null ? 'No data' : slateLabel(strength),
+      finalGames: finals.length, ppg: average(scores), median: scores.length ? (scores[Math.floor((scores.length - 1) / 2)] + scores[Math.ceil((scores.length - 1) / 2)]) / 2 : null,
+      opponentPPG: average(finals.map(cell => cell.oppPoints)), wins: finals.filter(cell => cell.result === 'W').length, losses: finals.filter(cell => cell.result === 'L').length, ties: finals.filter(cell => cell.result === 'T').length};
+  }
+  function replayLink(a, b, label) {
+    const link = node('a', 'sched-replay-link', label || ('Replay ' + a.name + ' on ' + b.name + '’s schedule →'));
+    const params = new URLSearchParams((root.location && root.location.search) || '');
+    params.set('replayTeam', a.name); params.set('replayOwner', b.name);
+    link.href = 'schedule.html?' + params + '#fair';
+    return link;
+  }
+
   function viewTabs(state, onView) {
     const list = node('div', 'clarity-tabs sched-tabs');
     list.setAttribute('role', 'tablist');
     list.setAttribute('aria-label', 'Schedule desk views');
-    [['heat', 'Heatmap'], ['h2h', 'Head-to-Head'], ['bye', 'Bye Radar'], ['odds', 'Playoff Odds'], ['fair', 'Fair Slate']].forEach(item => {
+    [['heat', 'Heatmap'], ['h2h', 'Head-to-Head'], ['bye', 'Bye Radar'], ['odds', 'Playoff Odds'], ['fair', 'Season Replay']].forEach(item => {
       const button = node('button', 'clarity-tab' + (state.view === item[0] ? ' active' : ''), item[1]);
       button.type = 'button';
       button.setAttribute('role', 'tab');
       button.setAttribute('aria-selected', state.view === item[0] ? 'true' : 'false');
+      button.tabIndex = state.view === item[0] ? 0 : -1;
       button.id = 'sched-tab-' + item[0];
       button.setAttribute('aria-controls', 'sched-panel');
       button.dataset.schedFocus = 'tab-' + item[0];
@@ -750,6 +860,8 @@
       let next = null;
       if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
       if (event.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+      if (event.key === 'Home') next = tabs[0];
+      if (event.key === 'End') next = tabs[tabs.length - 1];
       if (!next) return;
       event.preventDefault();
       next.click();
@@ -770,7 +882,7 @@
 
   function renderHeat(model, state, onSort, onCompare) {
     const panel = node('div', 'sched-panel');
-    panel.appendChild(notesNode(leagueInsights(model)));
+    if (state.scope === 'remaining') panel.appendChild(notesNode(leagueInsights(model)));
     const controls = node('div', 'sched-controls');
     const sort = node('div', 'clarity-tabs sched-sort');
     sort.setAttribute('role', 'group');
@@ -785,8 +897,11 @@
     });
     controls.appendChild(sort);
     panel.appendChild(controls);
+    panel.appendChild(node('p', 'sched-data-label', 'DIFFICULTY INDEX · 0–100 · NOT PROJECTED POINTS'));
+    panel.appendChild(node('p', 'note', 'The index column uses the selected comparison window. Colors reflect each opponent’s CURRENT record and scoring rank—not their projected score or your result. The heatmap retains the full posted season for context.'));
     panel.appendChild(legend());
-    const scroller = node('div', 'sched-scroll');
+    panel.appendChild(scrollHint('Full season heatmap'));
+    const scroller = scheduleScroller('Full season heatmap');
     const table = node('table', 'sched-heat');
     const caption = node('caption', '', 'Color is the opponent, not the result. Green is a soft draw, rust is a grind, and the underline marks a multi-week run. W and L are final. Gold-edged rows are in the playoff picture.');
     table.appendChild(caption);
@@ -795,7 +910,8 @@
     const managerHead = node('th', 'sched-sticky', 'Manager');
     managerHead.scope = 'col';
     managerHead.rowSpan = 2;
-    const slateHead = node('th', '', 'Slate');
+    const slateHead = node('th', 'sched-index-head');
+    slateHead.append(node('span', '', 'Index'), node('small', '', state.scope === 'completed' ? 'played' : state.scope === 'season' ? 'season' : 'left'));
     slateHead.scope = 'col';
     slateHead.rowSpan = 2;
     group.append(managerHead, slateHead);
@@ -817,27 +933,29 @@
     head.append(group, weeksRow);
     table.appendChild(head);
     const body = node('tbody');
-    orderedRosters(model, state.sort).forEach(roster => {
+    const ordered = model.rosters.slice().sort((a, b) => state.sort === 'slate'
+      ? (scopeMetrics(model, a.rosterId, state.scope).index ?? Infinity) - (scopeMetrics(model, b.rosterId, state.scope).index ?? Infinity) || a.rank - b.rank : a.rank - b.rank);
+    ordered.forEach(roster => {
+      const metrics = scopeMetrics(model, roster.rosterId, state.scope);
       const row = node('tr', roster.inPlayoffPicture ? 'in-field' : '');
       const who = node('th', 'sched-sticky');
       who.scope = 'row';
-      const identity = node('div', 'sched-manager');
+      const identity = node('button', 'sched-manager sched-manager-action');
+      identity.type = 'button';
+      identity.dataset.schedFocus = 'compare-' + roster.rosterId;
+      identity.setAttribute('aria-label', 'Compare ' + roster.name + ' head to head');
+      identity.addEventListener('click', () => onCompare(roster.rosterId));
       identity.appendChild(avatarNode(roster.name));
-      const copy = node('div', 'sched-manager-copy');
+      const copy = node('span', 'sched-manager-copy');
       copy.appendChild(node('strong', '', roster.rank + '. ' + roster.name));
       copy.appendChild(node('small', '', formatOwn(roster) + (roster.inPlayoffPicture ? ' · in the field' : '')));
       identity.appendChild(copy);
-      const compare = node('button', 'sched-compare', 'Compare');
-      compare.type = 'button';
-      compare.dataset.schedFocus = 'compare-' + roster.rosterId;
-      compare.setAttribute('aria-label', 'Compare ' + roster.name + ' head to head');
-      compare.addEventListener('click', () => onCompare(roster.rosterId));
-      identity.appendChild(compare);
+      identity.appendChild(node('span', 'sched-compare-cue', 'Compare →'));
       who.appendChild(identity);
       row.appendChild(who);
-      const slate = node('td', 'sched-slate ' + roster.remaining.label.toLowerCase());
-      slate.appendChild(node('b', '', roster.remaining.index == null ? '—' : String(roster.remaining.index)));
-      slate.appendChild(node('span', '', roster.remaining.label));
+      const slate = node('td', 'sched-slate ' + metrics.label.toLowerCase());
+      slate.appendChild(node('b', '', metrics.index == null ? '—' : String(metrics.index)));
+      slate.appendChild(node('span', '', metrics.label));
       row.appendChild(slate);
       const softWeeks = new Set((roster.stretches.soft && roster.stretches.soft.weeks) || []);
       const brutalWeeks = new Set((roster.stretches.brutal && roster.stretches.brutal.weeks) || []);
@@ -865,7 +983,7 @@
     table.appendChild(body);
     scroller.appendChild(table);
     panel.appendChild(scroller);
-    panel.appendChild(node('p', 'sched-scroll-hint', 'The slate index is the average difficulty of the games still left. Lower is softer.'));
+    panel.appendChild(node('p', 'sched-scroll-hint', 'Lower index = softer opponents in the selected window. Use Compare for actual scoring, opponent points faced, and a borrowed-schedule replay.'));
     return panel;
   }
 
@@ -898,23 +1016,37 @@
       panel.appendChild(node('p', 'note', 'Pick two different managers to compare the road left.'));
       return panel;
     }
-    panel.appendChild(notesNode(matchupInsights(model, left.rosterId, right.rosterId)));
+    if (state.scope === 'remaining') panel.appendChild(notesNode(matchupInsights(model, left.rosterId, right.rosterId)));
     const heads = node('div', 'sched-duel-head');
     [left, right].forEach(roster => {
-      const card = node('div', 'sched-scorecard ' + roster.remaining.label.toLowerCase());
+      const metrics = scopeMetrics(model, roster.rosterId, state.scope);
+      const card = node('div', 'sched-scorecard ' + metrics.label.toLowerCase());
       card.appendChild(avatarNode(roster.name));
       const copy = node('div', '');
       copy.appendChild(node('strong', '', roster.name));
-      copy.appendChild(node('span', '', formatOwn(roster) + ' · ' + ordinal(roster.rank) + ' · ' + roster.remaining.vsPicture + ' left vs the playoff field'));
+      copy.appendChild(node('span', '', formatOwn(roster) + ' overall · ' + ordinal(roster.rank) + ' in current standings'));
       card.appendChild(copy);
       const index = node('div', 'sched-manager-score');
-      index.appendChild(node('b', '', roster.remaining.index == null ? '—' : String(roster.remaining.index)));
-      index.appendChild(node('small', '', roster.remaining.label + ' slate'));
+      index.appendChild(node('b', '', metrics.index == null ? '—' : String(metrics.index)));
+      index.appendChild(node('small', '', metrics.label + ' · index'));
       card.appendChild(index);
       heads.appendChild(card);
     });
     panel.appendChild(heads);
-    const weeks = left.cells.map(cell => cell.week);
+    const comparison = node('section', 'sched-actual-comparison');
+    comparison.appendChild(node('h3', '', 'Team scoring vs schedule difficulty'));
+    comparison.appendChild(node('p', 'note', 'Scoring figures below use finalized games in the selected window. Index uses the opponents’ current-season records and scoring ranks; it is NOT projected points or a pregame rating.'));
+    [left, right].forEach(roster => {
+      const metrics = scopeMetrics(model, roster.rosterId, state.scope);
+      const line = node('p', 'sched-comparison-metrics');
+      line.appendChild(node('strong', '', roster.name));
+      line.appendChild(node('span', '', 'Difficulty index ' + (metrics.index == null ? '—' : metrics.index) + ' · ' + metrics.known + ' known opponents' + (metrics.missing ? ' · ' + metrics.missing + ' missing' : '')));
+      line.appendChild(node('span', '', metrics.finalGames ? metrics.finalGames + ' final games · actual ' + metrics.wins + '–' + metrics.losses + '–' + metrics.ties + ' · scoring avg ' + metrics.ppg.toFixed(2) + ' / median ' + metrics.median.toFixed(2) + ' · opponent actual avg ' + metrics.opponentPPG.toFixed(2) : 'No finalized scores in this window. Future points are not assumed.'));
+      comparison.appendChild(line);
+    });
+    comparison.append(replayLink(left, right), replayLink(right, left));
+    panel.appendChild(comparison);
+    const weeks = scopeMetrics(model, left.rosterId, state.scope).cells.map(cell => cell.week);
     weeks.forEach(week => {
       const leftCell = left.cells.find(cell => cell.week === week);
       const rightCell = right.cells.find(cell => cell.week === week);
@@ -989,6 +1121,11 @@
   function renderBye(bundle, state, onManager, onPlayers) {
     const panel = node('div', 'sched-panel');
     const weeks = byeWindow(bundle.model);
+    if (!weeks.length) {
+      panel.appendChild(node('p', 'note', 'There are no remaining posted weeks to map. The heatmap and head-to-head views still show the season record.'));
+      return panel;
+    }
+    if (!bundle.ownershipKnown) panel.appendChild(node('p', 'note', 'Current roster ownership is unavailable. The last captured lineup is shown for reference; free-agent suggestions are withheld.'));
     if (bundle.playerFeed && bundle.playerFeed.source === 'unavailable') {
       panel.appendChild(node('p', 'note', 'Player teams are temporarily unavailable, so bye weeks cannot be mapped. The manager heatmap still works.'));
       return panel;
@@ -1008,7 +1145,8 @@
       callout.addEventListener('click', () => onManager(worst.rosterId));
       panel.appendChild(callout);
     } else {
-      panel.appendChild(node('p', 'sched-callout static', 'No roster has two starters on bye in the same remaining week.'));
+      const incomplete = reports.some(item => item.report.unknownWeeks.length);
+      panel.appendChild(node('p', 'sched-callout static', incomplete ? 'No collision is confirmed. Some NFL schedules or player teams are unknown; those weeks are not treated as byes.' : 'No roster has two starters on bye in the same remaining week.'));
     }
     const dir = bundle.directories.find(item => item.rosterId === Number(state.byeId)) || bundle.directories[0];
     const controls = node('div', 'sched-controls');
@@ -1018,7 +1156,8 @@
     const report = byeReport({starters: dir.starters, bench: dir.bench, weeks, nfl: bundle.nfl});
     panel.appendChild(notesNode(byeInsights(report)));
     if (!report.starters.length) return panel;
-    const scroller = node('div', 'sched-scroll');
+    panel.appendChild(scrollHint('Starter bye calendar'));
+    const scroller = scheduleScroller('Starter bye calendar');
     const table = node('table', 'sched-heat sched-bye');
     table.appendChild(node('caption', '', 'Starters on ' + dir.name + ' from Week ' + weeks[0] + ' through Week ' + weeks[weeks.length - 1] + '. BYE is a dark week. @ marks an away game.'));
     const head = node('thead');
@@ -1060,15 +1199,18 @@
         summary.byes.forEach(bye => {
           const line = node('div', 'sched-bye-line');
           line.appendChild(node('strong', '', (bye.slot || bye.position || 'Starter') + ' · ' + bye.name));
-          if (bye.covers.length) {
-            line.appendChild(node('p', '', 'Bench cover: ' + bye.covers.map(cover => cover.name + ' (' + (cover.home ? 'vs ' : '@ ') + cover.opponent + ')').join(', ') + '.'));
+          if (bye.cover) {
+            const cover = bye.cover;
+            line.appendChild(node('p', '', 'Bench fit: ' + cover.name + ' (' + (cover.home ? 'vs ' : '@ ') + cover.opponent + '). Each bench player is counted once per week; recheck injuries before kickoff.'));
           } else {
             const cached = state.pickupCache.has(summary.week);
             const options = cached ? pickupOptions(state.pickupCache.get(summary.week), bundle.nfl[summary.week], bye.slot || bye.position, bundle.rostered) : [];
-            if (!cached) {
-              line.appendChild(node('p', '', 'No bench cover. Checking the wire for an active ' + (bye.slot || bye.position || 'player') + '…'));
+            if (!bundle.ownershipKnown) {
+              line.appendChild(node('p', '', 'No separate healthy bench fit. Current league ownership is unavailable, so free-agent suggestions are withheld.'));
+            } else if (!cached) {
+              line.appendChild(node('p', '', 'No separate healthy bench fit. Checking unrostered ' + (bye.slot || bye.position || 'player') + ' options…'));
             } else if (!options.length) {
-              line.appendChild(node('p', '', 'No bench cover, and no projected free agent is active at ' + (bye.slot || bye.position || 'this slot') + ' in Week ' + summary.week + '.'));
+              line.appendChild(node('p', '', 'No separate healthy bench fit, and no eligible unrostered player with a posted game is in the Week ' + summary.week + ' projection feed.'));
             } else {
               line.appendChild(node('p', '', 'No bench cover. Unrostered options by Week ' + summary.week + ' projection:'));
               const list = node('ol', 'sched-pickups');
@@ -1091,7 +1233,7 @@
     if (!state.playerB) state.playerB = suggestion[1];
     const duel = node('section', 'sched-duel-block');
     duel.appendChild(node('h3', 'sched-duel-title', 'Who plays, who sits'));
-    duel.appendChild(node('p', 'sched-duel-copy', 'Pick any two players in the league. A week where only one of them plays is an automatic start.'));
+    duel.appendChild(node('p', 'sched-duel-copy', 'Compare any two rostered players’ posted games and byes. Calendar availability is not a start/sit recommendation; check position eligibility and injuries.'));
     const picks = node('div', 'sched-controls');
     [['player-a', 'Player A', state.playerA, 'a'], ['player-b', 'Player B', state.playerB, 'b']].forEach(spec => {
       const field = node('label', 'sched-field');
@@ -1119,7 +1261,8 @@
     if (playerA && playerB && playerA.id !== playerB.id) {
       const comparison = comparePlayers(playerA, playerB, bundle.nfl, weeks);
       duel.appendChild(notesNode(duelInsights(comparison, playerA, playerB).slice(0, 4)));
-      const grid = node('div', 'sched-scroll');
+      duel.appendChild(scrollHint('Player calendar comparison'));
+      const grid = scheduleScroller('Player calendar comparison');
       const table = node('table', 'sched-heat sched-bye');
       const head = node('thead');
       const headRow = node('tr');
@@ -1156,7 +1299,7 @@
   function holeWeeks(report) {
     const weeks = [];
     (report.weekSummaries || []).forEach(summary => {
-      if (summary.byes.some(bye => !bye.covers.length) && !weeks.includes(summary.week)) weeks.push(summary.week);
+      if (summary.byes.some(bye => !bye.cover) && !weeks.includes(summary.week)) weeks.push(summary.week);
     });
     return weeks;
   }
@@ -1170,13 +1313,17 @@
   function syncUrl(state, model) {
     if (!root.history || !root.location || !model) return;
     try {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(root.location.search || '');
       const left = findRoster(model, state.a);
       const right = findRoster(model, state.b);
       const bye = findRoster(model, state.byeId);
       if (left) params.set('a', left.name);
       if (right) params.set('b', right.name);
       if (bye) params.set('bye', bye.name);
+      params.set('sort', state.sort);
+      params.set('scope', state.scope || 'remaining');
+      if (state.playerA) params.set('pa', state.playerA); else params.delete('pa');
+      if (state.playerB) params.set('pb', state.playerB); else params.delete('pb');
       const query = params.toString();
       const hash = state.view === 'heat' ? 'heat' : state.view;
       root.history.replaceState(null, '', root.location.pathname + (query ? '?' + query : '') + '#' + hash);
@@ -1189,8 +1336,12 @@
       state.pendingA = params.get('a');
       state.pendingB = params.get('b');
       state.pendingBye = params.get('bye');
+      state.sort = params.get('sort') === 'slate' ? 'slate' : 'standings';
+      state.scope = ['completed', 'season'].includes(params.get('scope')) ? params.get('scope') : 'remaining';
+      state.playerA = /^[A-Za-z0-9_-]{1,24}$/.test(params.get('pa') || '') ? params.get('pa') : null;
+      state.playerB = /^[A-Za-z0-9_-]{1,24}$/.test(params.get('pb') || '') ? params.get('pb') : null;
       const hash = String(root.location.hash || '').replace('#', '');
-      if (hash === 'h2h' || hash === 'bye' || hash === 'heat' || hash === 'odds' || hash === 'fair') state.view = hash;
+      state.view = ['h2h', 'bye', 'heat', 'odds', 'fair'].includes(hash) ? hash : 'heat';
     } catch (_err) {}
   }
 
@@ -1216,26 +1367,31 @@
     });
   }
 
-  function directoryFor(roster, snapshot, playerFeed) {
-    const row = (snapshot.matchups || []).find(item => item.rosterId === roster.rosterId) || {rosterId: roster.rosterId, starters: [], players: []};
+  function directoryFor(roster, snapshot, playerFeed, ownership) {
+    const current = (ownership || []).find(item => Number(item.roster_id) === roster.rosterId);
+    const row = current ? {starters: current.starters || [], players: current.players || []} : (snapshot.matchups || []).find(item => item.rosterId === roster.rosterId) || {rosterId: roster.rosterId, starters: [], players: []};
     const lineup = root.FarmhoodLive.lineupFor(row, snapshot.rosterPositions, playerFeed);
     const starterIds = new Set(lineup.map(player => String(player.id)));
+    const reservedIds = new Set(current ? [].concat(current.reserve || [], current.taxi || []).map(String) : []);
     const players = (playerFeed && playerFeed.players) || {};
     const starters = lineup.filter(player => player.id && player.id !== '0').map(player => ({
       id: String(player.id),
       name: player.name,
       position: player.position || '',
       slot: player.slot || player.position || '',
-      team: player.team || (/^[A-Z]{2,4}$/.test(player.id) ? player.id : '')
+      team: player.team || (/^[A-Z]{2,4}$/.test(player.id) ? player.id : ''),
+      injury: player.injury || ''
     }));
-    const bench = (row.players || []).filter(id => id && id !== '0' && !starterIds.has(String(id))).map(id => {
+    const bench = (row.players || []).filter(id => id && id !== '0' && !starterIds.has(String(id)) && !reservedIds.has(String(id))).map(id => {
       const info = players[id] || {};
+      const defense = NFL_TEAMS.has(String(id));
       return {
         id: String(id),
-        name: info.name || ('Player ' + id),
-        position: info.position || '',
+        name: info.name || (defense ? id + ' D/ST' : 'Player ' + id),
+        position: info.position || (defense ? 'DEF' : ''),
         slot: 'BN',
-        team: info.team || (/^[A-Z]{2,4}$/.test(String(id)) ? String(id) : '')
+        team: info.team || (/^[A-Z]{2,4}$/.test(String(id)) ? String(id) : ''),
+        injury: info.injury || ''
       };
     });
     return {rosterId: roster.rosterId, name: roster.name, starters, bench};
@@ -1248,21 +1404,32 @@
         const settings = (league && league.settings) || {};
         return {
           playoffStart: finite(settings.playoff_week_start, snapshot.regularSeasonWeeks + 1),
-          playoffTeams: finite(settings.playoff_teams, 6)
+          playoffTeams: finite(settings.playoff_teams, 6),
+          playoffReseed: null
         };
-      }).catch(() => ({playoffStart: snapshot.regularSeasonWeeks + 1, playoffTeams: 6}));
+      }).catch(() => ({playoffStart: snapshot.regularSeasonWeeks + 1, playoffTeams: 6, playoffReseed: null}));
       const lastWeek = snapshot.regularSeasonWeeks + 3;
       const weekNumbers = [];
       for (let week = 1; week <= lastWeek; week++) weekNumbers.push(week);
-      const weeksPromise = Promise.all(weekNumbers.map(week => live.loadWeek(week, {force: !!force}).then(rows => [week, rows]).catch(() => [week, []])));
+      const weeksPromise = Promise.all(weekNumbers.map(week => week === snapshot.currentWeek
+        ? Promise.resolve([week, snapshot.matchups || []])
+        : live.loadWeek(week, {force: !!force && week >= snapshot.currentWeek - 1}).then(rows => [week, rows]).catch(() => [week, []])));
       const playersPromise = live.loadPlayers(snapshot, snapshot.currentWeek, {force: !!force}).catch(() => ({players: {}, source: 'unavailable'}));
+      const ownershipPromise = fetchJSON('https://api.sleeper.app/v1/league/' + snapshot.leagueId + '/rosters').then(rows => {
+        if (!Array.isArray(rows) || rows.length !== snapshot.rosters.length || !snapshot.rosters.every(roster => rows.some(row => Number(row.roster_id) === roster.rosterId && Array.isArray(row.players) && Array.isArray(row.starters)))) return null;
+        return rows;
+      }).catch(() => null);
       const nflFrom = Math.min(snapshot.currentWeek, snapshot.regularSeasonWeeks + 1);
       const nflNumbers = [];
       for (let week = nflFrom; week <= lastWeek; week++) nflNumbers.push(week);
-      const nflPromise = Promise.all(nflNumbers.map(week => fetchJSON('https://api.sleeper.app/scores/nfl/regular/' + snapshot.season + '/' + week)
-        .then(rows => [week, normalizeNflWeek(rows)])
-        .catch(() => [week, null])));
-      return Promise.all([shapePromise, weeksPromise, playersPromise, nflPromise]).then(parts => {
+      const nflPromise = fetchJSON('https://api.sleeper.app/schedule/nfl/regular/' + snapshot.season).then(rows => {
+        const calendar = normalizeNflSeason(rows);
+        if (!calendar) throw new Error('The NFL season calendar is incomplete.');
+        return calendar;
+      }).catch(() => Promise.all(nflNumbers.map(week => fetchJSON('https://api.sleeper.app/scores/nfl/regular/' + snapshot.season + '/' + week)
+        .then(rows => [week, normalizeNflWeek(rows, week)])
+        .catch(() => [week, null]))).then(entries => Object.fromEntries(entries)));
+      return Promise.all([shapePromise, weeksPromise, playersPromise, nflPromise, ownershipPromise]).then(parts => {
         const shape = parts[0];
         const weeks = Object.fromEntries(parts[1]);
         const playerFeed = parts[2] || {players: {}, source: 'unavailable'};
@@ -1277,17 +1444,18 @@
           completedThrough,
           currentWeek: snapshot.currentWeek
         });
-        const directories = snapshot.rosters.map(roster => directoryFor(roster, snapshot, playerFeed));
+        const ownership = parts[4];
+        const directories = snapshot.rosters.map(roster => directoryFor(roster, snapshot, playerFeed, ownership));
         const rostered = new Set();
-        (snapshot.matchups || []).forEach(row => (row.players || []).forEach(id => {
+        (ownership || snapshot.matchups || []).forEach(row => [].concat(row.players || [], row.reserve || [], row.taxi || []).forEach(id => {
           if (id && id !== '0') rostered.add(String(id));
         }));
-        return {snapshot, model, nfl: Object.fromEntries(parts[3]), directories, rostered, playerFeed, shape};
+        return {snapshot, model, weeks, nfl: parts[3], directories, rostered, ownershipKnown: !!ownership, playerFeed, shape};
       });
     });
   }
 
-  const METHOD = 'The slate index blends each remaining opponent\'s win percentage (62%) with their points-for rank (38%). Lower is a softer road. Weeks 15-17 are the posted Sleeper slate; Farmhood\'s six-team bracket reseeds when the playoffs begin. Bye weeks use each player\'s current NFL team. Waiver names are unrostered players ranked by that week\'s Farmhood projection.';
+  const METHOD = 'The slate index blends each remaining opponent\'s win percentage (62%) with their points-for rank (38%). Lower is a softer road; it is not a win probability. Future playoff pairings are not locked; bracket format is set by the league. Bye weeks use each player\'s current NFL team and a validated full-season NFL schedule; missing teams in partial calendars are unknown. Bench fits use current injury status and count each player once per week. Waiver names require current league ownership and are ranked by that week\'s Farmhood projection, not guaranteed points. No lineup changes are made.';
 
   function mount(target) {
     if (!root.document) return;
@@ -1312,6 +1480,7 @@
     const state = {
       view: 'heat',
       sort: 'standings',
+      scope: 'remaining',
       a: null,
       b: null,
       byeId: null,
@@ -1322,11 +1491,12 @@
       pickupCache: new Map(),
       pickupInflight: new Set()
     };
+    let refreshVersion = 0;
     readUrl(state);
 
     function queuePickups() {
       const bundle = state.bundle;
-      if (!bundle || state.view !== 'bye') return;
+      if (!bundle || !bundle.ownershipKnown || state.view !== 'bye') return;
       const dir = bundle.directories.find(item => item.rosterId === Number(state.byeId)) || bundle.directories[0];
       if (!dir) return;
       const report = byeReport({starters: dir.starters, bench: dir.bench, weeks: byeWindow(bundle.model), nfl: bundle.nfl});
@@ -1336,6 +1506,7 @@
       Promise.all(missing.map(week => root.FarmhoodLive.loadPlayers(bundle.snapshot, week)
         .then(feed => [week, (feed && feed.players) || {}])
         .catch(() => [week, {}]))).then(entries => {
+        if (state.bundle !== bundle) return;
         entries.forEach(entry => {
           state.pickupCache.set(entry[0], entry[1]);
           state.pickupInflight.delete(entry[0]);
@@ -1347,7 +1518,8 @@
     function paint() {
       const bundle = state.bundle;
       if (!bundle) return;
-      const focus = state.focus;
+      const active = root.document.activeElement;
+      const focus = state.focus || (active && body.contains(active) && active.dataset && active.dataset.schedFocus) || '';
       state.focus = '';
       body.textContent = '';
       body.appendChild(summaryStrip(bundle.model));
@@ -1360,6 +1532,16 @@
       panel.id = 'sched-panel';
       panel.setAttribute('role', 'tabpanel');
       panel.setAttribute('aria-labelledby', 'sched-tab-' + state.view);
+      if (state.view === 'heat' || state.view === 'h2h') {
+        const scopeField = node('label', 'sched-field sched-scope');
+        scopeField.appendChild(node('span', '', 'Comparison window'));
+        const select = node('select'); select.dataset.schedFocus = 'scope-window';
+        [['remaining', 'Remaining road · known opponents'], ['completed', 'Played season · finalized weeks'], ['season', 'Full regular season · all posted opponents']].forEach(item => {
+          const option = node('option', '', item[1]); option.value = item[0]; option.selected = state.scope === item[0]; select.appendChild(option);
+        });
+        select.addEventListener('change', () => { state.scope = select.value; state.focus = 'scope-window'; paint(); });
+        scopeField.appendChild(select); panel.appendChild(scopeField);
+      }
       if (state.view === 'h2h') {
         panel.appendChild(renderHeadToHead(bundle.model, state, (side, id) => {
           state[side] = id;
@@ -1370,6 +1552,8 @@
         panel.appendChild(root.FarmhoodDesk.renderOdds(bundle));
       } else if (state.view === 'fair' && root.FarmhoodDesk) {
         panel.appendChild(root.FarmhoodDesk.renderFair(bundle));
+      } else if (state.view === 'odds' || state.view === 'fair') {
+        panel.appendChild(node('p', 'note', 'This analysis is temporarily unavailable. Heatmap, Head-to-Head, and Bye Radar are still available.'));
       } else if (state.view === 'bye') {
         panel.appendChild(renderBye(bundle, state, id => {
           state.byeId = id;
@@ -1411,6 +1595,10 @@
     }
 
     function applyBundle(bundle) {
+      if (state.bundle) {
+        bundle.oddsUi = state.bundle.oddsUi;
+        bundle.fairUi = state.bundle.fairUi;
+      }
       state.bundle = bundle;
       const namedA = resolveName(bundle.model, state.pendingA);
       const namedB = resolveName(bundle.model, state.pendingB);
@@ -1427,6 +1615,13 @@
         if (state.b == null) state.b = pair[1];
       }
       if (state.byeId == null) state.byeId = state.a;
+      if (!findRoster(bundle.model, state.a)) state.a = defaultPair(bundle.model)[0];
+      if (!findRoster(bundle.model, state.b)) state.b = defaultPair(bundle.model)[1];
+      if (!findRoster(bundle.model, state.byeId)) state.byeId = state.a;
+      if (!findPlayer(bundle.directories, state.playerA)) state.playerA = null;
+      if (!findPlayer(bundle.directories, state.playerB)) state.playerB = null;
+      state.pickupCache.clear();
+      state.pickupInflight.clear();
       state.pickupCache.set(bundle.snapshot.currentWeek, (bundle.playerFeed && bundle.playerFeed.players) || {});
       status.textContent = '';
       if (typeof root.liveStatusBar === 'function') status.appendChild(root.liveStatusBar(bundle.snapshot, () => refresh(true)));
@@ -1434,13 +1629,37 @@
     }
 
     function refresh(force) {
-      return loadBundle(!!force).then(applyBundle).catch(() => {
-        if (state.bundle) return;
+      const version = ++refreshVersion;
+      return loadBundle(!!force).then(bundle => {
+        if (version === refreshVersion) applyBundle(bundle);
+      }).catch(() => {
+        if (version !== refreshVersion) return;
+        if (state.bundle) {
+          status.appendChild(node('p', 'note', 'Refresh failed. The last loaded schedule is still shown; try refreshing again.'));
+          return;
+        }
         status.textContent = '';
         status.appendChild(typeof root.liveError === 'function'
           ? root.liveError('The schedule desk could not reach Sleeper. The rest of the record book is still available.')
           : node('p', 'note', 'The schedule desk could not reach Sleeper.'));
       });
+    }
+
+    if (typeof root.addEventListener === 'function') {
+      const followUrl = () => {
+        readUrl(state);
+        if (!state.bundle) return;
+        const model = state.bundle.model;
+        state.a = resolveName(model, state.pendingA) || defaultPair(model)[0];
+        state.b = resolveName(model, state.pendingB) || defaultPair(model)[1];
+        state.byeId = resolveName(model, state.pendingBye) || state.a;
+        state.pendingA = state.pendingB = state.pendingBye = null;
+        if (!findPlayer(state.bundle.directories, state.playerA)) state.playerA = null;
+        if (!findPlayer(state.bundle.directories, state.playerB)) state.playerB = null;
+        paint();
+      };
+      root.addEventListener('hashchange', followUrl);
+      root.addEventListener('popstate', followUrl);
     }
 
     refresh(false);
@@ -1452,9 +1671,11 @@
     matchupInsights,
     defaultPair,
     opponentStrength,
+    scopeMetrics,
     abbreviateAll,
     eligibleForSlot,
     normalizeNflWeek,
+    normalizeNflSeason,
     byeReport,
     byeInsights,
     worstCollision,
@@ -1462,6 +1683,7 @@
     duelInsights,
     pickupOptions,
     cellSummary,
+    loadBundle,
     mount
   };
 });
