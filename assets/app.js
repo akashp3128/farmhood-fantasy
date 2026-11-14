@@ -1417,7 +1417,7 @@ function openProfile(name){
   if(window.FarmhoodDesk&&typeof window.FarmhoodDesk.fingerprintFor==='function'){
     const shape=window.FarmhoodDesk.fingerprintFor(name);
     if(shape){
-      const section=el('div','prof-sec','Season shape');
+      const section=el('div','prof-sec',`${shape.season||2025} season shape · final regular-season weeks`);
       const line=el('p','desk-fp-line');
       line.textContent=shape.summary;
       box.append(section,line);
