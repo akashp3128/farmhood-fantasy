@@ -1,8 +1,37 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-10-waiver-recap",
-  "updatedAt": "2026-11-12T01:52:33.704Z",
+  "featuredArticleId": "2026-week-10-recap",
+  "updatedAt": "2026-11-17T22:50:30.555Z",
   "articles": [
+    {
+      "articleId": "2026-week-10-recap",
+      "path": "content/articles/2026/week-10-recap.json",
+      "type": "week_recap",
+      "edition": "Postgame Edition",
+      "season": 2026,
+      "week": 10,
+      "status": "published",
+      "title": "Week 10 Recap: The 0.08-Point Crime Scene",
+      "dek": "vpitello34 survived sidjunlee by a decimal dusting, while jwislek_20 posted the week’s loudest statement.",
+      "publishedAt": "2026-11-17T22:50:30.555Z",
+      "dataAsOf": "2026-11-17T22:50:30.555Z",
+      "forecastContext": {
+        "mode": "results_only",
+        "receiptEligible": false,
+        "publishedForecastExists": false,
+        "description": "No published Preview or Weekend Outlook forecast exists for this week. This recap reports final results only, with no prediction grade."
+      },
+      "storylines": [
+        "Decimal disaster in Matchup 2",
+        "jwislek_20 brings the heavy artillery",
+        "McCaffrey makes the margin matter"
+      ],
+      "tags": [
+        "Recap",
+        "Week 10",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-10-waiver-recap",
       "path": "content/articles/2026/week-10-waiver-recap.json",

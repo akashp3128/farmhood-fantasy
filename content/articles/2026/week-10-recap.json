@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-10-recap",
+  "type": "week_recap",
+  "season": 2026,
+  "week": 10,
+  "status": "published",
+  "edition": "Postgame Edition",
+  "title": "Week 10 Recap: The 0.08-Point Crime Scene",
+  "dek": "vpitello34 survived sidjunlee by a decimal dusting, while jwislek_20 posted the week’s loudest statement.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-11-17T22:50:30.555Z",
+  "updatedAt": "2026-11-17T22:50:30.555Z",
+  "dataAsOf": "2026-11-17T22:50:30.555Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "Week 10 finished with six official results and one matchup decided by 0.08 points—the kind of margin that turns every forgotten lineup click into a federal case.",
+      "Jahmyr Gibbs and George Pickens powered vpitello34 past sidjunlee, 145.04–144.96, while jwislek_20’s 156.16 led the week in a 51.14-point rout of Archibaldo."
+    ],
+    "pullQuote": "A 0.08-point loss is not a loss; it is a browser-history investigation.",
+    "keyStat": {
+      "label": "Closest final",
+      "value": "0.08 points",
+      "note": "vpitello34 145.04, sidjunlee 144.96"
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "akaaashh",
+      "managerB": "maco71",
+      "receiptEligible": false,
+      "currentScoreA": 107.12,
+      "currentScoreB": 102.78,
+      "finalScoreA": 107.12,
+      "finalScoreB": 102.78,
+      "winner": "akaaashh",
+      "headline": "akaaashh 107.12, maco71 102.78",
+      "analysis": "Christian McCaffrey’s 44.3 and Isaiah Likely’s 23.2 gave akaaashh just enough insulation to withstand maco71’s Nico Collins and DJ Moore push. Five-ish points never felt so legally protected.",
+      "keyPlayer": "Christian McCaffrey",
+      "keyPlayerId": "4034",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w10:m1:final-score:akaaashh",
+        "2026:w10:m1:final-score:maco71",
+        "2026:w10:m1:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "sidjunlee",
+      "managerB": "vpitello34",
+      "receiptEligible": false,
+      "currentScoreA": 144.96,
+      "currentScoreB": 145.04,
+      "finalScoreA": 144.96,
+      "finalScoreB": 145.04,
+      "winner": "vpitello34",
+      "headline": "vpitello34 145.04, sidjunlee 144.96",
+      "analysis": "This was a decimal-point knife fight. Jahmyr Gibbs scored 40.7 and George Pickens added 38 for vpitello34; Brock Purdy’s 31.66 and Amon-Ra St. Brown’s 23.8 left sidjunlee 0.08 short of peace.",
+      "keyPlayer": "Jahmyr Gibbs",
+      "keyPlayerId": "9221",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w10:m2:final-score:sidjunlee",
+        "2026:w10:m2:final-score:vpitello34",
+        "2026:w10:m2:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "cuch",
+      "managerB": "martinch94",
+      "receiptEligible": false,
+      "currentScoreA": 129.88,
+      "currentScoreB": 93.1,
+      "finalScoreA": 129.88,
+      "finalScoreB": 93.1,
+      "winner": "cuch",
+      "headline": "cuch 129.88, martinch94 93.10",
+      "analysis": "cuch got 27.1 from Jaxon Smith-Njigba and 25.7 from Cam Skattebo, then watched the gap become a 36.78-point lecture. Chase Brown’s 24.3 could not carry martinch94 out of the group-chat evidence locker.",
+      "keyPlayer": "Jaxon Smith-Njigba",
+      "keyPlayerId": "9488",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w10:m3:final-score:cuch",
+        "2026:w10:m3:final-score:martinch94",
+        "2026:w10:m3:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "Blumbo",
+      "managerB": "turi70",
+      "receiptEligible": false,
+      "currentScoreA": 112.24,
+      "currentScoreB": 80.22,
+      "finalScoreA": 112.24,
+      "finalScoreB": 80.22,
+      "winner": "Blumbo",
+      "headline": "Blumbo 112.24, turi70 80.22",
+      "analysis": "Parker Washington’s 24.7 and James Cook III’s 21.7 drove Blumbo to a 32.02-point win. turi70 got 20 from the Vikings defense, which is impressive right up until the rest of the spreadsheet starts asking questions.",
+      "keyPlayer": "Parker Washington",
+      "keyPlayerId": "9487",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w10:m4:final-score:Blumbo",
+        "2026:w10:m4:final-score:turi70",
+        "2026:w10:m4:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "Siccboi",
+      "managerB": "pgorny",
+      "receiptEligible": false,
+      "currentScoreA": 130.92,
+      "currentScoreB": 90.76,
+      "finalScoreA": 130.92,
+      "finalScoreB": 90.76,
+      "winner": "Siccboi",
+      "headline": "Siccboi 130.92, pgorny 90.76",
+      "analysis": "Chuba Hubbard’s 31.7 led Siccboi through a 40.16-point win, with Jared Goff adding 20.42. pgorny got 20.76 from Jayden Daniels and 19 from Cam Little, but the rest of the rescue mission did not arrive.",
+      "keyPlayer": "Chuba Hubbard",
+      "keyPlayerId": "7594",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w10:m5:final-score:Siccboi",
+        "2026:w10:m5:final-score:pgorny",
+        "2026:w10:m5:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "Archibaldo",
+      "managerB": "jwislek_20",
+      "receiptEligible": false,
+      "currentScoreA": 105.02,
+      "currentScoreB": 156.16,
+      "finalScoreA": 105.02,
+      "finalScoreB": 156.16,
+      "winner": "jwislek_20",
+      "headline": "jwislek_20 156.16, Archibaldo 105.02",
+      "analysis": "Joe Burrow scored 33.16, Emmett Johnson added 32.1, and jwislek_20 ran up the week’s top score. Dak Prescott’s 34.42 was strong for Archibaldo; it just needed several friends who also answered the phone.",
+      "keyPlayer": "Dak Prescott",
+      "keyPlayerId": "3294",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w10:m6:final-score:Archibaldo",
+        "2026:w10:m6:final-score:jwislek_20",
+        "2026:w10:m6:starter-scoring"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "Decimal disaster in Matchup 2",
+      "body": "vpitello34’s 145.04–144.96 win over sidjunlee was decided by 0.08 points. Gibbs and Pickens combined for 78.7, enough to make the difference permanent and the postgame scrolling unbearable.",
+      "subjects": [
+        "vpitello34",
+        "sidjunlee"
+      ],
+      "factIds": [
+        "2026:w10:m2:final-score:sidjunlee",
+        "2026:w10:m2:final-score:vpitello34",
+        "2026:w10:m2:starter-scoring"
+      ]
+    },
+    {
+      "title": "jwislek_20 brings the heavy artillery",
+      "body": "jwislek_20 put up 156.16 behind Burrow’s 33.16 and Emmett Johnson’s 32.1, clearing Archibaldo by 51.14 points.",
+      "subjects": [
+        "jwislek_20",
+        "Archibaldo"
+      ],
+      "factIds": [
+        "2026:w10:m6:final-score:Archibaldo",
+        "2026:w10:m6:final-score:jwislek_20",
+        "2026:w10:m6:starter-scoring"
+      ]
+    },
+    {
+      "title": "McCaffrey makes the margin matter",
+      "body": "akaaashh’s 107.12–102.78 win over maco71 leaned hard on Christian McCaffrey’s 44.3. Isaiah Likely’s 23.2 made it a two-man operation with excellent union representation.",
+      "subjects": [
+        "akaaashh",
+        "maco71"
+      ],
+      "factIds": [
+        "2026:w10:m1:final-score:akaaashh",
+        "2026:w10:m1:final-score:maco71",
+        "2026:w10:m1:starter-scoring"
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "title": "Photo-Finish Survivor",
+      "recipient": "vpitello34",
+      "body": "Won 145.04–144.96, surviving the closest Week 10 result after Gibbs posted 40.7 and Pickens scored 38.",
+      "factIds": [
+        "2026:w10:m2:final-score:sidjunlee",
+        "2026:w10:m2:final-score:vpitello34",
+        "2026:w10:m2:starter-scoring"
+      ]
+    },
+    {
+      "title": "Scoreboard Arsonist",
+      "recipient": "jwislek_20",
+      "body": "Week 10’s highest scorer at 156.16, with Burrow and Emmett Johnson combining for 65.26 points.",
+      "factIds": [
+        "2026:w10:m6:final-score:Archibaldo",
+        "2026:w10:m6:final-score:jwislek_20",
+        "2026:w10:m6:starter-scoring"
+      ]
+    },
+    {
+      "title": "Week 10 Recap: The 0.08-Point Crime Scene",
+      "recipient": "vpitello34",
+      "body": "Won 145.04–144.96, surviving the closest Week 10 result after Gibbs posted 40.7 and Pickens scored 38.",
+      "factIds": [
+        "2026:w10:m2:final-score:sidjunlee",
+        "2026:w10:m2:final-score:vpitello34",
+        "2026:w10:m2:starter-scoring"
+      ]
+    }
+  ],
+  "receipts": null,
+  "forecastContext": {
+    "mode": "results_only",
+    "receiptEligible": false,
+    "publishedForecastExists": false,
+    "description": "No published Preview or Weekend Outlook forecast exists for this week. This recap reports final results only, with no prediction grade."
+  },
+  "lineupSnapshot": {
+    "capturedAt": "2026-11-17T22:50:30.555Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "9758",
+          "12469",
+          "8138",
+          "9487",
+          "9997",
+          "3214",
+          "9501",
+          "13298",
+          "3451",
+          "SEA"
+        ],
+        "lineupHash": "9758.12469.8138.9487.9997.3214.9501.13298.3451.SEA"
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "11564",
+          "4034",
+          "12504",
+          "11646",
+          "11632",
+          "8131",
+          "13281",
+          "13270",
+          "12185",
+          "JAX"
+        ],
+        "lineupHash": "11564.4034.12504.11646.11632.8131.13281.13270.12185.JAX"
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12495",
+          "13286",
+          "6786",
+          "13285",
+          "9479",
+          "12634",
+          "7543",
+          "1945",
+          "NYG"
+        ],
+        "lineupHash": "3294.12495.13286.6786.13285.9479.12634.7543.1945.NYG"
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "13337",
+          "7564",
+          "8144",
+          "11604",
+          "13301",
+          "13274",
+          "11533",
+          "BUF"
+        ],
+        "lineupHash": "6770.12490.13337.7564.8144.11604.13301.13274.11533.BUF"
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "1166",
+          "7588",
+          "12481",
+          "9488",
+          "5859",
+          "4217",
+          "5967",
+          "12501",
+          "7839",
+          "BAL"
+        ],
+        "lineupHash": "1166.7588.12481.9488.5859.4217.5967.12501.7839.BAL"
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "9228",
+          "9224",
+          "12527",
+          "12526",
+          "8146",
+          "2505",
+          "7021",
+          "9753",
+          "7042",
+          "DET"
+        ],
+        "lineupHash": "9228.9224.12527.12526.8146.2505.7021.9753.7042.DET"
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "96",
+          "5995",
+          "13305",
+          "6794",
+          "8167",
+          "12518",
+          "6801",
+          "8126",
+          "11539",
+          "MIN"
+        ],
+        "lineupHash": "96.5995.13305.6794.8167.12518.6801.8126.11539.MIN"
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "3163",
+          "6813",
+          "7594",
+          "8112",
+          "2449",
+          "12506",
+          "10229",
+          "13276",
+          "13968",
+          "HOU"
+        ],
+        "lineupHash": "3163.6813.7594.8112.2449.12506.10229.13276.13968.HOU"
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "12545",
+          "9509",
+          "8150",
+          "4983",
+          "7569",
+          "9484",
+          "12512",
+          "12718",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "12545.9509.8150.4983.7569.9484.12512.12718.11792.PIT"
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "11566",
+          "3198",
+          "4035",
+          "3286",
+          "8148",
+          "10859",
+          "5947",
+          "11637",
+          "11786",
+          "GB"
+        ],
+        "lineupHash": "11566.3198.4035.3286.8148.10859.5947.11637.11786.GB"
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "8183",
+          "11586",
+          "8228",
+          "7547",
+          "5846",
+          "8130",
+          "8155",
+          "11783",
+          "2747",
+          "KC"
+        ],
+        "lineupHash": "8183.11586.8228.7547.5846.8130.8155.11783.2747.KC"
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "11647",
+          "9756",
+          "13296",
+          "1466",
+          "8137",
+          "7553",
+          "6083",
+          "LAR"
+        ],
+        "lineupHash": "4984.9221.11647.9756.13296.1466.8137.7553.6083.LAR"
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-10-final-28d3c87845fe9a8b",
+    "predictionId": null,
+    "predictionKind": "results_only",
+    "dataAsOf": "2026-11-17T22:50:30.555Z",
+    "promptVersion": "farmhood-press-v3-late-outlook",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_0b8644f1039cd03e016afcda37b17487d093acebd9d07f6709",
+    "usage": {
+      "inputTokens": 3642,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1731,
+      "reasoningTokens": 0,
+      "totalTokens": 5373,
+      "estimatedCostUsd": 0.028056,
+      "pricingAsOf": "2026-11-10",
+      "preflight": {
+        "requestCharacters": 13571,
+        "localInputTokenEstimate": 4102,
+        "exactInputTokens": 3642,
+        "maxOutputTokens": 2600,
+        "maximumEstimatedCostUsd": 0.040305,
+        "configuredCostLimitUsd": 0.07,
+        "policyMaximumCostUsd": 0.07
+      },
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-10-final-28d3c87845fe9a8b",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Recap",
+    "Week 10",
+    "Lineup Watch"
+  ]
+}
