@@ -4,8 +4,8 @@
   "leagueId": "1377086848295260160",
   "currency": "USD",
   "status": {
-    "currentWeek": 9,
-    "completedThroughWeek": 9,
+    "currentWeek": 10,
+    "completedThroughWeek": 10,
     "season": "pending",
     "nextRun": "Tuesday at 9:00 AM America/Chicago"
   },
@@ -15,8 +15,8 @@
     "weeklyHighPoolCents": 42000,
     "positionPoolCents": 14000,
     "rivalryPoolCents": 30000,
-    "awardedCents": 61000,
-    "reservedCents": 239000
+    "awardedCents": 70000,
+    "reservedCents": 230000
   },
   "rules": {
     "weeklyPositionEligibility": "Starting players only. QB, RB, WR, TE, K and DEF awards follow the player's listed position. FLEX awards follow the occupied starting FLEX slot.",
@@ -1810,27 +1810,70 @@
     },
     {
       "week": 10,
-      "status": "pending",
+      "status": "final",
       "position": "FLEX",
       "highScore": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 3000,
-        "leaders": [],
-        "allocations": []
+        "leaders": [
+          {
+            "ownerId": "450707444838952960",
+            "rosterId": 4,
+            "manager": "jwislek_20",
+            "firstName": "Jimmy",
+            "score": 156.16
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "450707444838952960",
+            "rosterId": 4,
+            "manager": "jwislek_20",
+            "firstName": "Jimmy",
+            "shareCents": 3000
+          }
+        ]
       },
       "positionPrize": {
-        "status": "pending",
+        "status": "final",
         "awardCents": 1000,
-        "leaders": [],
-        "allocations": [],
         "position": "FLEX",
-        "players": []
+        "players": [
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince",
+            "playerId": "8137",
+            "playerName": "George Pickens",
+            "position": "WR",
+            "slot": "FLEX",
+            "score": 38
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince"
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "464552386170449920",
+            "rosterId": 12,
+            "manager": "vpitello34",
+            "firstName": "Vince",
+            "shareCents": 1000
+          }
+        ]
       },
       "rivalry": {
         "id": "martin-dom",
         "week": 10,
         "matchupId": 3,
-        "status": "pending",
+        "status": "final",
         "awardCents": 5000,
         "participants": [
           {
@@ -1846,13 +1889,142 @@
             "firstName": "Dom"
           }
         ],
-        "scores": [],
-        "leaders": [],
-        "allocations": []
+        "scores": [
+          {
+            "ownerId": "92391164216754176",
+            "rosterId": 6,
+            "manager": "martinch94",
+            "firstName": "Martin",
+            "score": 93.1
+          },
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom",
+            "score": 129.88
+          }
+        ],
+        "leaders": [
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom",
+            "score": 129.88
+          }
+        ],
+        "allocations": [
+          {
+            "ownerId": "92288423205158912",
+            "rosterId": 5,
+            "manager": "cuch",
+            "firstName": "Dom",
+            "shareCents": 5000
+          }
+        ]
       },
-      "finalizedAt": null,
+      "finalizedAt": "2026-11-17T22:46:09.032Z",
       "correctedAt": null,
-      "sourceDigest": null
+      "sourceDigest": "7b66b6aee28ef4b1c3ed59ca6b546adb06b439c6c1adb2d090324052d66f713f",
+      "teamScores": [
+        {
+          "ownerId": "79220990290575360",
+          "rosterId": 1,
+          "manager": "Blumbo",
+          "firstName": "Albert",
+          "scoreUnits": 11224,
+          "score": 112.24
+        },
+        {
+          "ownerId": "89787120084205568",
+          "rosterId": 2,
+          "manager": "akaaashh",
+          "firstName": "Akash",
+          "scoreUnits": 10712,
+          "score": 107.12
+        },
+        {
+          "ownerId": "450705025862201344",
+          "rosterId": 3,
+          "manager": "Archibaldo",
+          "firstName": "Sasha",
+          "scoreUnits": 10502,
+          "score": 105.02
+        },
+        {
+          "ownerId": "450707444838952960",
+          "rosterId": 4,
+          "manager": "jwislek_20",
+          "firstName": "Jimmy",
+          "scoreUnits": 15616,
+          "score": 156.16
+        },
+        {
+          "ownerId": "92288423205158912",
+          "rosterId": 5,
+          "manager": "cuch",
+          "firstName": "Dom",
+          "scoreUnits": 12988,
+          "score": 129.88
+        },
+        {
+          "ownerId": "92391164216754176",
+          "rosterId": 6,
+          "manager": "martinch94",
+          "firstName": "Martin",
+          "scoreUnits": 9310,
+          "score": 93.1
+        },
+        {
+          "ownerId": "87253894098731008",
+          "rosterId": 7,
+          "manager": "turi70",
+          "firstName": "Sal",
+          "scoreUnits": 8022,
+          "score": 80.22
+        },
+        {
+          "ownerId": "450755017129848832",
+          "rosterId": 8,
+          "manager": "Siccboi",
+          "firstName": "Ian",
+          "scoreUnits": 13092,
+          "score": 130.92
+        },
+        {
+          "ownerId": "450905805542125568",
+          "rosterId": 9,
+          "manager": "maco71",
+          "firstName": "Marco",
+          "scoreUnits": 10278,
+          "score": 102.78
+        },
+        {
+          "ownerId": "450908261617496064",
+          "rosterId": 10,
+          "manager": "pgorny",
+          "firstName": "Pat",
+          "scoreUnits": 9076,
+          "score": 90.76
+        },
+        {
+          "ownerId": "463423832728793088",
+          "rosterId": 11,
+          "manager": "sidjunlee",
+          "firstName": "Sid",
+          "scoreUnits": 14496,
+          "score": 144.96
+        },
+        {
+          "ownerId": "464552386170449920",
+          "rosterId": 12,
+          "manager": "vpitello34",
+          "firstName": "Vince",
+          "scoreUnits": 14504,
+          "score": 145.04
+        }
+      ]
     },
     {
       "week": 11,
@@ -1964,11 +2136,22 @@
       "rosterId": 4,
       "manager": "jwislek_20",
       "firstName": "Jimmy",
-      "weeklyHighCents": 3000,
+      "weeklyHighCents": 6000,
       "positionCents": 1000,
       "rivalryCents": 5000,
       "seasonCents": 0,
-      "totalCents": 9000
+      "totalCents": 12000
+    },
+    {
+      "ownerId": "92288423205158912",
+      "rosterId": 5,
+      "manager": "cuch",
+      "firstName": "Dom",
+      "weeklyHighCents": 3000,
+      "positionCents": 2000,
+      "rivalryCents": 5000,
+      "seasonCents": 0,
+      "totalCents": 10000
     },
     {
       "ownerId": "450705025862201344",
@@ -2015,17 +2198,6 @@
       "totalCents": 6000
     },
     {
-      "ownerId": "92288423205158912",
-      "rosterId": 5,
-      "manager": "cuch",
-      "firstName": "Dom",
-      "weeklyHighCents": 3000,
-      "positionCents": 2000,
-      "rivalryCents": 0,
-      "seasonCents": 0,
-      "totalCents": 5000
-    },
-    {
       "ownerId": "450905805542125568",
       "rosterId": 9,
       "manager": "maco71",
@@ -2053,10 +2225,10 @@
       "manager": "vpitello34",
       "firstName": "Vince",
       "weeklyHighCents": 0,
-      "positionCents": 1000,
+      "positionCents": 2000,
       "rivalryCents": 0,
       "seasonCents": 0,
-      "totalCents": 1000
+      "totalCents": 2000
     },
     {
       "ownerId": "92391164216754176",
@@ -2088,10 +2260,10 @@
   "source": {
     "provider": "Sleeper",
     "leagueId": "1377086848295260160",
-    "completedThroughWeek": 9,
+    "completedThroughWeek": 10,
     "teamScorePolicy": "custom_points when present, otherwise points",
     "playerScorePolicy": "players_points cross-checked against starters_points"
   },
-  "revision": "73ee704d0ce9d0af5b975d7a27e7f785e129f2449cfdb1560f64257f538dcc69",
-  "updatedAt": "2026-11-10T21:11:39.300Z"
+  "revision": "1a5703ad848f47c86457b1cb4c518bfd315cd20e675773a110cbed77c1b2b0e6",
+  "updatedAt": "2026-11-17T22:46:09.032Z"
 }
