@@ -1,8 +1,31 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-10-recap",
-  "updatedAt": "2026-11-17T22:50:30.555Z",
+  "featuredArticleId": "2026-week-11-waiver-recap",
+  "updatedAt": "2026-11-19T01:50:10.870Z",
   "articles": [
+    {
+      "articleId": "2026-week-11-waiver-recap",
+      "path": "content/articles/2026/week-11-waiver-recap.json",
+      "type": "week_waiver_recap",
+      "edition": "Waiver Wire",
+      "season": 2026,
+      "week": 11,
+      "status": "published",
+      "title": "Week 11 Waiver Wire: 7 Free-Agent Moves",
+      "dek": "Sleeper recorded 7 completed transactions: 0 waiver claims and 7 free-agent moves, covering 5 adds and 6 drops.",
+      "publishedAt": "2026-11-19T01:50:10.870Z",
+      "dataAsOf": "2026-11-19T01:50:10.870Z",
+      "storylines": [
+        "martinch94 led the transaction count",
+        "No successful waiver claims",
+        "DEF and QB and RB and TE and WR led the add board"
+      ],
+      "tags": [
+        "Waiver Wire",
+        "Week 11",
+        "Transactions"
+      ]
+    },
     {
       "articleId": "2026-week-10-recap",
       "path": "content/articles/2026/week-10-recap.json",

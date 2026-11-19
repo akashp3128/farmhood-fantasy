@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "kind": "transactions",
+  "season": 2026,
+  "week": 11,
+  "generatedAt": "2026-11-19T01:50:10.870Z",
+  "dataAsOf": "2026-11-19T01:50:10.870Z",
+  "immutable": true,
+  "source": {
+    "provider": "Sleeper API",
+    "leagueId": "1377086848295260160",
+    "endpoint": "https://api.sleeper.app/v1/league/1377086848295260160/transactions/11",
+    "statusFilter": "complete",
+    "includedTypes": [
+      "waiver",
+      "free_agent"
+    ],
+    "excludedTypes": [
+      "trade"
+    ]
+  },
+  "summary": {
+    "completedTransactions": 7,
+    "waiverClaims": 0,
+    "freeAgentMoves": 7,
+    "adds": 5,
+    "drops": 6,
+    "managersActive": 5,
+    "waiverBidsReported": 0,
+    "faabSpent": null,
+    "highestBids": [],
+    "mostActiveManagers": [
+      "martinch94"
+    ],
+    "mostActiveCount": 3,
+    "topAddedPositions": [
+      "DEF",
+      "QB",
+      "RB",
+      "TE",
+      "WR"
+    ],
+    "topAddedPositionCount": 1
+  },
+  "managerSummaries": [
+    {
+      "manager": "martinch94",
+      "rosterId": 6,
+      "transactionCount": 3,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 3,
+      "adds": 3,
+      "drops": 3,
+      "faabSpent": null
+    },
+    {
+      "manager": "akaaashh",
+      "rosterId": 2,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 1,
+      "drops": 0,
+      "faabSpent": null
+    },
+    {
+      "manager": "Archibaldo",
+      "rosterId": 3,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 0,
+      "drops": 1,
+      "faabSpent": null
+    },
+    {
+      "manager": "Blumbo",
+      "rosterId": 1,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 0,
+      "drops": 1,
+      "faabSpent": null
+    },
+    {
+      "manager": "vpitello34",
+      "rosterId": 12,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 1,
+      "drops": 1,
+      "faabSpent": null
+    }
+  ],
+  "transactions": [
+    {
+      "transactionId": "1428849578802675712",
+      "sleeperTransactionId": "1428849578802675712",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T18:33:15.630Z",
+      "rosterId": 12,
+      "manager": "vpitello34",
+      "adds": [
+        {
+          "playerId": "CIN",
+          "name": "Cincinnati Bengals",
+          "position": "DEF",
+          "team": "CIN"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "6083",
+          "name": "Matt Gay",
+          "position": "K",
+          "team": "LV"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428849578802675712"
+      ]
+    },
+    {
+      "transactionId": "1428848199333859328",
+      "sleeperTransactionId": "1428848199333859328",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T18:27:46.738Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "11199",
+          "name": "Emari Demercado",
+          "position": "RB",
+          "team": "HOU"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "9482",
+          "name": "Michael Mayer",
+          "position": "TE",
+          "team": "LV"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428848199333859328"
+      ]
+    },
+    {
+      "transactionId": "1428847853123407872",
+      "sleeperTransactionId": "1428847853123407872",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T18:26:24.195Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "5012",
+          "name": "Mark Andrews",
+          "position": "TE",
+          "team": "BAL"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "6803",
+          "name": "Brandon Aiyuk",
+          "position": "WR",
+          "team": "SF"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428847853123407872"
+      ]
+    },
+    {
+      "transactionId": "1428846830363348992",
+      "sleeperTransactionId": "1428846830363348992",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T18:22:20.350Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "6803",
+          "name": "Brandon Aiyuk",
+          "position": "WR",
+          "team": "SF"
+        }
+      ],
+      "drops": [
+        {
+          "playerId": "10218",
+          "name": "Xavier Hutchinson",
+          "position": "WR",
+          "team": "HOU"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428846830363348992"
+      ]
+    },
+    {
+      "transactionId": "1428765116576301056",
+      "sleeperTransactionId": "1428765116576301056",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T12:57:38.266Z",
+      "rosterId": 3,
+      "manager": "Archibaldo",
+      "adds": [],
+      "drops": [
+        {
+          "playerId": "NYG",
+          "name": "New York Giants",
+          "position": "DEF",
+          "team": "NYG"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428765116576301056"
+      ]
+    },
+    {
+      "transactionId": "1428732898759966720",
+      "sleeperTransactionId": "1428732898759966720",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T10:49:36.939Z",
+      "rosterId": 1,
+      "manager": "Blumbo",
+      "adds": [],
+      "drops": [
+        {
+          "playerId": "9501",
+          "name": "DeMario Douglas",
+          "position": "WR",
+          "team": "NE"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428732898759966720"
+      ]
+    },
+    {
+      "transactionId": "1428725054891384832",
+      "sleeperTransactionId": "1428725054891384832",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 11,
+      "completedAt": "2026-11-18T10:18:26.815Z",
+      "rosterId": 2,
+      "manager": "akaaashh",
+      "adds": [
+        {
+          "playerId": "12522",
+          "name": "Cam Ward",
+          "position": "QB",
+          "team": "TEN"
+        }
+      ],
+      "drops": [],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w11:transaction:1428725054891384832"
+      ]
+    }
+  ],
+  "factIds": [
+    "2026:w11:transaction:1428849578802675712",
+    "2026:w11:transaction:1428848199333859328",
+    "2026:w11:transaction:1428847853123407872",
+    "2026:w11:transaction:1428846830363348992",
+    "2026:w11:transaction:1428765116576301056",
+    "2026:w11:transaction:1428732898759966720",
+    "2026:w11:transaction:1428725054891384832"
+  ],
+  "id": "farmhood-2026-week-11-transactions-09ea6628f31994f0"
+}
