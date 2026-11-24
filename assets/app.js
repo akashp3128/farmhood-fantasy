@@ -34,6 +34,7 @@ const PRIMARY_PAGES = [
 ];
 const NAV_GROUPS = [
   {label:'League',pages:[
+    ['playoffs.html','Playoff Machine','playoffs'],
     ['schedule.html','Schedule','schedule'],
     ['managers.html','Managers','managers'],
     ['draft.html','Draft','draft'],
