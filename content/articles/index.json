@@ -1,8 +1,37 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-11-waiver-recap",
-  "updatedAt": "2026-11-19T01:50:10.870Z",
+  "featuredArticleId": "2026-week-11-recap",
+  "updatedAt": "2026-11-24T23:50:32.841Z",
   "articles": [
+    {
+      "articleId": "2026-week-11-recap",
+      "path": "content/articles/2026/week-11-recap.json",
+      "type": "week_recap",
+      "edition": "Postgame Edition",
+      "season": 2026,
+      "week": 11,
+      "status": "published",
+      "title": "Week 11 Recap: The 140 Club Had Guests",
+      "dek": "Siccboi led the week, Blumbo and Archibaldo brought heat, and pgorny survived the league’s tightest finish.",
+      "publishedAt": "2026-11-24T23:50:32.841Z",
+      "dataAsOf": "2026-11-24T23:50:32.841Z",
+      "forecastContext": {
+        "mode": "results_only",
+        "receiptEligible": false,
+        "publishedForecastExists": false,
+        "description": "No published Preview or Weekend Outlook forecast exists for this week. This recap reports final results only, with no prediction grade."
+      },
+      "storylines": [
+        "The top shelf was crowded",
+        "pgorny wins the squeaker",
+        "Dallas did the heavy lifting"
+      ],
+      "tags": [
+        "Recap",
+        "Week 11",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-11-waiver-recap",
       "path": "content/articles/2026/week-11-waiver-recap.json",
