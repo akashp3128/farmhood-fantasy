@@ -1,0 +1,50 @@
+/* Whole-field schedule comparison: readable names, pinned Actual, no forecasts. */
+.field-comparison{min-width:0;max-width:100%;color:var(--text)}
+.field-heading{font-family:var(--serif);font-size:clamp(1.4rem,3vw,1.9rem);line-height:1.25;margin:0 0 8px}
+.field-meta{font-size:.875rem;color:var(--muted);line-height:1.5;margin:0 0 10px}
+.field-note{font-size:.875rem;color:var(--muted);line-height:1.65;margin:12px 0}
+.field-warning{font-size:.9375rem;line-height:1.6;padding:10px 12px;border-left:3px solid var(--gold-solid);background:var(--surface);margin:12px 0}
+.field-switches{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.field-view-button{font:700 .9375rem 'Public Sans',sans-serif;min-height:44px;border:1px solid var(--line);padding:10px 16px;color:var(--text);background:var(--surface);cursor:pointer;border-radius:3px}
+.field-view-button.active{color:var(--surface);background:var(--blue);border-color:var(--blue)}
+.field-view-button:focus-visible,.field-result:focus-visible,.field-scroll:focus-visible,.field-breakdown>summary:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.field-summary{font-size:1rem;line-height:1.65;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:12px 0;min-height:50px}
+.field-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:18px;color:var(--muted);font-size:.875rem}
+.field-key{display:inline-flex;align-items:center;gap:6px}
+.field-swatch{display:inline-block;width:14px;height:14px;border-radius:2px;background:var(--bg2)}
+.field-swatch.field-better{background:color-mix(in srgb,var(--win) 20%,var(--surface))}
+.field-swatch.field-worse{background:color-mix(in srgb,var(--loss) 20%,var(--surface))}
+.field-band{margin-top:24px;min-width:0}
+.field-band:first-child{margin-top:0}
+.field-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.field-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;color:var(--text);background:var(--surface);font-size:1rem}
+.field-caption{text-align:left;font-family:var(--serif);font-size:1rem;line-height:1.5;margin-bottom:10px;color:var(--text)}
+.field-table th,.field-table td{text-align:center;padding:0;border-bottom:1px solid var(--line);font-weight:400;vertical-align:middle}
+.field-table thead th{font-size:.875rem;font-weight:700;padding:10px 4px;color:var(--muted);overflow-wrap:anywhere}
+.field-table .field-name{width:112px;text-align:left;padding:10px 8px;font-weight:700;color:var(--text);position:sticky;left:0;z-index:2;background:var(--surface);overflow-wrap:anywhere}
+.field-table .field-actual{width:72px;position:sticky;left:112px;background:var(--bg2);border-right:3px solid var(--line);color:var(--text);font-weight:700;z-index:2}
+.field-table thead .field-name,.field-table thead .field-actual{z-index:3}
+.field-table tbody .field-actual{font-family:var(--serif);font-size:1.125rem}
+.field-table .field-axis-title{border-bottom:0;color:var(--text);padding-top:5px;padding-bottom:4px}
+.field-result{display:block;width:100%;min-height:46px;padding:10px 2px;font:500 1rem/1.5 'Public Sans',sans-serif;font-variant-numeric:tabular-nums;border:0;border-radius:0;background:var(--surface);color:var(--text);cursor:pointer;overflow-wrap:anywhere}
+.field-result.field-better{background:color-mix(in srgb,var(--win) 14%,var(--surface))}
+.field-result.field-worse{background:color-mix(in srgb,var(--loss) 14%,var(--surface))}
+.field-result.field-same,.field-result.field-unknown{color:var(--muted)}
+.field-result[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--blue);font-weight:800}
+.field-table .field-selected-axis{color:var(--text);box-shadow:inset 0 -3px 0 var(--gold-solid)}
+.field-breakdown{border-top:1px solid var(--line);margin-top:20px}
+.field-breakdown[hidden]{display:none}
+.field-breakdown>summary{min-height:48px;cursor:pointer;padding:12px 0;font-family:var(--serif);font-weight:700;font-size:1rem}
+.field-breakdown-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-bottom:12px}
+.field-week{padding:12px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.field-week h3{font-family:var(--serif);font-size:1.1rem;margin:0 0 8px}
+.field-week p{font-size:.9375rem;line-height:1.55;margin:5px 0;overflow-wrap:anywhere}
+.field-week .field-week-result{font-weight:700}
+@media(max-width:640px){
+  .field-table .field-name{width:84px;font-size:.9375rem;padding:10px 6px}
+  .field-table .field-actual{width:62px;left:84px}
+  .field-result{font-size:1rem;min-height:48px;padding:11px 2px}
+  .field-table thead th{font-size:.875rem;padding:10px 3px}
+  .field-view-button{flex:1 1 125px;padding:10px 12px}
+  .field-breakdown-body{grid-template-columns:1fr}
+}

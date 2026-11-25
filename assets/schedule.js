@@ -841,7 +841,7 @@
     const list = node('div', 'clarity-tabs sched-tabs');
     list.setAttribute('role', 'tablist');
     list.setAttribute('aria-label', 'Schedule desk views');
-    [['heat', 'Heatmap'], ['h2h', 'Head-to-Head'], ['bye', 'Bye Radar'], ['odds', 'Playoff Odds'], ['fair', 'Season Replay']].forEach(item => {
+    [['heat', 'Heatmap'], ['h2h', 'Head-to-Head'], ['bye', 'Bye Radar'], ['odds', 'Playoff Odds'], ['fair', 'Season Replay'], ['compare', 'Compare league']].forEach(item => {
       const button = node('button', 'clarity-tab' + (state.view === item[0] ? ' active' : ''), item[1]);
       button.type = 'button';
       button.setAttribute('role', 'tab');
@@ -1341,7 +1341,7 @@
       state.playerA = /^[A-Za-z0-9_-]{1,24}$/.test(params.get('pa') || '') ? params.get('pa') : null;
       state.playerB = /^[A-Za-z0-9_-]{1,24}$/.test(params.get('pb') || '') ? params.get('pb') : null;
       const hash = String(root.location.hash || '').replace('#', '');
-      state.view = ['h2h', 'bye', 'heat', 'odds', 'fair'].includes(hash) ? hash : 'heat';
+      state.view = ['h2h', 'bye', 'heat', 'odds', 'fair', 'compare'].includes(hash) ? hash : 'heat';
     } catch (_err) {}
   }
 
@@ -1471,6 +1471,10 @@
     }
     const status = node('div', 'sched-status');
     const body = node('div', 'sched-body');
+    const tools=node('div','sched-tools');
+    const playoffs=node('a','','Try the Playoff Machine →');playoffs.href='playoffs.html';
+    const compare=node('a','','Compare all managers’ schedules →');compare.href='schedule.html#compare';
+    tools.append(playoffs,compare);host.appendChild(tools);
     host.append(status, body);
     if (!root.FarmhoodLive) {
       status.appendChild(typeof root.liveError === 'function' ? root.liveError('The schedule desk needs the Sleeper feed.') : node('p', 'note', 'The schedule desk needs the Sleeper feed.'));
@@ -1521,6 +1525,8 @@
       const active = root.document.activeElement;
       const focus = state.focus || (active && body.contains(active) && active.dataset && active.dataset.schedFocus) || '';
       state.focus = '';
+      const oldField=body.querySelector('.field-comparison');
+      if(oldField&&typeof oldField.dispose==='function')oldField.dispose();
       body.textContent = '';
       body.appendChild(summaryStrip(bundle.model));
       body.appendChild(viewTabs(state, view => {
@@ -1552,6 +1558,8 @@
         panel.appendChild(root.FarmhoodDesk.renderOdds(bundle));
       } else if (state.view === 'fair' && root.FarmhoodDesk) {
         panel.appendChild(root.FarmhoodDesk.renderFair(bundle));
+      } else if (state.view === 'compare') {
+        panel.appendChild(root.FarmhoodField?root.FarmhoodField.render(bundle):node('p','note','The whole-league comparison could not load. Refresh this page to retry.'));
       } else if (state.view === 'odds' || state.view === 'fair') {
         panel.appendChild(node('p', 'note', 'This analysis is temporarily unavailable. Heatmap, Head-to-Head, and Bye Radar are still available.'));
       } else if (state.view === 'bye') {
@@ -1598,6 +1606,7 @@
       if (state.bundle) {
         bundle.oddsUi = state.bundle.oddsUi;
         bundle.fairUi = state.bundle.fairUi;
+        bundle.fieldUi = state.bundle.fieldUi;
       }
       state.bundle = bundle;
       const namedA = resolveName(bundle.model, state.pendingA);

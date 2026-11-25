@@ -1,0 +1,26 @@
+/* Quiet feature discovery; outside the live dashboard so refreshes never reopen it. */
+.home-announcement{margin:0 0 24px;min-width:0}
+.announcement-strip{display:flex;align-items:center;gap:16px;padding:14px 16px;border:1px solid var(--line);border-left:4px solid var(--blue);background:var(--surface);min-width:0}
+.announcement-copy{display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1 1 240px;min-width:0}
+.announcement-title-row{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap}
+.announcement-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--blue);background:var(--bg2);padding:3px 6px;line-height:1.5}
+.announcement-heading{font-family:var(--serif);font-size:18px;line-height:1.35;color:var(--text)}
+.announcement-description{font-size:13px;line-height:1.5;color:var(--muted);margin:0}
+.announcement-actions{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;flex:0 1 auto}
+.announcement-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:10px 12px;box-sizing:border-box;border:1px solid var(--blue);border-radius:2px;color:var(--blue);background:transparent;font-size:12px;font-weight:700;line-height:1.5;text-align:center;text-decoration:none}
+.announcement-link.announcement-primary{background:var(--blue);color:var(--surface)}
+.announcement-link:hover{text-decoration:underline;text-underline-offset:3px}
+.announcement-dismiss{display:inline-grid;place-items:center;align-self:center;min-height:44px;min-width:44px;flex:0 0 44px;padding:0;border:0;background:transparent;color:var(--muted);font:400 24px/1 'Public Sans',sans-serif;cursor:pointer}
+.announcement-reopen{display:inline-flex;align-items:center;min-height:44px;max-width:100%;padding:5px 0;border:0;background:transparent;color:var(--blue);font:700 12px/1.5 'Public Sans',sans-serif;cursor:pointer;text-align:left;text-decoration:underline;text-underline-offset:4px}
+.home-announcement.is-dismissed{margin-bottom:12px}
+.announcement-strip[hidden],.announcement-reopen[hidden],.announcement-link[hidden]{display:none}
+.announcement-link:focus-visible,.announcement-dismiss:focus-visible,.announcement-reopen:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+@media(max-width:800px){
+ .announcement-strip{display:grid;grid-template-columns:minmax(0,1fr) 44px;grid-template-areas:'copy dismiss' 'actions actions';gap:12px;padding:12px}
+ .announcement-copy{grid-area:copy;min-width:0}
+ .announcement-dismiss{grid-area:dismiss;align-self:start}
+ .announcement-actions{grid-area:actions;width:100%}
+ .announcement-link{flex:1 1 130px;font-size:13px;padding:10px 12px}
+ .announcement-badge{font-size:11px}
+ .announcement-heading{font-size:18px}
+}
