@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "articleId": "2026-week-11-recap",
+  "type": "week_recap",
+  "season": 2026,
+  "week": 11,
+  "status": "published",
+  "edition": "Postgame Edition",
+  "title": "Week 11 Recap: The 140 Club Had Guests",
+  "dek": "Siccboi led the week, Blumbo and Archibaldo brought heat, and pgorny survived the league’s tightest finish.",
+  "byline": "Farmhood Intelligence Desk",
+  "publishedAt": "2026-11-24T23:50:32.841Z",
+  "updatedAt": "2026-11-24T23:50:32.841Z",
+  "dataAsOf": "2026-11-24T23:50:32.841Z",
+  "tone": "spicy",
+  "lead": {
+    "body": [
+      "Week 11 is final, and the top end brought actual fireworks: Siccboi posted 143.16, Blumbo scored 138.56, and Archibaldo put up 128.30.",
+      "At the other end, pgorny escaped cuch by 3.46 points—the kind of win that makes a matchup page refresh feel like cardio."
+    ],
+    "pullQuote": "Siccboi hit 143.16. The group chat may now resume its regularly scheduled coping.",
+    "keyStat": {
+      "label": "Top Week 11 score",
+      "value": "143.16",
+      "note": "Siccboi topped jwislek_20, 143.16–117.60."
+    }
+  },
+  "matchups": [
+    {
+      "matchupId": 1,
+      "managerA": "maco71",
+      "managerB": "sidjunlee",
+      "receiptEligible": false,
+      "currentScoreA": 79.88,
+      "currentScoreB": 101.6,
+      "finalScoreA": 79.88,
+      "finalScoreB": 101.6,
+      "winner": "sidjunlee",
+      "headline": "sidjunlee 101.60, maco71 79.88",
+      "analysis": "sidjunlee cleared 100 behind Brock Purdy’s 22.2 and Ladd McConkey’s 18.2. maco71 got 19.1 from DJ Moore, but the rest of the operation never found enough volume.",
+      "keyPlayer": "Brock Purdy",
+      "keyPlayerId": "8183",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w11:m1:final-score:maco71",
+        "2026:w11:m1:final-score:sidjunlee",
+        "2026:w11:m1:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 2,
+      "managerA": "akaaashh",
+      "managerB": "martinch94",
+      "receiptEligible": false,
+      "currentScoreA": 90.32,
+      "currentScoreB": 115.84,
+      "finalScoreA": 90.32,
+      "finalScoreB": 115.84,
+      "winner": "martinch94",
+      "headline": "martinch94 115.84, akaaashh 90.32",
+      "analysis": "martinch94 got 25.4 from Ashton Jeanty and an extremely kicker-shaped 18 from Tyler Bass. akaaashh received 22.22 from Cam Ward and 15 from Malik Nabers, then watched the spreadsheet decline the appeal.",
+      "keyPlayer": "Ashton Jeanty",
+      "keyPlayerId": "12527",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w11:m2:final-score:akaaashh",
+        "2026:w11:m2:final-score:martinch94",
+        "2026:w11:m2:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 3,
+      "managerA": "Blumbo",
+      "managerB": "vpitello34",
+      "receiptEligible": false,
+      "currentScoreA": 138.56,
+      "currentScoreB": 114.26,
+      "finalScoreA": 138.56,
+      "finalScoreB": 114.26,
+      "winner": "Blumbo",
+      "headline": "Blumbo 138.56, vpitello34 114.26",
+      "analysis": "Blumbo’s 138.56 had a 32.9-point Jonah Coleman detonation at its center, with C.J. Stroud adding 20.46. vpitello34 was not bad—Jahmyr Gibbs scored 25.8 and Travis Kelce had 22.4—but Blumbo showed up with a flamethrower.",
+      "keyPlayer": "Jonah Coleman",
+      "keyPlayerId": "13345",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w11:m3:final-score:Blumbo",
+        "2026:w11:m3:final-score:vpitello34",
+        "2026:w11:m3:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 4,
+      "managerA": "cuch",
+      "managerB": "pgorny",
+      "receiptEligible": false,
+      "currentScoreA": 88.7,
+      "currentScoreB": 92.16,
+      "finalScoreA": 88.7,
+      "finalScoreB": 92.16,
+      "winner": "pgorny",
+      "headline": "pgorny 92.16, cuch 88.70",
+      "analysis": "The week’s closest final belonged to pgorny, who squeezed past cuch by 3.46. Jameson Williams scored 17.3 and Derrick Henry 17.1; cuch countered with 22.6 from Javonte Williams and 16.9 from George Kittle, but came up one small fantasy inconvenience short.",
+      "keyPlayer": "Javonte Williams",
+      "keyPlayerId": "7588",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w11:m4:final-score:cuch",
+        "2026:w11:m4:final-score:pgorny",
+        "2026:w11:m4:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 5,
+      "managerA": "Archibaldo",
+      "managerB": "turi70",
+      "receiptEligible": false,
+      "currentScoreA": 128.3,
+      "currentScoreB": 90.24,
+      "finalScoreA": 128.3,
+      "finalScoreB": 90.24,
+      "winner": "Archibaldo",
+      "headline": "Archibaldo 128.30, turi70 90.24",
+      "analysis": "Archibaldo got the Dallas stack humming: Dak Prescott scored 35.9 and CeeDee Lamb added 24.7. turi70 had 22.44 from Justin Herbert, but Saquon Barkley’s 13.5 was not enough to keep this from becoming a very public 38.06-point problem.",
+      "keyPlayer": "Dak Prescott",
+      "keyPlayerId": "3294",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w11:m5:final-score:Archibaldo",
+        "2026:w11:m5:final-score:turi70",
+        "2026:w11:m5:starter-scoring"
+      ]
+    },
+    {
+      "matchupId": 6,
+      "managerA": "jwislek_20",
+      "managerB": "Siccboi",
+      "receiptEligible": false,
+      "currentScoreA": 117.6,
+      "currentScoreB": 143.16,
+      "finalScoreA": 117.6,
+      "finalScoreB": 143.16,
+      "winner": "Siccboi",
+      "headline": "Siccboi 143.16, jwislek_20 117.60",
+      "analysis": "Siccboi posted the week’s high score with Chuba Hubbard’s 26 and Patrick Mahomes’ 24.96 leading the way. jwislek_20 got a respectable 22.3 from Emmett Johnson and 19.9 from Joe Burrow; respectable just happened to be insufficient against a 143.16-point nuisance.",
+      "keyPlayer": "Chuba Hubbard",
+      "keyPlayerId": "7594",
+      "upsetPath": "",
+      "historyNote": "",
+      "injuryWatch": [],
+      "suggestedSwaps": [],
+      "factIds": [
+        "2026:w11:m6:final-score:jwislek_20",
+        "2026:w11:m6:final-score:Siccboi",
+        "2026:w11:m6:starter-scoring"
+      ]
+    }
+  ],
+  "storylines": [
+    {
+      "title": "The top shelf was crowded",
+      "body": "Siccboi, Blumbo and Archibaldo each cleared 128 points, turning Week 11 into a three-manager demonstration of why everyone else’s matchup tab looked rude.",
+      "subjects": [
+        "Siccboi",
+        "Blumbo",
+        "Archibaldo"
+      ],
+      "factIds": [
+        "2026:w11:m3:final-score:Blumbo",
+        "2026:w11:m5:final-score:Archibaldo",
+        "2026:w11:m6:final-score:Siccboi"
+      ]
+    },
+    {
+      "title": "pgorny wins the squeaker",
+      "body": "pgorny’s 92.16–88.70 victory over cuch was the narrowest final of the week, a 3.46-point escape powered in part by Jameson Williams and Derrick Henry.",
+      "subjects": [
+        "pgorny",
+        "cuch"
+      ],
+      "factIds": [
+        "2026:w11:m4:final-score:cuch",
+        "2026:w11:m4:final-score:pgorny",
+        "2026:w11:m4:starter-scoring"
+      ]
+    },
+    {
+      "title": "Dallas did the heavy lifting",
+      "body": "Archibaldo’s Dak Prescott and CeeDee Lamb combined for 60.6 points in a 128.30-point win over turi70. That is less a stack than a hostile takeover.",
+      "subjects": [
+        "Archibaldo",
+        "turi70"
+      ],
+      "factIds": [
+        "2026:w11:m5:final-score:Archibaldo",
+        "2026:w11:m5:final-score:turi70",
+        "2026:w11:m5:starter-scoring"
+      ]
+    }
+  ],
+  "awards": [
+    {
+      "title": "Week 11 High Score",
+      "recipient": "Siccboi",
+      "body": "143.16 points, led by Chuba Hubbard’s 26 and Patrick Mahomes’ 24.96.",
+      "factIds": [
+        "2026:w11:m6:final-score:Siccboi",
+        "2026:w11:m6:starter-scoring"
+      ]
+    },
+    {
+      "title": "Margin-of-Error Survivor",
+      "recipient": "pgorny",
+      "body": "Escaped cuch 92.16–88.70, the tightest final on the board.",
+      "factIds": [
+        "2026:w11:m4:final-score:cuch",
+        "2026:w11:m4:final-score:pgorny"
+      ]
+    },
+    {
+      "title": "Starter Detonator",
+      "recipient": "Blumbo",
+      "body": "Jonah Coleman scored 32.9 in Blumbo’s 138.56-point win over vpitello34.",
+      "factIds": [
+        "2026:w11:m3:final-score:Blumbo",
+        "2026:w11:m3:final-score:vpitello34",
+        "2026:w11:m3:starter-scoring"
+      ]
+    }
+  ],
+  "receipts": null,
+  "forecastContext": {
+    "mode": "results_only",
+    "receiptEligible": false,
+    "publishedForecastExists": false,
+    "description": "No published Preview or Weekend Outlook forecast exists for this week. This recap reports final results only, with no prediction grade."
+  },
+  "lineupSnapshot": {
+    "capturedAt": "2026-11-24T23:50:32.841Z",
+    "teams": [
+      {
+        "name": "Blumbo",
+        "rosterId": 1,
+        "starterIds": [
+          "9758",
+          "8138",
+          "13345",
+          "9487",
+          "9997",
+          "5844",
+          "8210",
+          "12499",
+          "3451",
+          "SF"
+        ],
+        "lineupHash": "9758.8138.13345.9487.9997.5844.8210.12499.3451.SF"
+      },
+      {
+        "name": "akaaashh",
+        "rosterId": 2,
+        "starterIds": [
+          "12522",
+          "4034",
+          "11576",
+          "11646",
+          "13279",
+          "8131",
+          "13281",
+          "11632",
+          "12185",
+          "JAX"
+        ],
+        "lineupHash": "12522.4034.11576.11646.13279.8131.13281.11632.12185.JAX"
+      },
+      {
+        "name": "Archibaldo",
+        "rosterId": 3,
+        "starterIds": [
+          "3294",
+          "12495",
+          "12507",
+          "6786",
+          "7525",
+          "7600",
+          "13285",
+          "7543",
+          "1945",
+          "DEN"
+        ],
+        "lineupHash": "3294.12495.12507.6786.7525.7600.13285.7543.1945.DEN"
+      },
+      {
+        "name": "jwislek_20",
+        "rosterId": 4,
+        "starterIds": [
+          "6770",
+          "12490",
+          "13337",
+          "7564",
+          "8144",
+          "2505",
+          "9500",
+          "13301",
+          "11533",
+          "BUF"
+        ],
+        "lineupHash": "6770.12490.13337.7564.8144.2505.9500.13301.11533.BUF"
+      },
+      {
+        "name": "cuch",
+        "rosterId": 5,
+        "starterIds": [
+          "1166",
+          "7588",
+          "12481",
+          "12519",
+          "9502",
+          "4217",
+          "5967",
+          "11625",
+          "7839",
+          "CAR"
+        ],
+        "lineupHash": "1166.7588.12481.12519.9502.4217.5967.11625.7839.CAR"
+      },
+      {
+        "name": "martinch94",
+        "rosterId": 6,
+        "starterIds": [
+          "11560",
+          "9224",
+          "12527",
+          "12526",
+          "8146",
+          "12517",
+          "10218",
+          "12534",
+          "7042",
+          "CHI"
+        ],
+        "lineupHash": "11560.9224.12527.12526.8146.12517.10218.12534.7042.CHI"
+      },
+      {
+        "name": "turi70",
+        "rosterId": 7,
+        "starterIds": [
+          "6797",
+          "6790",
+          "4866",
+          "6794",
+          "6801",
+          "12518",
+          "4993",
+          "6806",
+          "11539",
+          "MIN"
+        ],
+        "lineupHash": "6797.6790.4866.6794.6801.12518.4993.6806.11539.MIN"
+      },
+      {
+        "name": "Siccboi",
+        "rosterId": 8,
+        "starterIds": [
+          "4046",
+          "6813",
+          "7594",
+          "10229",
+          "2449",
+          "5022",
+          "11584",
+          "2216",
+          "13968",
+          "HOU"
+        ],
+        "lineupHash": "4046.6813.7594.10229.2449.5022.11584.2216.13968.HOU"
+      },
+      {
+        "name": "maco71",
+        "rosterId": 9,
+        "starterIds": [
+          "12545",
+          "8122",
+          "13414",
+          "4983",
+          "7569",
+          "9480",
+          "11620",
+          "11610",
+          "11792",
+          "PIT"
+        ],
+        "lineupHash": "12545.8122.13414.4983.7569.9480.11620.11610.11792.PIT"
+      },
+      {
+        "name": "pgorny",
+        "rosterId": 10,
+        "starterIds": [
+          "11566",
+          "3198",
+          "8136",
+          "12514",
+          "8148",
+          "10859",
+          "5947",
+          "11637",
+          "11786",
+          "DET"
+        ],
+        "lineupHash": "11566.3198.8136.12514.8148.10859.5947.11637.11786.DET"
+      },
+      {
+        "name": "sidjunlee",
+        "rosterId": 11,
+        "starterIds": [
+          "8183",
+          "8155",
+          "8228",
+          "7547",
+          "5846",
+          "8130",
+          "11635",
+          "11783",
+          "2020",
+          "KC"
+        ],
+        "lineupHash": "8183.8155.8228.7547.5846.8130.11635.11783.2020.KC"
+      },
+      {
+        "name": "vpitello34",
+        "rosterId": 12,
+        "starterIds": [
+          "4984",
+          "9221",
+          "5892",
+          "8137",
+          "5872",
+          "1466",
+          "7049",
+          "13296",
+          "6650",
+          "CIN"
+        ],
+        "lineupHash": "4984.9221.5892.8137.5872.1466.7049.13296.6650.CIN"
+      }
+    ]
+  },
+  "source": {
+    "snapshotId": "farmhood-2026-week-11-final-80172f7207775b8e",
+    "predictionId": null,
+    "predictionKind": "results_only",
+    "dataAsOf": "2026-11-24T23:50:32.841Z",
+    "promptVersion": "farmhood-press-v3-late-outlook",
+    "model": "gpt-5.6-terra",
+    "responseId": "resp_06c17b73775f557d016b0622ca1ed087d29086e83b3f2431ec",
+    "usage": {
+      "inputTokens": 3639,
+      "cachedInputTokens": 0,
+      "cacheWriteInputTokens": 0,
+      "outputTokens": 1580,
+      "reasoningTokens": 0,
+      "totalTokens": 5219,
+      "estimatedCostUsd": 0.026238,
+      "pricingAsOf": "2026-11-10",
+      "preflight": {
+        "requestCharacters": 13547,
+        "localInputTokenEstimate": 4095,
+        "exactInputTokens": 3639,
+        "maxOutputTokens": 2600,
+        "maximumEstimatedCostUsd": 0.040297,
+        "configuredCostLimitUsd": 0.07,
+        "policyMaximumCostUsd": 0.07
+      },
+      "model": "gpt-5.6-terra"
+    }
+  },
+  "factCheck": {
+    "status": "passed",
+    "snapshotId": "farmhood-2026-week-11-final-80172f7207775b8e",
+    "projectionCoverage": 1,
+    "matchupsReconciled": 6
+  },
+  "tags": [
+    "Recap",
+    "Week 11",
+    "Lineup Watch"
+  ]
+}
