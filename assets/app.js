@@ -270,8 +270,10 @@ function liveError(message){
 }
 
 /* ---------- HOME ---------- */
+let homeAnnouncement=null;
 function renderHome(){
   const m=L.meta, app=$('#app');
+  if(window.FarmhoodAnnouncements)homeAnnouncement=window.FarmhoodAnnouncements.mount(app);
   const champ=L.managers.find(x=>x.name===m.reigningChampion);
   const totalSeasons=Object.keys(championsAll()).length;
   const titleLeader=[...L.managers].sort((a,b)=>titlesOf(b.name)-titlesOf(a.name))[0];
@@ -377,6 +379,7 @@ function mountHomeLive(node){
     try{
       const snapshot=await window.FarmhoodLive.load({force:!!force});
       if(token!==request)return;
+      if(homeAnnouncement)homeAnnouncement.update(snapshot);
       const phase=window.FarmhoodLive.phase(snapshot);
       const standings=window.FarmhoodLive.standings(snapshot);
       const officialGames=Math.max(0,...standings.map(row=>row.games));
@@ -403,7 +406,7 @@ function mountHomeLive(node){
       });
       node.appendChild(grid);
       const actions=el('div','live-actions');
-      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['schedule.html','Compare schedules'],['power-rankings.html','View live power rankings'],['payouts.html','View weekly payouts']].forEach(([href,label])=>{
+      [['press.html','Read the Farmhood Press'],['matchups.html','Open live scoreboard'],['schedule.html','Schedule & bye radar'],['power-rankings.html','View live power rankings'],['payouts.html','View weekly payouts']].forEach(([href,label])=>{
         const a=el('a','live-link',label+' →');a.href=href;actions.appendChild(a);
       });
       node.appendChild(actions);hasRendered=true;
