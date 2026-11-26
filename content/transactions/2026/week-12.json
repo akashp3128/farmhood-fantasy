@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "kind": "transactions",
+  "season": 2026,
+  "week": 12,
+  "generatedAt": "2026-11-26T02:44:12.576Z",
+  "dataAsOf": "2026-11-26T02:44:12.576Z",
+  "immutable": true,
+  "source": {
+    "provider": "Sleeper API",
+    "leagueId": "1377086848295260160",
+    "endpoint": "https://api.sleeper.app/v1/league/1377086848295260160/transactions/12",
+    "statusFilter": "complete",
+    "includedTypes": [
+      "waiver",
+      "free_agent"
+    ],
+    "excludedTypes": [
+      "trade"
+    ]
+  },
+  "summary": {
+    "completedTransactions": 5,
+    "waiverClaims": 0,
+    "freeAgentMoves": 5,
+    "adds": 2,
+    "drops": 3,
+    "managersActive": 4,
+    "waiverBidsReported": 0,
+    "faabSpent": null,
+    "highestBids": [],
+    "mostActiveManagers": [
+      "turi70"
+    ],
+    "mostActiveCount": 2,
+    "topAddedPositions": [
+      "QB",
+      "WR"
+    ],
+    "topAddedPositionCount": 1
+  },
+  "managerSummaries": [
+    {
+      "manager": "turi70",
+      "rosterId": 7,
+      "transactionCount": 2,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 2,
+      "adds": 1,
+      "drops": 1,
+      "faabSpent": null
+    },
+    {
+      "manager": "martinch94",
+      "rosterId": 6,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 1,
+      "drops": 0,
+      "faabSpent": null
+    },
+    {
+      "manager": "Siccboi",
+      "rosterId": 8,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 0,
+      "drops": 1,
+      "faabSpent": null
+    },
+    {
+      "manager": "vpitello34",
+      "rosterId": 12,
+      "transactionCount": 1,
+      "waiverClaims": 0,
+      "waiverBidsReported": 0,
+      "freeAgentMoves": 1,
+      "adds": 0,
+      "drops": 1,
+      "faabSpent": null
+    }
+  ],
+  "transactions": [
+    {
+      "transactionId": "1431466899371200512",
+      "sleeperTransactionId": "1431466899371200512",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 12,
+      "completedAt": "2026-11-25T23:53:33.480Z",
+      "rosterId": 7,
+      "manager": "turi70",
+      "adds": [],
+      "drops": [
+        {
+          "playerId": "8126",
+          "name": "Wan'Dale Robinson",
+          "position": "WR",
+          "team": "TEN"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w12:transaction:1431466899371200512"
+      ]
+    },
+    {
+      "transactionId": "1431466647201255424",
+      "sleeperTransactionId": "1431466647201255424",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 12,
+      "completedAt": "2026-11-25T23:52:33.358Z",
+      "rosterId": 7,
+      "manager": "turi70",
+      "adds": [
+        {
+          "playerId": "4017",
+          "name": "Deshaun Watson",
+          "position": "QB",
+          "team": "CLE"
+        }
+      ],
+      "drops": [],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w12:transaction:1431466647201255424"
+      ]
+    },
+    {
+      "transactionId": "1431460773959303168",
+      "sleeperTransactionId": "1431460773959303168",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 12,
+      "completedAt": "2026-11-25T23:29:13.069Z",
+      "rosterId": 8,
+      "manager": "Siccboi",
+      "adds": [],
+      "drops": [
+        {
+          "playerId": "5022",
+          "name": "Dallas Goedert",
+          "position": "TE",
+          "team": "PHI"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w12:transaction:1431460773959303168"
+      ]
+    },
+    {
+      "transactionId": "1431457001409351680",
+      "sleeperTransactionId": "1431457001409351680",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 12,
+      "completedAt": "2026-11-25T23:14:13.622Z",
+      "rosterId": 12,
+      "manager": "vpitello34",
+      "adds": [],
+      "drops": [
+        {
+          "playerId": "LAR",
+          "name": "Los Angeles Rams",
+          "position": "DEF",
+          "team": "LAR"
+        }
+      ],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w12:transaction:1431457001409351680"
+      ]
+    },
+    {
+      "transactionId": "1431228562131681280",
+      "sleeperTransactionId": "1431228562131681280",
+      "transactionType": "free_agent",
+      "status": "complete",
+      "season": 2026,
+      "week": 12,
+      "completedAt": "2026-11-25T08:06:29.454Z",
+      "rosterId": 6,
+      "manager": "martinch94",
+      "adds": [
+        {
+          "playerId": "12483",
+          "name": "Jack Bech",
+          "position": "WR",
+          "team": "LV"
+        }
+      ],
+      "drops": [],
+      "waiverBid": null,
+      "waiverPriority": null,
+      "claimSequence": null,
+      "factIds": [
+        "2026:w12:transaction:1431228562131681280"
+      ]
+    }
+  ],
+  "factIds": [
+    "2026:w12:transaction:1431466899371200512",
+    "2026:w12:transaction:1431466647201255424",
+    "2026:w12:transaction:1431460773959303168",
+    "2026:w12:transaction:1431457001409351680",
+    "2026:w12:transaction:1431228562131681280"
+  ],
+  "id": "farmhood-2026-week-12-transactions-d080c84e1cb8ae4b"
+}
