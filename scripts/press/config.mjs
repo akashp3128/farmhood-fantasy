@@ -29,6 +29,7 @@ export const PRESS_CONFIG = Object.freeze({
   }),
   projectionLogisticScale: 18,
   minimumProjectionCoverage: 0.8,
+  minimumLateOutlookCoverage: 0.8,
   byline: 'Farmhood Intelligence Desk',
   tone: 'Sportswriter credibility with spicy group-chat energy',
   ownerNames: Object.freeze({

@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { PRESS_CONFIG } from './config.mjs';
 import { assertPredictionLineage, isLateForecastLedger } from './lineage.mjs';
 import { buildLateMatchupOutlook, buildLateTeamOutlook } from './outlook.mjs';
+import { assertLateOutlookCoverage, lateOutlookCoverage } from './facts.mjs';
 import { validateArticleCopy } from './schema.mjs';
 import { validateWaiverArticle, WAIVER_ARTICLE_TYPE } from './waivers.mjs';
 import { assert, readJsonIfExists, repoRoot } from './utils.mjs';
@@ -13,7 +14,7 @@ function closeEnough(a, b) {
 }
 
 function sameNullableNumber(a, b) {
-  return (a == null && b == null) || closeEnough(a, b);
+  return a == null || b == null ? a == null && b == null : closeEnough(a, b);
 }
 
 function assertFiniteNumber(value, label) {
@@ -26,8 +27,10 @@ function assertLateForecastShape(row, label) {
   assert(Number.isInteger(row.lockedStarterCount) && row.lockedStarterCount >= 0, `${label} lockedStarterCount must be a nonnegative integer.`);
   assert(['complete', 'incomplete'].includes(row.forecastStatus), `${label} has an invalid forecastStatus.`);
   assert(Array.isArray(row.missingProjectionPlayers), `${label} must list missing projection players.`);
+  assert(row.missingGameStatusPlayers === undefined || Array.isArray(row.missingGameStatusPlayers), `${label} game-status exceptions must be an array.`);
   ['currentScoreA', 'currentScoreB'].forEach((field) => assertFiniteNumber(row[field], `${label} ${field}`));
   if (row.forecastStatus === 'complete') {
+    assert(!row.missingProjectionPlayers.length && !(row.missingGameStatusPlayers || []).length, `${label} cannot publish a complete forecast with missing data.`);
     ['remainingProjectionA', 'remainingProjectionB', 'forecastScoreA', 'forecastScoreB'].forEach((field) => assertFiniteNumber(row[field], `${label} ${field}`));
     assert(closeEnough(row.forecastScoreA, row.currentScoreA + row.remainingProjectionA), `${label} forecastScoreA formula mismatch.`);
     assert(closeEnough(row.forecastScoreB, row.currentScoreB + row.remainingProjectionB), `${label} forecastScoreB formula mismatch.`);
@@ -45,6 +48,7 @@ function assertLateForecastMatches(actual, expected, label) {
   ['managerA', 'managerB', 'forecastWinner', 'startedAtCapture', 'lockedStarterCount', 'forecastStatus', 'receiptEligible']
     .forEach((field) => assert(actual[field] === expected[field], `${label} ${field} mismatch.`));
   assert(JSON.stringify(actual.missingProjectionPlayers) === JSON.stringify(expected.missingProjectionPlayers), `${label} missing projection players mismatch.`);
+  assert(JSON.stringify(actual.missingGameStatusPlayers || []) === JSON.stringify(expected.missingGameStatusPlayers || []), `${label} missing game-status players mismatch.`);
 }
 
 function assertNonnegativeNumber(value, label) {
@@ -209,13 +213,34 @@ export async function validatePress({ root = repoRoot(import.meta.url) } = {}) {
       const lineageSnapshot = isLatePreview ? snapshot : lateSnapshot;
       assert(lineageSnapshot?.kind === 'live' && lineageSnapshot.phase?.key === 'live' && lineageSnapshot.immutable === true, `${meta.articleId} must inherit an immutable live-phase snapshot.`);
       assert(lineageSnapshot.forecastContext?.mode === 'late_outlook' && lineageSnapshot.forecastContext?.receiptEligible === false, `${meta.articleId} live snapshot is missing late-outlook context.`);
-      assert(lineageSnapshot.validation?.gameStatusCoverage === 1 && lineageSnapshot.validation?.gameStatusOccupiedStarters === lineageSnapshot.validation?.occupiedStarterSlots, `${meta.articleId} must have game-status coverage for every occupied starter.`);
-      assert(Array.isArray(lineageSnapshot.validation?.missingGameStatusStarters) && lineageSnapshot.validation.missingGameStatusStarters.length === 0, `${meta.articleId} has occupied starters without a known NFL game status.`);
-      lineageSnapshot.teams.flatMap((team) => team.starters || []).filter((player) => player.id !== '0')
-        .forEach((player) => assert(Boolean(player.gameStatus), `${meta.articleId} starter ${player.name || player.id} is missing gameStatus.`));
+      assert(lineageSnapshot.teams?.length === PRESS_CONFIG.teamCount && lineageSnapshot.matchups?.length === PRESS_CONFIG.teamCount / 2, `${meta.articleId} must cover the full league.`);
+      const coverage = lateOutlookCoverage(lineageSnapshot.teams, lineageSnapshot.matchups);
+      assertLateOutlookCoverage(coverage);
+      for (const field of ['occupiedStarterSlots', 'gameStatusOccupiedStarters', 'gameStatusCoverage']) {
+        assert(coverage[field] === lineageSnapshot.validation?.[field], `${meta.articleId} ${field} does not match the frozen starters.`);
+      }
+      assert(Array.isArray(lineageSnapshot.validation?.missingGameStatusStarters), `${meta.articleId} must list game-status exceptions.`);
+      if (coverage.missingGameStatusStarters.length) {
+        assert(lineageSnapshot.forecastContext.coveragePolicy === 'partial-matchups-v1', `${meta.articleId} must disclose the partial-forecast policy.`);
+      }
+      assert(JSON.stringify(coverage.missingGameStatusStarters) === JSON.stringify(lineageSnapshot.validation.missingGameStatusStarters), `${meta.articleId} game-status exceptions do not match the frozen starters.`);
+      if (lineageSnapshot.forecastContext.coveragePolicy === 'partial-matchups-v1') {
+        for (const field of ['completeForecastMatchups', 'forecastMatchupCoverage']) assert(coverage[field] === lineageSnapshot.validation[field], `${meta.articleId} ${field} mismatch.`);
+      }
       const originalArticle = await readJsonIfExists(path.join(root, 'content', 'articles', String(article.season), `week-${String(article.week).padStart(2, '0')}-preview.json`));
       assert(!originalArticle, `${meta.articleId} cannot coexist with an original pregame Preview.`);
       const teams = new Map(lineageSnapshot.teams.map((team) => [team.rosterId, team]));
+      lineageSnapshot.teams.forEach((team) => {
+        const expected = buildLateTeamOutlook(team);
+        for (const field of ['remainingProjection', 'forecastScore']) assert(sameNullableNumber(team[field], expected[field]), `${meta.articleId} team ${team.manager} ${field} mismatch.`);
+        assert(team.forecastStatus === expected.forecastStatus, `${meta.articleId} team ${team.manager} forecastStatus mismatch.`);
+        assert(JSON.stringify(team.missingGameStatusPlayers || []) === JSON.stringify(expected.missingGameStatusPlayers), `${meta.articleId} team ${team.manager} game-status exceptions mismatch.`);
+        if (expected.missingGameStatusPlayers.length) {
+          assert(team.projectedScore == null, `${meta.articleId} must withhold an unsafe legacy lineup projection.`);
+          const baseline = isLatePreview && article.lineupSnapshot.teams.find((row) => row.rosterId === team.rosterId);
+          if (baseline) assert(baseline.projection == null && baseline.forecastScore == null, `${meta.articleId} must withhold an unsafe published lineup forecast.`);
+        }
+      });
       lineageSnapshot.matchups.forEach((matchup) => {
         assertLateForecastShape(matchup, `${meta.articleId} snapshot matchup ${matchup.matchupId}`);
         const expected = buildLateMatchupOutlook({
@@ -239,6 +264,9 @@ export async function validatePress({ root = repoRoot(import.meta.url) } = {}) {
       assert(matchup.managerA === prediction.managerA && matchup.managerB === prediction.managerB, `Manager mismatch in matchup ${id}.`);
       if (lateForecast) {
         assertLateForecastShape(prediction, `${meta.articleId} ledger matchup ${id}`);
+        const frozenMatchup = (isLatePreview ? snapshot : lateSnapshot)?.matchups.find((row) => Number(row.matchupId) === id);
+        assert(frozenMatchup, `${meta.articleId} has no frozen outlook for matchup ${id}.`);
+        assertLateForecastMatches(prediction, frozenMatchup, `${meta.articleId} ledger matchup ${id}`);
         assert(matchup.receiptEligible === false, `${meta.articleId} matchup ${id} must be ineligible for receipts.`);
         assert(!Object.hasOwn(matchup, 'predictionCorrect'), `${meta.articleId} matchup ${id} must not grade a late forecast.`);
         assert(!Object.hasOwn(matchup, 'predictedWinner'), `${meta.articleId} matchup ${id} must not relabel a late outlook as an original prediction.`);
@@ -252,7 +280,7 @@ export async function validatePress({ root = repoRoot(import.meta.url) } = {}) {
       assert(managers.has(matchup.managerA) && managers.has(matchup.managerB), `Unknown manager in matchup ${id}.`);
       (matchup.factIds || []).forEach((factId) => assert(allowedFactIds.has(factId), `Unknown fact ID ${factId} in matchup ${id}.`));
     });
-    if (isRecap) validateArticleCopy(articleCopy(article), snapshot, 'recap', { lateForecast, prediction: ledger });
+    if (isRecap || isLatePreview) validateArticleCopy(articleCopy(article), snapshot, isRecap ? 'recap' : 'late-preview', { lateForecast, prediction: ledger });
     walkText(article, meta.articleId);
   }
   assert(ids.has(index.featuredArticleId), 'featuredArticleId does not resolve to a published article.');

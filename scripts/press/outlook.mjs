@@ -3,6 +3,7 @@ import { clamp, round } from './utils.mjs';
 
 const MINIMUM_WIN_PROBABILITY = 0.15;
 const MAXIMUM_WIN_PROBABILITY = 0.85;
+const KNOWN_GAME_STATUSES = new Set(['pre_game', 'scheduled', 'live', 'in_game', 'final', 'complete', 'post_game']);
 
 function nullableFinite(value) {
   if (value === null || value === undefined || value === '') return null;
@@ -36,6 +37,10 @@ function playerReference(starter) {
   };
 }
 
+export function hasKnownGameStatus(starter) {
+  return KNOWN_GAME_STATUSES.has(String(starter?.gameStatus ?? '').trim().toLowerCase());
+}
+
 /**
  * Returns the projection that may still be added to a team's official score.
  * Empty slots and unavailable starters are deterministic zeroes. A null value
@@ -50,7 +55,9 @@ export function effectiveStarterProjection(starter) {
 /**
  * Build a late-week team forecast without mutating the supplied team or lineup.
  * The official score already contains every locked player's result, including
- * a locked zero, so only unlocked projections are added to it.
+ * a locked zero, so only unlocked projections are added to it. An unknown game
+ * status withholds the forecast: a projection or zero score cannot prove that
+ * the player's game has not started.
  */
 export function buildLateTeamOutlook(team = {}) {
   const starters = Array.isArray(team.starters) ? team.starters : [];
@@ -62,10 +69,13 @@ export function buildLateTeamOutlook(team = {}) {
   const missingProjectionPlayers = unlockedStarters
     .filter((starter) => effectiveStarterProjection(starter) === null)
     .map(playerReference);
+  const missingGameStatusPlayers = occupiedStarters
+    .filter((starter) => !hasKnownGameStatus(starter))
+    .map(playerReference);
   const pregameMissingProjectionPlayers = occupiedStarters
     .filter((starter) => effectiveStarterProjection(starter) === null)
     .map(playerReference);
-  const complete = missingProjectionPlayers.length === 0;
+  const complete = missingProjectionPlayers.length === 0 && missingGameStatusPlayers.length === 0;
 
   const remainingProjection = complete
     ? round(unlockedStarters.reduce((sum, starter) => sum + effectiveStarterProjection(starter), 0))
@@ -83,6 +93,7 @@ export function buildLateTeamOutlook(team = {}) {
     lockedStarterCount: lockedStarters.length,
     forecastStatus: complete ? 'complete' : 'incomplete',
     missingProjectionPlayers,
+    missingGameStatusPlayers,
     pregameMissingProjectionPlayers,
     receiptEligible: false
   };
@@ -99,6 +110,15 @@ function teamName(explicitName, team, fallback) {
   return String(explicitName || team?.manager || team?.name || fallback);
 }
 
+function cloneTeamOutlook(team) {
+  return {
+    ...team,
+    missingProjectionPlayers: (team.missingProjectionPlayers || []).map((player) => ({ ...player })),
+    missingGameStatusPlayers: (team.missingGameStatusPlayers || []).map((player) => ({ ...player })),
+    receiptEligible: false
+  };
+}
+
 /**
  * Build the corresponding matchup forecast. The probability is the same
  * bounded logistic transform used by the Press prediction model, but it is
@@ -107,10 +127,10 @@ function teamName(explicitName, team, fallback) {
  */
 export function buildLateMatchupOutlook(matchup = {}) {
   const teamA = isTeamOutlook(matchup.teamA)
-    ? { ...matchup.teamA, missingProjectionPlayers: [...(matchup.teamA.missingProjectionPlayers || [])], receiptEligible: false }
+    ? cloneTeamOutlook(matchup.teamA)
     : buildLateTeamOutlook(matchup.teamA);
   const teamB = isTeamOutlook(matchup.teamB)
-    ? { ...matchup.teamB, missingProjectionPlayers: [...(matchup.teamB.missingProjectionPlayers || [])], receiptEligible: false }
+    ? cloneTeamOutlook(matchup.teamB)
     : buildLateTeamOutlook(matchup.teamB);
   const managerA = teamName(matchup.managerA, matchup.teamA, 'Team A');
   const managerB = teamName(matchup.managerB, matchup.teamB, 'Team B');
@@ -130,6 +150,10 @@ export function buildLateMatchupOutlook(matchup = {}) {
     ...teamA.missingProjectionPlayers.map((player) => ({ ...player, manager: managerA, side: 'A' })),
     ...teamB.missingProjectionPlayers.map((player) => ({ ...player, manager: managerB, side: 'B' }))
   ];
+  const missingGameStatusPlayers = [
+    ...teamA.missingGameStatusPlayers.map((player) => ({ ...player, manager: managerA, side: 'A' })),
+    ...teamB.missingGameStatusPlayers.map((player) => ({ ...player, manager: managerB, side: 'B' }))
+  ];
 
   return {
     matchupId: matchup.matchupId ?? null,
@@ -147,6 +171,7 @@ export function buildLateMatchupOutlook(matchup = {}) {
     lockedStarterCount: teamA.lockedStarterCount + teamB.lockedStarterCount,
     forecastStatus: complete ? 'complete' : 'incomplete',
     missingProjectionPlayers,
+    missingGameStatusPlayers,
     probabilityA,
     predictedWinner: forecastWinner,
     winProbability: forecastProbability,

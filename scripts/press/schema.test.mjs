@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateArticleCopy } from './schema.mjs';
+import { applyIncompleteOutlookNotices, incompleteOutlookNotice, validateArticleCopy } from './schema.mjs';
 
 const snapshot = {
   matchups: [{ matchupId: 1, managerA: 'Blumbo', managerB: 'maco71', factIds: ['late:1'] }],
@@ -38,6 +38,33 @@ function resultsCopy(analysis) {
 test('accepts explicit post-kickoff late-outlook language', () => {
   const copy = copyWith('Blumbo leads on known Thursday points; the remaining projection still favors a close finish.');
   assert.equal(validateArticleCopy(copy, snapshot, 'late-preview'), copy);
+});
+
+test('new incomplete outlooks cannot publish AI winner claims in any matchup narrative field', () => {
+  const partial = { ...snapshot, forecastContext: { coveragePolicy: 'partial-matchups-v1' }, matchups: [{ ...snapshot.matchups[0], currentScoreA: 17.5, currentScoreB: 0, forecastStatus: 'incomplete', missingGameStatusPlayers: [{ id: 'pending', name: 'Pending Player' }] }] };
+  const unsafe = copyWith('Blumbo will win 150-100 with an 85% chance to win.');
+  const { copy: safe, notices } = applyIncompleteOutlookNotices(unsafe, partial, 'late-preview');
+  assert.deepEqual(notices, [{ matchupId: 1, reason: 'incomplete-forecast', replacement: 'verified-data-notice' }]);
+  assert.match(safe.matchups[0].analysis, /17\.50 points.*0\.00/);
+  assert.match(safe.matchups[0].analysis, /withheld because NFL game-status data is incomplete/);
+  assert.doesNotMatch(safe.matchups[0].analysis, /150-100|85%|will win/);
+  assert.match(unsafe.matchups[0].analysis, /85%/, 'the original is not mutated or lost');
+  assert.equal(validateArticleCopy(safe, partial, 'late-preview'), safe);
+  for (const field of ['headline', 'analysis', 'upsetPath', 'historyNote']) {
+    const forged = structuredClone(safe);
+    forged.matchups[0][field] = 'Blumbo will win 150-100.';
+    assert.throws(() => validateArticleCopy(forged, partial, 'late-preview'), /must use the verified data notice/);
+  }
+  assert.deepEqual(applyIncompleteOutlookNotices(safe, partial, 'late-preview').copy, safe, 'notice substitution is idempotent');
+  assert.deepEqual(safe.matchups[0].factIds, unsafe.matchups[0].factIds, 'fact IDs are never silently repaired');
+});
+
+test('verified incomplete notices do not rewrite complete matchups, recaps, or historical frozen copy', () => {
+  const raw = copyWith('Known scoring leads a competitive matchup.');
+  for (const type of ['late-preview', 'recap']) assert.deepEqual(applyIncompleteOutlookNotices(raw, snapshot, type), { copy: raw, notices: [] });
+  const known = { ...snapshot, forecastContext: { coveragePolicy: 'partial-matchups-v1' }, matchups: [{ ...snapshot.matchups[0], forecastStatus: 'complete' }] };
+  assert.deepEqual(applyIncompleteOutlookNotices(raw, known, 'late-preview'), { copy: raw, notices: [] });
+  assert.match(incompleteOutlookNotice({ ...snapshot.matchups[0], currentScoreA: 0, currentScoreB: 10 }).analysis, /remaining-projection data is incomplete/);
 });
 
 test('rejects hindsight framed as an original prediction', () => {

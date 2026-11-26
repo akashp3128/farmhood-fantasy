@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { LATE_OUTLOOK_MODEL, PRESS_CONFIG, PRESS_SCHEMA_VERSION, PREDICTION_MODEL } from './config.mjs';
-import { buildLateMatchupOutlook, buildLateTeamOutlook } from './outlook.mjs';
+import { buildLateMatchupOutlook, buildLateTeamOutlook, hasKnownGameStatus } from './outlook.mjs';
 import { assert, digest, isoNow, round } from './utils.mjs';
 
 const require = createRequire(import.meta.url);
@@ -81,11 +81,37 @@ function factIdsForMatchup(season, week, matchup, edition) {
   ];
 }
 
-export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now, edition = 'preview' } = {}) {
+// Recompute coverage from starters, not a feed's summary or a claimed matchup
+// status. Unknown kickoff state must never be treated as an unplayed game.
+export function lateOutlookCoverage(teams, matchups) {
+  const occupied = teams.flatMap((team) => team.starters.filter((player) => player.id !== '0').map((player) => ({ ...player, manager: team.manager })));
+  const missing = occupied.filter((player) => !hasKnownGameStatus(player));
+  const byManager = new Map(teams.map((team) => [team.manager, team]));
+  const complete = matchups.filter((matchup) => [matchup.managerA, matchup.managerB].every((manager) => {
+    const team = byManager.get(manager);
+    return team && buildLateTeamOutlook(team).forecastStatus === 'complete';
+  })).length;
+  return {
+    occupiedStarterSlots: occupied.length,
+    gameStatusOccupiedStarters: occupied.length - missing.length,
+    gameStatusCoverage: occupied.length ? round((occupied.length - missing.length) / occupied.length, 4) : 0,
+    missingGameStatusStarters: missing.map(({ id, name, team, slot, manager }) => ({ id, name, team, slot, manager })),
+    completeForecastMatchups: complete,
+    forecastMatchupCoverage: matchups.length ? round(complete / matchups.length, 4) : 0
+  };
+}
+
+export function assertLateOutlookCoverage(coverage) {
+  const minimum = PRESS_CONFIG.minimumLateOutlookCoverage;
+  assert(coverage.gameStatusCoverage >= minimum, `Game-status coverage ${(coverage.gameStatusCoverage * 100).toFixed(0)}% is below the ${minimum * 100}% late-outlook gate. No AI request can be sent safely.`);
+  assert(coverage.forecastMatchupCoverage >= minimum, `Complete matchup coverage ${(coverage.forecastMatchupCoverage * 100).toFixed(0)}% is below the ${minimum * 100}% late-outlook gate. No AI request can be sent safely.`);
+}
+
+export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now, edition = 'preview', loadRuntime = loadLeagueRuntime } = {}) {
   assert(season === PRESS_CONFIG.season, `Only the ${PRESS_CONFIG.season} season is configured.`);
   assert(['preview', 'late-preview', 'recap'].includes(edition), `Unsupported Farmhood Press edition: ${edition}.`);
   const latePreview = edition === 'late-preview';
-  const { league, live } = loadLeagueRuntime();
+  const { league, live } = loadRuntime();
   const base = await live.load({ force: true });
   const selectedWeek = week || base.currentWeek;
   assert(selectedWeek <= base.currentWeek, 'Cannot generate facts for a future Sleeper week.');
@@ -106,16 +132,17 @@ export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now
   const teams = watch.teams.map((rawTeam) => {
     const team = compactTeam(rawTeam);
     if (!latePreview) return team;
+    const outlook = buildLateTeamOutlook({ currentScore: scoreByRoster.get(team.rosterId) || 0, starters: team.starters });
+    const knownStarterIds = new Set(rawTeam.starters.filter(hasKnownGameStatus).map((player) => player.id));
+    const knownBenchIds = new Set((rawTeam.bench || []).filter(hasKnownGameStatus).map((player) => player.id));
     return {
-      ...team,
-      ...buildLateTeamOutlook({ currentScore: scoreByRoster.get(team.rosterId) || 0, starters: team.starters })
+      ...team, ...outlook,
+      projectedScore: outlook.forecastScore,
+      suggestedSwaps: team.suggestedSwaps.filter((swap) => (swap.starterId === '0' || knownStarterIds.has(swap.starterId)) && knownBenchIds.has(swap.alternativeId))
     };
   });
   const occupiedStarters = teams.flatMap((team) => team.starters.filter((player) => player.id !== '0'));
-  const missingGameStatusStarters = occupiedStarters.filter((player) => !player.gameStatus);
-  if (latePreview) {
-    assert(missingGameStatusStarters.length === 0, `Game-status coverage is incomplete for ${missingGameStatusStarters.length} occupied starter${missingGameStatusStarters.length === 1 ? '' : 's'}. No late outlook can be generated safely.`);
-  }
+  const missingGameStatusStarters = occupiedStarters.filter((player) => !hasKnownGameStatus(player));
   const teamByName = new Map(teams.map((team) => [team.manager, team]));
   const matchups = watch.matchups.map((matchup) => {
     const a = teamByName.get(matchup.managerA);
@@ -169,12 +196,15 @@ export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now
       lockedStarterCount: outlook.lockedStarterCount,
       forecastStatus: outlook.forecastStatus,
       missingProjectionPlayers: outlook.missingProjectionPlayers,
+      missingGameStatusPlayers: outlook.missingGameStatusPlayers,
       receiptEligible: false,
       injuries: baseMatchup.injuries,
       suggestedSwaps: baseMatchup.suggestedSwaps,
       factIds: baseMatchup.factIds
     };
   });
+  const coverage = latePreview ? lateOutlookCoverage(teams, matchups) : null;
+  if (latePreview) assertLateOutlookCoverage(coverage);
   const snapshotCore = {
     schemaVersion: PRESS_SCHEMA_VERSION,
     kind: latePreview ? 'live' : watch.phase.key === 'final' ? 'final' : 'pre',
@@ -197,6 +227,7 @@ export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now
         mode: 'late_outlook',
         knownScoringIncluded: true,
         receiptEligible: false,
+        coveragePolicy: 'partial-matchups-v1',
         description: 'Published after the weekly slate began; this is a current-state outlook, not an original pregame prediction.'
       }
     } : {}),
@@ -224,7 +255,8 @@ export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now
       missingGameStatusStarters: missingGameStatusStarters.map((player) => ({ id: player.id, name: player.name, team: player.team, slot: player.slot })),
       emptyStarterSlots: teams.reduce((sum, team) => sum + team.emptySlots.length, 0),
       questionableStarters: teams.reduce((sum, team) => sum + team.injuries.filter((injury) => String(injury.status).toLowerCase() === 'questionable').length, 0),
-      projectionCoverage: round(watch.projectionCoverage, 4)
+      projectionCoverage: round(watch.projectionCoverage, 4),
+      ...(coverage || {})
     },
     powerBoard: power.rows.map((row) => ({ rank: row.rank, manager: row.name, score: round(row.power), tag: row.tag.label })),
     teams,
@@ -277,6 +309,7 @@ export async function buildWeeklyFacts({ season = PRESS_CONFIG.season, week, now
       lockedStarterCount: matchup.lockedStarterCount,
       forecastStatus: matchup.forecastStatus,
       missingProjectionPlayers: matchup.missingProjectionPlayers,
+      missingGameStatusPlayers: matchup.missingGameStatusPlayers,
       factIds: matchup.factIds
     })),
     grading: null,

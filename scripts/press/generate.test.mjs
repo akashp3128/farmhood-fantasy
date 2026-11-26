@@ -15,6 +15,7 @@ import {
 } from './generate.mjs';
 import { validatePress } from './validate.mjs';
 import { writeJsonAtomic } from './utils.mjs';
+import { buildLateFactsFixture, lateFactsFixture } from '../../tests/helpers/press-outlook.mjs';
 
 const copy = {
   title: 'Weekend Outlook after Thursday',
@@ -271,6 +272,131 @@ test('preflight reserves explicit-cache-write cost and never starts an over-budg
   await assert.rejects(generatePress(fixture), /worst-case.*above the \$0.07/);
   assert.equal(calls, 1);
   await assert.rejects(access(path.join(fixture.root, 'workflow-output.txt')), { code: 'ENOENT' });
+});
+
+test('one missing kickoff status publishes one safe Outlook, survives validation, and duplicate retries spend nothing', async (t) => {
+  const fixture = await generationFixture(t);
+  const source = await buildLateFactsFixture();
+  const written = {
+    ...fixture.written,
+    title: 'Week Twelve: verified scores and the weekend ahead',
+    dek: 'Five complete forecasts and one explicitly withheld outlook.',
+    lead: ['Official current scores are captured facts.', 'One forecast is unavailable while game-status data is pending.'],
+    pullQuote: 'Known scores, clearly labeled uncertainty.',
+    keyStat: { label: 'Complete forecasts', value: '5 of 6', note: 'One kickoff status is unknown.' },
+    matchups: source.snapshot.matchups.map((row) => ({
+      matchupId: row.matchupId, headline: `${row.managerA} versus ${row.managerB}`,
+      analysis: row.forecastStatus === 'incomplete' ? 'The forecast is unavailable because one starter is missing game-status data.' : `The current score is ${row.currentScoreA} to ${row.currentScoreB}.`,
+      upsetPath: '', historyNote: '', factIds: row.factIds
+    })),
+    storylines: source.snapshot.teams.slice(0, 3).map((team) => ({ title: `${team.manager}: the weekend ahead`, body: 'Official current scores are known; remaining games are not final.', subjects: [team.manager], factIds: source.snapshot.matchups[0].factIds })),
+    awards: []
+  };
+  const options = { type: 'late-preview', season: 2026, week: 12 };
+  written.matchups[0].analysis = 'Blumbo will win 150-100 with an 85% chance to win.';
+  const requests = [];
+  globalThis.fetch = async (url, request) => {
+    requests.push(String(url));
+    if (String(url).endsWith('/responses/input_tokens')) return Response.json({ input_tokens: 1000 });
+    const body = JSON.parse(request.body), input = JSON.parse(body.input);
+    assert.match(body.instructions, /do not infer a winner, probability, estimated final/);
+    assert.equal(input.snapshot.matchups[0].forecastScoreA, null);
+    assert.equal(input.snapshot.matchups[0].forecastWinner, null);
+    assert.equal(input.snapshot.matchups[0].missingGameStatusPlayers[0].id, 's1-2');
+    assert.equal(input.snapshot.teams[0].forecastScore, null);
+    assert.equal(input.snapshot.validation.completeForecastMatchups, 5);
+    return Response.json({ id: 'partial-outlook-response', status: 'completed', model: 'gpt-5.6-terra', usage: { input_tokens: 1000, output_tokens: 1000, total_tokens: 2000 }, output_text: JSON.stringify(written) });
+  };
+  await generatePress({ ...fixture, options, buildFacts: async () => structuredClone(source) });
+  assert.equal(requests.filter((url) => url.endsWith('/responses')).length, 1);
+  assert.equal((await validatePress({ root: fixture.root })).articles, 1);
+  const articlePath = path.join(fixture.root, 'content/articles/2026/week-12-late-preview.json');
+  const article = JSON.parse(await readFile(articlePath, 'utf8'));
+  assert.equal(article.receipts, null);
+  assert.equal(article.matchups[0].forecastWinner, null);
+  assert.equal(article.matchups[0].forecastScoreA, null);
+  assert.match(article.matchups[0].analysis, /withheld because NFL game-status data is incomplete/);
+  assert.doesNotMatch(article.matchups[0].analysis, /150-100|85%/);
+  assert.equal(article.lineupSnapshot.teams[0].projection, null);
+  assert.equal(article.lineupSnapshot.teams[0].forecastScore, null);
+  const snapshotPath = path.join(fixture.root, 'content/snapshots/2026/week-12/live.json');
+  const frozen = await readFile(snapshotPath, 'utf8');
+  globalThis.fetch = async () => assert.fail('A duplicate Outlook must not contact an API.');
+  for (let retry = 0; retry < 2; retry += 1) await generatePress({ ...fixture, options, buildFacts: async () => assert.fail('An immutable Outlook must not rebuild facts.') });
+  assert.equal(await readFile(snapshotPath, 'utf8'), frozen);
+  assert.equal(JSON.parse(await readFile(path.join(fixture.root, 'content/usage/ledger.json'), 'utf8')).totals.requests, 1);
+
+  const zeroInsteadOfUnknown = structuredClone(article);
+  zeroInsteadOfUnknown.matchups[0].forecastScoreA = 0;
+  await writeJsonAtomic(articlePath, zeroInsteadOfUnknown);
+  await assert.rejects(validatePress({ root: fixture.root }), /forecastScoreA mismatch/);
+  await writeJsonAtomic(articlePath, article);
+  const forgedCoverage = JSON.parse(frozen);
+  forgedCoverage.validation.gameStatusCoverage = 1;
+  await writeJsonAtomic(snapshotPath, forgedCoverage);
+  await assert.rejects(validatePress({ root: fixture.root }), /gameStatusCoverage does not match/);
+  await writeJsonAtomic(snapshotPath, JSON.parse(frozen));
+  const forgedTeam = JSON.parse(frozen);
+  forgedTeam.teams[0].forecastScore = 0;
+  await writeJsonAtomic(snapshotPath, forgedTeam);
+  await assert.rejects(validatePress({ root: fixture.root }), /team .* forecastScore mismatch/);
+  await writeJsonAtomic(snapshotPath, JSON.parse(frozen));
+  assert.equal((await validatePress({ root: fixture.root })).articles, 1);
+
+  const predictionPath = path.join(fixture.root, 'content/predictions/2026-week-12.json');
+  const savedPrediction = JSON.parse(await readFile(predictionPath, 'utf8'));
+  const forgedPrediction = structuredClone(savedPrediction), forgedArticle = structuredClone(article);
+  for (const row of [forgedPrediction.predictions[0], forgedArticle.matchups[0]]) Object.assign(row, {
+    remainingProjectionA: 80, forecastScoreA: 97.5, forecastWinner: row.managerA,
+    forecastProbability: 0.7, forecastStatus: 'complete', missingGameStatusPlayers: []
+  });
+  await writeJsonAtomic(predictionPath, forgedPrediction);
+  await writeJsonAtomic(articlePath, forgedArticle);
+  await assert.rejects(validatePress({ root: fixture.root }), /ledger matchup 1 .* mismatch/);
+  await writeJsonAtomic(predictionPath, savedPrediction);
+  await writeJsonAtomic(articlePath, article);
+
+  // The next Tuesday must retain the incomplete Friday baseline, never turn
+  // its unknown into zero, invent a receipt, or discard the published Outlook.
+  const final = structuredClone(source.snapshot);
+  Object.assign(final, { id: 'week-12-final-fixture', kind: 'final', phase: { key: 'final' }, generatedAt: '2026-12-01T15:07:00.000Z', factsAsOf: '2026-12-01T15:07:00.000Z' });
+  final.matchups.forEach((row) => {
+    row.currentScoreA += 100; row.currentScoreB += 110; row.status = 'final';
+    row.factIds = [`2026:w12:m${row.matchupId}:final-score`];
+  });
+  const recapCopy = {
+    ...written, title: 'Week Twelve: the verified final results',
+    dek: 'The final scores are in; the Friday baseline remains frozen.',
+    lead: ['All six matchups are final.', 'The Friday outlook remains an ungraded, post-kickoff baseline.'],
+    keyStat: { label: 'Completed matchups', value: '6', note: 'Verified final scores.' },
+    matchups: final.matchups.map((row) => ({ matchupId: row.matchupId, headline: `${row.managerB} wins`, analysis: `Final score: ${row.currentScoreA} to ${row.currentScoreB}.`, upsetPath: '', historyNote: '', factIds: row.factIds })),
+    storylines: final.teams.slice(0, 3).map((team) => ({ title: `${team.manager}: the final week`, body: 'All games are final.', subjects: [team.manager], factIds: final.matchups[0].factIds })),
+    awards: final.teams.slice(0, 3).map((team) => ({ title: 'On the record', recipient: team.manager, body: 'The final score is recorded.', factIds: final.matchups[0].factIds }))
+  };
+  globalThis.fetch = async (url, request) => {
+    if (String(url).endsWith('/responses/input_tokens')) return Response.json({ input_tokens: 1000 });
+    const input = JSON.parse(JSON.parse(request.body).input);
+    assert.equal(input.forecastContext.lateForecast.predictions[0].forecastStatus, 'incomplete');
+    assert.equal(input.forecastContext.lateForecast.predictions[0].forecastScoreA, null);
+    return Response.json({ id: 'partial-baseline-recap-response', status: 'completed', model: 'gpt-5.6-terra', usage: { input_tokens: 1000, output_tokens: 1000, total_tokens: 2000 }, output_text: JSON.stringify(recapCopy) });
+  };
+  await generatePress({ ...fixture, options: { type: 'recap', season: 2026, week: 12 }, buildFacts: async () => ({ snapshot: final, prediction: null }) });
+  assert.equal((await validatePress({ root: fixture.root })).articles, 2);
+  const recap = JSON.parse(await readFile(path.join(fixture.root, 'content/articles/2026/week-12-recap.json'), 'utf8'));
+  assert.equal(recap.receipts, null);
+  assert.equal(recap.matchups[0].forecastScoreA, null);
+  assert.equal(recap.matchups[0].forecastWinner, null);
+  assert.equal(recap.matchups[0].missingGameStatusPlayers[0].id, 's1-2');
+  assert.equal(await readFile(snapshotPath, 'utf8'), frozen);
+});
+
+test('a broad kickoff outage fails before input-token counting, generation, or snapshot writes', async (t) => {
+  const fixture = await generationFixture(t);
+  const feed = lateFactsFixture({ unknown: ['1:2', '3:2'] });
+  globalThis.fetch = async () => assert.fail('An unusable feed must not contact any API.');
+  await assert.rejects(generatePress({ ...fixture, options: { type: 'late-preview', season: 2026, week: 12 }, buildFacts: feed.buildFacts }), /Complete matchup coverage .* below/);
+  await assert.rejects(access(path.join(fixture.root, 'workflow-output.txt')), { code: 'ENOENT' });
+  await assert.rejects(access(path.join(fixture.root, 'content/snapshots/2026/week-12/live.json')), { code: 'ENOENT' });
 });
 
 test('ambiguous paid transport failure keeps request_started set for the workflow guard', async (t) => {
