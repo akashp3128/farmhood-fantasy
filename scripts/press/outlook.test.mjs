@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PRESS_CONFIG } from './config.mjs';
-import { buildLateMatchupOutlook, buildLateTeamOutlook, effectiveStarterProjection } from './outlook.mjs';
+import { buildLateMatchupOutlook, buildLateTeamOutlook, effectiveStarterProjection, hasKnownGameStatus } from './outlook.mjs';
 
 const player = (id, projection, overrides = {}) => ({
   id: String(id),
@@ -9,6 +9,7 @@ const player = (id, projection, overrides = {}) => ({
   slot: 'FLEX',
   projection,
   locked: false,
+  gameStatus: 'pre_game',
   ...overrides
 });
 
@@ -16,7 +17,7 @@ test('adds only unlocked projections to the official score', () => {
   const outlook = buildLateTeamOutlook({
     currentScore: 18.25,
     starters: [
-      player(1, 24, { locked: true, points: 18.25 }),
+      player(1, 24, { locked: true, gameStatus: 'live', points: 18.25 }),
       player(2, 15.5),
       player(3, 10)
     ]
@@ -31,6 +32,7 @@ test('adds only unlocked projections to the official score', () => {
     lockedStarterCount: 1,
     forecastStatus: 'complete',
     missingProjectionPlayers: [],
+    missingGameStatusPlayers: [],
     pregameMissingProjectionPlayers: [],
     receiptEligible: false
   });
@@ -40,7 +42,7 @@ test('a locked zero-point starter is started and is never double-counted', () =>
   const outlook = buildLateTeamOutlook({
     officialCurrentScore: 0,
     starters: [
-      player(1, 19.4, { locked: true, points: 0 }),
+      player(1, 19.4, { locked: true, gameStatus: 'final', points: 0 }),
       player(2, 11.6)
     ]
   });
@@ -95,7 +97,7 @@ test('a missing locked projection cannot be reconstructed pregame but does not i
   const outlook = buildLateTeamOutlook({
     currentScore: 9,
     starters: [
-      player(1, null, { locked: true }),
+      player(1, null, { locked: true, gameStatus: 'live' }),
       player(2, 14)
     ]
   });
@@ -113,8 +115,8 @@ test('computes a bounded matchup probability from complete late forecasts', () =
     matchupId: 3,
     managerA: 'Alpha',
     managerB: 'Bravo',
-    teamA: { currentScore: 40, starters: [player(1, 20, { locked: true }), player(2, 15)] },
-    teamB: { currentScore: 22, starters: [player(3, 10, { locked: true }), player(4, 12)] }
+    teamA: { currentScore: 40, starters: [player(1, 20, { locked: true, gameStatus: 'final' }), player(2, 15)] },
+    teamB: { currentScore: 22, starters: [player(3, 10, { locked: true, gameStatus: 'final' }), player(4, 12)] }
   });
   const expectedProbabilityA = Math.min(0.85, Math.max(0.15, 1 / (1 + Math.exp(-(55 - 34) / PRESS_CONFIG.projectionLogisticScale))));
 
@@ -175,4 +177,109 @@ test('rejects a non-finite official score instead of publishing a misleading for
     () => buildLateTeamOutlook({ currentScore: 'not-a-score', starters: [] }),
     /finite official current score/
   );
+});
+
+test('recognizes only explicit runtime game statuses without inferring a bye or kickoff', () => {
+  for (const gameStatus of ['pre_game', 'scheduled', 'live', 'in_game', 'final', 'complete', 'post_game', ' LIVE ', ' Pre_Game ']) {
+    assert.equal(hasKnownGameStatus({ gameStatus }), true, gameStatus);
+  }
+  for (const gameStatus of [undefined, null, '', ' ', 'unknown', 'bye', 'postponed', 'canceled', 'not_started', 0]) {
+    assert.equal(hasKnownGameStatus({ gameStatus, team: 'DAL', locked: false, points: 0, projection: 12 }), false, String(gameStatus));
+  }
+  assert.equal(hasKnownGameStatus(), false);
+});
+
+test('unknown kickoff status withholds the forecast despite positive or zero projections and official scores', () => {
+  for (const gameStatus of [undefined, null, '', ' ', 'unknown', 'bye', 'postponed']) {
+    for (const projection of [0, 12]) {
+      for (const officialCurrentScore of [0, 17]) {
+        for (const locked of [false, true]) {
+          const outlook = buildLateTeamOutlook({
+            officialCurrentScore,
+            starters: [player(1, projection, { gameStatus, locked, name: 'Uncertain Starter', slot: 'WR', position: 'WR' }), player(2, 10)]
+          });
+          assert.equal(outlook.currentScore, officialCurrentScore);
+          assert.equal(outlook.remainingProjection, null);
+          assert.equal(outlook.forecastScore, null);
+          assert.equal(outlook.forecastStatus, 'incomplete');
+          assert.equal(outlook.pregameProjection, projection + 10, 'separate pregame reconstruction is unaffected');
+          assert.deepEqual(outlook.missingProjectionPlayers, []);
+          assert.deepEqual(outlook.missingGameStatusPlayers, [{ id: '1', name: 'Uncertain Starter', slot: 'WR', position: 'WR', injuryStatus: null }]);
+        }
+      }
+    }
+  }
+});
+
+test('an unknown-status hard-out starter still withholds the outlook instead of proving no game started', () => {
+  const outlook = buildLateTeamOutlook({
+    currentScore: 9,
+    starters: [player(1, null, { gameStatus: '', injuryStatus: 'Out', locked: true }), player(2, 14)]
+  });
+  assert.equal(outlook.currentScore, 9);
+  assert.equal(outlook.remainingProjection, null);
+  assert.equal(outlook.forecastScore, null);
+  assert.equal(outlook.forecastStatus, 'incomplete');
+  assert.equal(outlook.pregameProjection, 14);
+  assert.deepEqual(outlook.missingProjectionPlayers, []);
+  assert.deepEqual(outlook.missingGameStatusPlayers, [{ id: '1', name: 'Player 1', slot: 'FLEX', position: '', injuryStatus: 'Out' }]);
+});
+
+test('an unknown-status player with no projection records both independent missing facts', () => {
+  const outlook = buildLateTeamOutlook({ currentScore: 0, starters: [player(1, null, { gameStatus: null })] });
+  assert.equal(outlook.forecastStatus, 'incomplete');
+  assert.equal(outlook.pregameProjection, null);
+  assert.deepEqual(outlook.missingProjectionPlayers.map(({ id }) => id), ['1']);
+  assert.deepEqual(outlook.missingGameStatusPlayers.map(({ id }) => id), ['1']);
+});
+
+test('unknown status on either side withholds both winner aliases and every probability', () => {
+  for (const side of ['A', 'B']) {
+    const unknown = { currentScore: 0, starters: [player(1, 100, { gameStatus: '', name: 'Unknown Kickoff' })] };
+    const known = { currentScore: 7, starters: [player(2, 1)] };
+    const outlook = buildLateMatchupOutlook({
+      managerA: 'Alpha', managerB: 'Bravo',
+      teamA: side === 'A' ? unknown : known,
+      teamB: side === 'B' ? unknown : known
+    });
+    assert.equal(outlook.forecastStatus, 'incomplete');
+    for (const field of ['forecastWinner', 'predictedWinner', 'forecastProbability', 'winProbability', 'probabilityA']) assert.equal(outlook[field], null, field);
+    assert.equal(outlook[`forecastScore${side}`], null);
+    assert.equal(outlook[`remainingProjection${side}`], null);
+    assert.equal(outlook[`currentScore${side}`], 0);
+    assert.deepEqual(outlook.missingGameStatusPlayers, [{
+      id: '1', name: 'Unknown Kickoff', slot: 'FLEX', position: '', injuryStatus: null,
+      manager: side === 'A' ? 'Alpha' : 'Bravo', side
+    }]);
+  }
+});
+
+test('empty and unoccupied slots do not require a game status', () => {
+  const outlook = buildLateTeamOutlook({
+    currentScore: 0,
+    starters: [player(0, null, { gameStatus: '' }), player(1, null, { gameStatus: '', empty: true }), player(2, null, { gameStatus: '', occupied: false })]
+  });
+  assert.equal(outlook.forecastStatus, 'complete');
+  assert.equal(outlook.forecastScore, 0);
+  assert.deepEqual(outlook.missingGameStatusPlayers, []);
+});
+
+test('precomputed team outlooks preserve and independently clone missing-status and projection details', () => {
+  const teamA = buildLateTeamOutlook({ currentScore: 12, starters: [player(1, null, { gameStatus: null })] });
+  const teamB = buildLateTeamOutlook({ currentScore: 0, starters: [player(2, 8, { gameStatus: '' })] });
+  const before = structuredClone({ teamA, teamB });
+  const outlook = buildLateMatchupOutlook({ managerA: 'Alpha', managerB: 'Bravo', teamA, teamB });
+
+  assert.deepEqual({ teamA, teamB }, before);
+  assert.deepEqual(outlook.missingGameStatusPlayers.map(({ manager, side, id }) => ({ manager, side, id })), [
+    { manager: 'Alpha', side: 'A', id: '1' }, { manager: 'Bravo', side: 'B', id: '2' }
+  ]);
+  assert.notStrictEqual(outlook.teamA.missingGameStatusPlayers, teamA.missingGameStatusPlayers);
+  assert.notStrictEqual(outlook.teamA.missingGameStatusPlayers[0], teamA.missingGameStatusPlayers[0]);
+  assert.notStrictEqual(outlook.teamB.missingGameStatusPlayers[0], teamB.missingGameStatusPlayers[0]);
+  assert.notStrictEqual(outlook.teamA.missingProjectionPlayers[0], teamA.missingProjectionPlayers[0]);
+  outlook.teamA.missingGameStatusPlayers[0].name = 'Changed output detail';
+  outlook.teamA.missingProjectionPlayers[0].name = 'Changed output detail';
+  outlook.teamB.missingGameStatusPlayers.push({ id: '3' });
+  assert.deepEqual({ teamA, teamB }, before, 'mutating output details must not mutate supplied outlooks');
 });

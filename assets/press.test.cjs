@@ -228,6 +228,65 @@ test('late Weekend Outlook still shows captured scores and its ungraded live for
   assert.match(view.panel.querySelector('.press-receipts').textContent, /Weekend Outlook snapshot is frozen for transparency/);
 });
 
+for (const staleForecast of [false, true]) {
+  test(`late outlook with unknown kickoff status preserves official scores and withholds ${staleForecast ? 'stale' : 'missing'} estimates`, async () => {
+    const row = article({ type: 'week_late_preview', edition: 'Weekend Outlook', source: { predictionKind: 'late_forecast' }, forecastContext: { mode: 'late_outlook', receiptEligible: false } });
+    Object.assign(row.matchups[0], {
+      currentScoreA: 24.5, currentScoreB: 17.2, startedAtCapture: false,
+      forecastScoreA: staleForecast ? 125 : null, forecastScoreB: staleForecast ? 112 : null,
+      forecastWinner: staleForecast ? 'Alpha' : null, forecastProbability: staleForecast ? 0.63 : null,
+      forecastStatus: staleForecast ? 'complete' : 'incomplete',
+      missingGameStatusPlayers: [{ id: '123', name: 'Jamie Starter', manager: 'Alpha', side: 'A' }]
+    });
+    const view = await browser([row]);
+    const card = view.panel.querySelector('.press-matchup');
+    assert.match(card.querySelector('.press-matchup-top').textContent, /Kickoff status incomplete/);
+    assert.doesNotMatch(card.textContent, /No Thursday action|Friday lean:|EST\. FINAL|125\.0|112\.0|63%/);
+    assert.deepEqual(card.querySelectorAll('.press-team-score').map((node) => node.textContent), ['24.5', '17.2']);
+    assert.deepEqual(card.querySelectorAll('.press-score-vs').map((node) => node.textContent), ['CURRENT']);
+    assert.match(card.querySelector('.press-game-status-incomplete').textContent, /Game-status data pending for Jamie Starter \(Alpha\)/);
+    assert.match(card.textContent, /Estimated finals and winner lean are withheld/);
+    assert.match(card.querySelector('.press-odds').textContent, /Live outlookIncomplete/);
+    assert.equal(view.panel.querySelector('.receipt-stat'), null);
+  });
+}
+
+test('late outlook explains missing game statuses separately from missing projections', async () => {
+  const row = article({ type: 'week_late_preview', edition: 'Weekend Outlook', source: { predictionKind: 'late_forecast' }, forecastContext: { mode: 'late_outlook', receiptEligible: false } });
+  Object.assign(row.matchups[0], {
+    currentScoreA: 21, currentScoreB: 13, startedAtCapture: true, forecastStatus: 'incomplete',
+    missingGameStatusPlayers: [null, { id: 'unknown-starter', manager: 'Alpha', side: 'A' }],
+    missingProjectionPlayers: [{ name: 'Pat Projection', manager: 'Bravo' }]
+  });
+  const view = await browser([row]);
+  const card = view.panel.querySelector('.press-matchup');
+  const reasons = card.querySelectorAll('.press-forecast-incomplete').map((node) => node.textContent);
+  assert.match(card.querySelector('.press-matchup-top').textContent, /Kickoff status incomplete/);
+  assert.ok(reasons.includes('Game-status data pending for unknown-starter (Alpha).'));
+  assert.ok(reasons.includes('Incomplete forecast: missing remaining projections for Pat Projection.'));
+  assert.match(card.textContent, /Estimated finals and winner lean are withheld/);
+  assert.doesNotMatch(card.textContent, /No Thursday action|EST\. FINAL|Friday lean:/);
+});
+
+test('late-baseline recap explains frozen missing game status while retaining known final scores', async () => {
+  const row = article({ source: { predictionKind: 'late_forecast' }, forecastContext: { mode: 'late_outlook_baseline', receiptEligible: false } });
+  Object.assign(row.matchups[0], {
+    forecastWinner: 'Bravo', forecastProbability: 0.63, forecastStatus: 'complete',
+    missingGameStatusPlayers: [{ id: '123', name: 'Jamie Starter', manager: 'Alpha', side: 'A' }],
+    missingProjectionPlayers: [{ name: 'Pat Projection' }]
+  });
+  const view = await browser([row]);
+  const card = view.panel.querySelector('.press-matchup');
+  assert.equal(card.querySelector('.press-score-vs').textContent, 'FINAL');
+  assert.deepEqual(card.querySelectorAll('.press-team-score').map((node) => node.textContent), ['122.5', '111.2']);
+  assert.match(card.querySelector('.press-odds').textContent, /Frozen Weekend OutlookNo complete late forecast/);
+  assert.match(card.querySelector('.press-game-status-incomplete').textContent, /frozen Weekend Outlook was missing game-status data for Jamie Starter \(Alpha\)/);
+  assert.match(card.textContent, /estimated finals and winner lean were withheld/);
+  assert.match(card.textContent, /frozen Weekend Outlook was missing remaining projections for Pat Projection/);
+  assert.doesNotMatch(card.querySelector('.press-odds').textContent, /Bravo|63%/);
+  assert.equal(view.panel.querySelector('.receipt-stat'), null);
+});
+
 for (const complete of [true, false]) {
   test(`late-baseline recap retains ${complete ? 'complete' : 'incomplete'} frozen Weekend Outlook disclosure`, async () => {
     const row = article({ source: { predictionKind: 'late_forecast' }, forecastContext: { mode: 'late_outlook_baseline', receiptEligible: false } });

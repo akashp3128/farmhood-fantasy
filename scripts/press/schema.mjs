@@ -3,6 +3,31 @@ import { gradePredictions } from './grading.mjs';
 
 const stringField = (maxLength) => ({ type: 'string', maxLength });
 
+export function incompleteOutlookNotice(matchup) {
+  const reason = (matchup.missingGameStatusPlayers || []).length ? 'NFL game-status data' : 'remaining-projection data';
+  return {
+    headline: `${matchup.managerA} vs. ${matchup.managerB}: forecast pending`,
+    analysis: `At capture, ${matchup.managerA} had ${Number(matchup.currentScoreA).toFixed(2)} points and ${matchup.managerB} had ${Number(matchup.currentScoreB).toFixed(2)}. An estimated final, winner lean and probability are withheld because ${reason} is incomplete.`,
+    upsetPath: '',
+    historyNote: ''
+  };
+}
+
+// This is a deterministic data notice, not an attempted repair of model facts.
+// The paid original stays in its recovery checkpoint for an auditable fallback.
+export function applyIncompleteOutlookNotices(copy, snapshot, type) {
+  const notices = [];
+  if (type !== 'late-preview' || snapshot.forecastContext?.coveragePolicy !== 'partial-matchups-v1') return { copy, notices };
+  const safe = structuredClone(copy), facts = new Map(snapshot.matchups.map((row) => [row.matchupId, row]));
+  (safe.matchups || []).forEach((row) => {
+    const matchup = facts.get(row.matchupId);
+    if (matchup?.forecastStatus !== 'incomplete') return;
+    Object.assign(row, incompleteOutlookNotice(matchup));
+    notices.push({ matchupId: row.matchupId, reason: 'incomplete-forecast', replacement: 'verified-data-notice' });
+  });
+  return { copy: safe, notices };
+}
+
 function generatedProse(copy) {
   return [
     copy.title, copy.dek, ...(copy.lead || []), copy.pullQuote,
@@ -171,6 +196,9 @@ export function validateArticleCopy(copy, snapshot, type = 'preview', options = 
     const matchup = matchupById.get(item.matchupId);
     assert(matchup, `Unknown generated matchup: ${item.matchupId}.`);
     item.factIds.forEach((id) => assert(factIds.has(id), `Unknown fact ID in generated matchup copy: ${id}`));
+    if (type === 'late-preview' && snapshot.forecastContext?.coveragePolicy === 'partial-matchups-v1' && matchup.forecastStatus === 'incomplete') {
+      for (const [field, value] of Object.entries(incompleteOutlookNotice(matchup))) assert(item[field] === value, `Incomplete outlook matchup ${item.matchupId} must use the verified data notice for ${field}.`);
+    }
   });
   (copy.storylines || []).flatMap((item) => item.factIds || []).forEach((id) => assert(factIds.has(id), `Unknown storyline fact ID: ${id}`));
   (copy.awards || []).flatMap((item) => item.factIds || []).forEach((id) => assert(factIds.has(id), `Unknown award fact ID: ${id}`));

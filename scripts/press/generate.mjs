@@ -6,7 +6,7 @@ import { buildWeeklyFacts } from './facts.mjs';
 import { gradePredictions } from './grading.mjs';
 import { normalizeArticleCopy } from './copy-normalization.mjs';
 import { assertPredictionLineage, hasPublishedForecastLedger, isLateForecastLedger } from './lineage.mjs';
-import { articleCopySchema, validateArticleCopy } from './schema.mjs';
+import { applyIncompleteOutlookNotices, articleCopySchema, validateArticleCopy } from './schema.mjs';
 import {
   assert,
   fetchJson,
@@ -82,6 +82,7 @@ export function compactSnapshot(snapshot, type, { resultsOnly = false } = {}) {
       lockedStarterCount: matchup.lockedStarterCount,
       forecastStatus: matchup.forecastStatus,
       missingProjectionPlayers: matchup.missingProjectionPlayers,
+      ...(matchup.missingGameStatusPlayers?.length ? { missingGameStatusPlayers: matchup.missingGameStatusPlayers } : {}),
       receiptEligible: false,
       factIds: matchup.factIds
     } : resultsOnly ? {
@@ -117,6 +118,7 @@ export function compactSnapshot(snapshot, type, { resultsOnly = false } = {}) {
         lockedStarterCount: team.lockedStarterCount,
         forecastStatus: team.forecastStatus,
         missingProjectionPlayers: team.missingProjectionPlayers,
+        ...(team.missingGameStatusPlayers?.length ? { missingGameStatusPlayers: team.missingGameStatusPlayers } : {}),
         receiptEligible: false
       } : {}),
       featuredStarters: selectedByRoster.get(team.rosterId).map(({ id, slot, name, position, team: nflTeam, projection, points, injuryStatus, locked }) => type === 'late-preview'
@@ -187,7 +189,7 @@ async function appendWorkflowValue(filePath, name, value) {
   await appendFile(filePath, `${name}=${safeText(value, 500)}\n`, 'utf8');
 }
 
-async function reportGeneration({ changed, articleId, message, usage = null }) {
+async function reportGeneration({ changed, articleId, message, usage = null, validation = null }) {
   await appendWorkflowValue(process.env.GITHUB_OUTPUT, 'changed', String(changed));
   await appendWorkflowValue(process.env.GITHUB_OUTPUT, 'article_id', articleId);
   await appendWorkflowValue(process.env.GITHUB_OUTPUT, 'message', message);
@@ -204,6 +206,9 @@ async function reportGeneration({ changed, articleId, message, usage = null }) {
         ]
       : ['### Farmhood Press skipped safely', `- ${message}`, '- OpenAI requests: 0', '- Estimated API cost: $0.0000'];
     await appendFile(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`, 'utf8');
+    if (changed && validation?.missingGameStatusStarters?.length) {
+      await appendFile(process.env.GITHUB_STEP_SUMMARY, `- Forecasts available: ${validation.completeForecastMatchups} of ${validation.matchupCount}. Game-status data is pending for ${validation.missingGameStatusStarters.length} starter(s); affected estimates and winner leans were withheld.\n`, 'utf8');
+    }
   }
 }
 
@@ -227,22 +232,24 @@ async function reportPaidFailure({ articleId, message, usage }) {
 export async function validateArticleCopyRecoverably({ copy, snapshot, prediction, type, lateForecast, resultsOnly = false, recoveryPath, recoveryMetadata }) {
   assert(recoveryPath, 'A recovery path is required before validating paid article copy.');
   const normalized = normalizeArticleCopy(copy, snapshot.teams.map((team) => team.manager));
+  const noticeCopy = applyIncompleteOutlookNotices(normalized.copy, snapshot, type);
   const checkpoint = {
     schemaVersion: 1,
     ...recoveryMetadata,
     kind: 'farmhood_press_copy_recovery',
     publicationStatus: 'not_published',
     semanticValidation: { status: 'pending' },
-    structuredCopy: normalized.copy,
+    structuredCopy: noticeCopy.copy,
     normalization: { corrections: normalized.corrections },
-    ...(normalized.corrections.length ? { originalStructuredCopy: copy } : {})
+    ...(noticeCopy.notices.length ? { deterministicNotices: noticeCopy.notices } : {}),
+    ...(normalized.corrections.length || noticeCopy.notices.length ? { originalStructuredCopy: copy } : {})
   };
   await writeJsonAtomic(recoveryPath, checkpoint);
   if (normalized.corrections.length) console.log(JSON.stringify({ canonicalManagerCorrections: normalized.corrections }));
 
   let accepted;
   try {
-    accepted = validateArticleCopy(normalized.copy, snapshot, type, { lateForecast, resultsOnly, prediction });
+    accepted = validateArticleCopy(noticeCopy.copy, snapshot, type, { lateForecast, resultsOnly, prediction });
   } catch (error) {
     try {
       await writeJsonAtomic(recoveryPath, {
@@ -292,7 +299,7 @@ Use only facts supplied in the input. The application has already calculated eve
 
 Voice: sportswriter credibility with ${tone} group-chat energy. Be specific, concise and funny because the verified football facts are funny. Roast fantasy choices and results only. Never joke about an injury, health, family, work, appearance, protected traits or private life. Describe injury status as "listed" and preserve its as-of uncertainty. Avoid generic sports clichés, repeated punchlines and raw HTML.
 
-${timingRules} Do not call a matchup final unless the supplied phase is final.`;
+${timingRules} Do not call a matchup final unless the supplied phase is final. If forecastStatus is incomplete, explicitly describe the supplied missing game-status or projection data; do not infer a winner, probability, estimated final, unstarted game, or safe bench swap for the affected players.`;
 }
 
 async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, editorial, storylines, corrections, previous, type, tone, model, apiKey, onAttempt, resultsOnly = false, recoveryPath, recoveryMetadata }) {
@@ -321,6 +328,8 @@ async function requestArticleCopy({ snapshot, prediction, leagueCanon, canon, ed
       forecastScoreB: item.forecastScoreB,
       forecastWinner: item.forecastWinner,
       forecastProbability: item.forecastProbability,
+      forecastStatus: item.forecastStatus,
+      ...(item.missingGameStatusPlayers?.length ? { missingGameStatusPlayers: item.missingGameStatusPlayers } : {}),
       receiptEligible: false,
       factIds: item.factIds
     }))
@@ -481,7 +490,8 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
       startedAtCapture: locked.startedAtCapture,
       lockedStarterCount: locked.lockedStarterCount,
       forecastStatus: locked.forecastStatus,
-      missingProjectionPlayers: locked.missingProjectionPlayers
+      missingProjectionPlayers: locked.missingProjectionPlayers,
+      missingGameStatusPlayers: locked.missingGameStatusPlayers || []
     } : {};
     return {
       matchupId: facts.matchupId,
@@ -562,6 +572,7 @@ export function mergeArticle({ copy, snapshot, prediction, type, tone, model, re
           lockedStarterCount: team.lockedStarterCount,
           forecastStatus: team.forecastStatus,
           missingProjectionPlayers: team.missingProjectionPlayers,
+          missingGameStatusPlayers: team.missingGameStatusPlayers || [],
           receiptEligible: false
         } : {})
       }))
@@ -842,8 +853,8 @@ export async function generatePress({ options = parseCli(process.argv.slice(2)),
       : { ...sourcePrediction, state: 'graded', grading: article.receipts, gradedAt: article.updatedAt });
   }
   await removeCopyRecoveryCheckpoint(copyRecoveryPath);
-  await reportGeneration({ changed: true, articleId: article.articleId, message: 'Draft generated for review.', usage: generated.usage });
-  console.log(JSON.stringify({ articlePath: relativeArticlePath, articleId: article.articleId, model: generated.model, responseId: generated.responseId, usage: generated.usage }, null, 2));
+  await reportGeneration({ changed: true, articleId: article.articleId, message: 'Draft generated for review.', usage: generated.usage, validation: snapshot.validation });
+  console.log(JSON.stringify({ articlePath: relativeArticlePath, articleId: article.articleId, model: generated.model, responseId: generated.responseId, usage: generated.usage, validation: snapshot.validation }, null, 2));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

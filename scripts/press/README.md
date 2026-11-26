@@ -48,7 +48,9 @@ The recovery edition is deliberately different from a normal Preview:
 - It is rejected if `pre.json`, an original Preview, or a locked original prediction exists.
 - It freezes one immutable `content/snapshots/2026/week-NN/live.json` and writes `week-NN-late-preview.json` as a **Weekend Outlook**.
 - Each matchup forecast is official points already scored plus projections only for starters whose games had not begun at capture time. Missing remaining projections make that matchup incomplete, so no winner or probability is claimed.
-- Before OpenAI is contacted, every occupied starter must have a known NFL game status. This prevents a missing schedule row from being mistaken for an unstarted player and double-counted.
+- A missing or unrecognized NFL game status is **unknown**, not a bye or an unstarted game. That team's remaining projection and estimated final are withheld; the affected matchup has no winner lean or probability. The article names the pending game-status data while retaining verified current scores. Unsafe lineup-swap suggestions are also excluded.
+- One missing starter status no longer blocks five otherwise verified matchup reports. Before OpenAI is contacted, at least 80% of occupied starters must have recognized game statuses **and** at least 80% of matchups must have complete forecasts (five of this league's six). Broad feed outages still stop publication at zero generation cost. The validator independently recomputes coverage and every withheld forecast from the frozen starters; unavailable values may never be replaced with zero.
+- An incomplete matchup uses a deterministic notice with captured official scores and the reason its forecast is unavailable, not AI-written winner or score claims. The original paid copy and notice substitutions remain auditable in the recovery checkpoint until the validated edition is saved. The other five matchup reports keep their generated journalism.
 - Thursday's known results are disclosed as known state. The prompt and validator prohibit original-pick or hindsight-as-foresight language.
 - Every late forecast has `receiptEligible: false`. It is never included in original-prediction accuracy, even after the week becomes final.
 - It cannot be regenerated or replaced, including with `--force`. Manual runs still require review; the approved scheduled pipeline may publish its first validated copy automatically.
@@ -85,6 +87,8 @@ node scripts/press/validate.mjs
 - **Friday morning:** post-Thursday Weekend Outlook at 9:07, 9:37 and a 10:07 recovery attempt.
 
 Every schedule uses the IANA timezone `America/Chicago`, so GitHub handles CST/CDT automatically. The off-minute attempts avoid the busiest top-of-hour scheduling window. Deterministic article IDs, immutable snapshots and pre-request planning make repeated attempts cost $0 after the first success.
+
+The November 13 and 20, 2026 Friday runs reached the correct week but stopped before AI generation because one occupied starter lacked an NFL game status. Their unused reservations were released; the failures were not a credential, token-credit, scheduling, or Pages deployment problem. The partial-matchup safeguards above address that failure without guessing whether the missing player's game had started. Older completed weeks must not be backfilled as supposedly pregame forecasts.
 
 The planner derives week numbers from Sleeper rather than calendar arithmetic. Tuesday targets the latest finalized week only; retries cannot silently buy a backlog of historical recaps. Older backfills require an explicit week. Wednesday and Friday use the current Sleeper leg. Friday never replaces an original Preview. An open review blocks only the conflicting edition, before any AI request.
 
