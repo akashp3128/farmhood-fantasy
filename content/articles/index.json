@@ -1,8 +1,38 @@
 {
   "schemaVersion": 1,
-  "featuredArticleId": "2026-week-12-waiver-recap",
-  "updatedAt": "2026-11-26T02:44:12.576Z",
+  "featuredArticleId": "2026-week-12-late-preview",
+  "updatedAt": "2026-11-27T23:20:08.459Z",
   "articles": [
+    {
+      "articleId": "2026-week-12-late-preview",
+      "path": "content/articles/2026/week-12-late-preview.json",
+      "type": "week_late_preview",
+      "edition": "Weekend Outlook",
+      "season": 2026,
+      "week": 12,
+      "status": "published",
+      "title": "Week 12 Weekend Outlook: Thursday Has Already Chosen Violence",
+      "dek": "Known scoring is in. The remaining projections say maco71 and Archibaldo are cruising, while turi70–Siccboi is a coin-flip with shoulder pads.",
+      "publishedAt": "2026-11-27T23:20:08.459Z",
+      "dataAsOf": "2026-11-27T23:20:08.459Z",
+      "forecastContext": {
+        "mode": "late_outlook",
+        "capturedAt": "2026-11-27T23:20:08.459Z",
+        "sourceSnapshotId": "farmhood-2026-week-12-live-91a2a35aece5a3cc",
+        "knownScoringIncluded": true,
+        "receiptEligible": false
+      },
+      "storylines": [
+        "maco71’s scoreboard is doing the talking",
+        "The Tuesday-night anxiety game",
+        "Thursday gave Archibaldo a rare comfort cushion"
+      ],
+      "tags": [
+        "Weekend Outlook",
+        "Week 12",
+        "Lineup Watch"
+      ]
+    },
     {
       "articleId": "2026-week-12-waiver-recap",
       "path": "content/articles/2026/week-12-waiver-recap.json",
